@@ -34,6 +34,9 @@ const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ onSearch }) => {
           
           // Add to search history
           addSearchToHistory(query, searchResults.length);
+          
+          // Trigger custom storage event to update sidebar
+          window.dispatchEvent(new Event('storage'));
         } catch (error) {
           console.error('Search failed:', error);
         } finally {
@@ -45,10 +48,6 @@ const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ onSearch }) => {
     performSearch();
   }, [query]);
 
-  useEffect(() => {
-    // Trigger custom storage event to update sidebar
-    window.dispatchEvent(new Event('storage'));
-  }, [query]);
 
   useEffect(() => {
     let filtered = results;

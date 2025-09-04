@@ -29,6 +29,12 @@ export const saveUserData = (data: UserData): void => {
 
 export const addSearchToHistory = (query: string, resultsCount: number): void => {
   const userData = getStoredUserData();
+  
+  // Remove any existing search with the same query (case-insensitive)
+  userData.searchHistory = userData.searchHistory.filter(
+    item => item.query.toLowerCase() !== query.toLowerCase()
+  );
+  
   const newSearch: SearchHistory = {
     id: Date.now().toString(),
     query,
