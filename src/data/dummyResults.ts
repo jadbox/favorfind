@@ -75,27 +75,27 @@ export const dummySearchResults: SearchResult[] = [
   }
 ];
 
-export const getSearchResults = (query: string): SearchResult[] => {
+export const getSearchResults = (query: string): Promise<SearchResult[]> => {
   // Simple search simulation - in real app would call API
   const lowercaseQuery = query.toLowerCase();
   
+  let filtered: SearchResult[];
+  
   if (lowercaseQuery.includes('her2') || lowercaseQuery.includes('breast cancer')) {
-    return dummySearchResults.filter(result => 
+    filtered = dummySearchResults.filter(result => 
       result.title.toLowerCase().includes('her2') || 
       result.title.toLowerCase().includes('breast cancer')
     );
-  }
-  
-  if (lowercaseQuery.includes('clinical trial')) {
-    return dummySearchResults.filter(result => result.type === 'trial');
-  }
-  
-  if (lowercaseQuery.includes('immunotherapy')) {
-    return dummySearchResults.filter(result => 
+  } else if (lowercaseQuery.includes('clinical trial')) {
+    filtered = dummySearchResults.filter(result => result.type === 'trial');
+  } else if (lowercaseQuery.includes('immunotherapy')) {
+    filtered = dummySearchResults.filter(result => 
       result.category === 'Immunotherapy'
     );
+  } else {
+    // Return all results for other queries
+    filtered = dummySearchResults;
   }
   
-  // Return all results for other queries
-  return dummySearchResults;
+  return Promise.resolve(filtered);
 };

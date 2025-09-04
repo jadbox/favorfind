@@ -4,7 +4,7 @@ import { ArrowLeft, Filter, SortDesc } from 'lucide-react';
 import SearchBar from '../components/SearchBar';
 import SearchResultCard from '../components/SearchResultCard';
 import { SearchResult } from '../types';
-import { getSearchResults } from '../data/dummyResults';
+import { searchPapers } from '../services/semanticScholar';
 import { addSearchToHistory, saveToLibrary } from '../utils/localStorage';
 
 interface SearchResultsPageProps {
@@ -19,17 +19,35 @@ const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ onSearch }) => {
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'relevance' | 'date' | 'citations'>('relevance');
+  const [loading, setLoading] = useState<boolean>(false);
   
   const query = searchParams.get('q') || '';
 
   useEffect(() => {
-    if (query) {
-      const searchResults = getSearchResults(query);
-      setResults(searchResults);
-      setFilteredResults(searchResults);
-      
-      // Add to search history
-      addSearchToHistory(query, searchResults.length);
+    const performSearch = async () => {
+      if (query) {
+        setLoading(true);
+        try {
+          const searchResults = await searchPapers(query);
+          setResults(searchResults);
+          setFilteredResults(searchResults);
+          
+          // Add to search history
+          addSearchToHistory(query, searchResults.length);
+        } catch (error) {
+          console.error('Search failed:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    
+    performSearch();
+  }, [query]);
+
+  useEffect(() => {
+    // Trigger custom storage event to update sidebar
+    window.dispatchEvent(new Event('storage'));
     }
   }, [query]);
 
@@ -151,7 +169,12 @@ const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ onSearch }) => {
         
         {/* Results Grid */}
         <div className="grid gap-6">
-          {filteredResults.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="loading loading-spinner loading-lg text-medical-600"></div>
+              <div className="text-gray-500 text-lg mt-4">Searching medical literature...</div>
+            </div>
+          ) : filteredResults.length > 0 ? (
             filteredResults.map(result => (
               <SearchResultCard
                 key={result.id}
