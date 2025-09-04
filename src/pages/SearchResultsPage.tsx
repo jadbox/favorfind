@@ -48,7 +48,6 @@ const SearchResultsPage: React.FC<SearchResultsPageProps> = ({ onSearch }) => {
   useEffect(() => {
     // Trigger custom storage event to update sidebar
     window.dispatchEvent(new Event('storage'));
-    }
   }, [query]);
 
   useEffect(() => {
