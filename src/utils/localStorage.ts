@@ -1,6 +1,6 @@
-import { UserData, SearchHistory, SearchResult } from '../types';
+import { UserData, SearchHistory, SearchResult } from "../types";
 
-const STORAGE_KEY = 'medeligo-user-data';
+const STORAGE_KEY = "medeligo-user-data";
 
 export const getStoredUserData = (): UserData => {
   try {
@@ -9,13 +9,13 @@ export const getStoredUserData = (): UserData => {
       return JSON.parse(data);
     }
   } catch (error) {
-    console.error('Error reading from localStorage:', error);
+    console.error("Error reading from localStorage:", error);
   }
-  
+
   return {
-    firstName: 'Frank',
+    firstName: "Frank",
     searchHistory: [],
-    savedLibrary: []
+    savedLibrary: [],
   };
 };
 
@@ -23,25 +23,28 @@ export const saveUserData = (data: UserData): void => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (error) {
-    console.error('Error saving to localStorage:', error);
+    console.error("Error saving to localStorage:", error);
   }
 };
 
-export const addSearchToHistory = (query: string, resultsCount: number): void => {
+export const addSearchToHistory = (
+  query: string,
+  resultsCount: number
+): void => {
   const userData = getStoredUserData();
-  
+
   // Remove any existing search with the same query (case-insensitive)
   userData.searchHistory = userData.searchHistory.filter(
-    item => item.query.toLowerCase() !== query.toLowerCase()
+    (item) => item.query.toLowerCase() !== query.toLowerCase()
   );
-  
+
   const newSearch: SearchHistory = {
     id: Date.now().toString(),
     query,
     timestamp: new Date().toISOString(),
-    resultsCount
+    resultsCount,
   };
-  
+
   // Add to beginning of array and limit to 20 items
   userData.searchHistory = [newSearch, ...userData.searchHistory.slice(0, 19)];
   saveUserData(userData);
@@ -49,10 +52,33 @@ export const addSearchToHistory = (query: string, resultsCount: number): void =>
 
 export const saveToLibrary = (result: SearchResult): void => {
   const userData = getStoredUserData();
-  const exists = userData.savedLibrary.find(item => item.id === result.id);
-  
+  const exists = userData.savedLibrary.find((item) => item.id === result.id);
+
   if (!exists) {
     userData.savedLibrary = [result, ...userData.savedLibrary];
     saveUserData(userData);
   }
+};
+
+export const removeFromLibrary = (resultId: string): void => {
+  const userData = getStoredUserData();
+  userData.savedLibrary = userData.savedLibrary.filter(
+    (item) => item.id !== resultId
+  );
+  saveUserData(userData);
+};
+
+export const toggleSaveToLibrary = (result: SearchResult): void => {
+  const userData = getStoredUserData();
+  const exists = userData.savedLibrary.find((item) => item.id === result.id);
+  if (exists) {
+    // Remove from library
+    userData.savedLibrary = userData.savedLibrary.filter(
+      (item) => item.id !== result.id
+    );
+  } else {
+    // Add to top of library
+    userData.savedLibrary = [result, ...userData.savedLibrary];
+  }
+  saveUserData(userData);
 };

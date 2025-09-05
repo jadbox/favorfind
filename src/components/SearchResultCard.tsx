@@ -1,35 +1,40 @@
-import React from 'react';
-import { ExternalLink, BookOpen, Presentation as Citation } from 'lucide-react';
-import { SearchResult } from '../types';
+import React from "react";
+import { ExternalLink, BookOpen, Presentation as Citation } from "lucide-react";
+import { SearchResult } from "../types";
 
 interface SearchResultCardProps {
   result: SearchResult;
-  onSaveToLibrary: (result: SearchResult) => void;
+  isSaved: boolean;
+  onToggleSave: (result: SearchResult) => void;
 }
 
-const SearchResultCard: React.FC<SearchResultCardProps> = ({ result, onSaveToLibrary }) => {
+const SearchResultCard: React.FC<SearchResultCardProps> = ({
+  result,
+  isSaved,
+  onToggleSave,
+}) => {
   const handleOpenExternal = () => {
-    window.open(result.url, '_blank', 'noopener,noreferrer');
+    window.open(result.url, "_blank", "noopener,noreferrer");
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'article':
-        return 'badge-primary';
-      case 'trial':
-        return 'badge-secondary';
-      case 'guideline':
-        return 'badge-accent';
+      case "article":
+        return "badge-primary";
+      case "trial":
+        return "badge-secondary";
+      case "guideline":
+        return "badge-accent";
       default:
-        return 'badge-neutral';
+        return "badge-neutral";
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -53,32 +58,32 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({ result, onSaveToLib
             <span>{result.citationCount}</span>
           </div>
         </div>
-        
+
         {/* Title */}
         <h3 className="card-title text-lg font-semibold text-gray-900 mb-2 leading-tight">
           {result.title}
         </h3>
-        
+
         {/* Source and Date */}
         <div className="flex items-center space-x-4 mb-3 text-sm text-gray-600">
           <span className="font-medium">{result.source}</span>
           <span>•</span>
           <span>{formatDate(result.publicationDate)}</span>
         </div>
-        
+
         {/* Abstract */}
         <p className="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-3">
           {result.abstract}
         </p>
-        
+
         {/* Actions */}
         <div className="card-actions justify-end space-x-2">
           <button
-            onClick={() => onSaveToLibrary(result)}
+            onClick={() => onToggleSave(result)}
             className="btn btn-outline btn-sm flex items-center space-x-1"
           >
             <BookOpen className="h-4 w-4" />
-            <span>Save to Library</span>
+            <span>{isSaved ? "Unsave" : "Save to Library"}</span>
           </button>
           <button
             onClick={handleOpenExternal}
