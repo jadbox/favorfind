@@ -36,6 +36,7 @@ export const searchAction = async ({
   const query = formData.get("query") as string;
 
   console.log("Received query in action:", query);
+  //  return [];
 
   if (!query) {
     console.error("Search action received no query.");
@@ -49,7 +50,7 @@ export const searchAction = async ({
     )}&fields=${fields}&limit=20`;
 
     const headers: HeadersInit = {
-      "x-api-key": SEMANTIC_SCHOLAR_API_KEY,
+      "X-API-KEY": SEMANTIC_SCHOLAR_API_KEY,
     };
 
     const response = await fetch(url, { headers });

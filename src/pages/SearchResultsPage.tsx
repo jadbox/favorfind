@@ -18,11 +18,7 @@ import {
   getStoredUserData,
 } from "../utils/localStorage";
 
-interface SearchResultsPageProps {
-  // onSearch is no longer needed as search is handled by React Router action
-}
-
-const SearchResultsPage: React.FC<SearchResultsPageProps> = () => {
+const SearchResultsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const actionData = useActionData() as SearchResult[] | undefined;
@@ -63,12 +59,14 @@ const SearchResultsPage: React.FC<SearchResultsPageProps> = () => {
   // Update results when actionData or fetcher.data changes
   useEffect(() => {
     if (query) {
+      console.log("Effect searchPapers", query);
       searchPapers(query);
     }
   }, [query]);
 
   useEffect(() => {
     const data = actionData || (fetcher.data as SearchResult[]);
+    if (!data) return;
     setResults(data);
     setFilteredResults(data);
     addSearchToHistory(query, data.length);

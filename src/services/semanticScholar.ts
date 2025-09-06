@@ -3,7 +3,7 @@ import { useFetcher } from "react-router"; // Import useFetcher
 
 // The actual search logic is now in src/actions/search.ts
 export const useSearchPapers = () => {
-  const fetcher = useFetcher();
+  const fetcher = useFetcher(); // { key: "useSearchPapers" }
 
   const searchPapers = async (
     query: string,

@@ -7,7 +7,7 @@ An advanced knowledge discovery platform designed for oncology professionals to 
 Create a `.env` file in the root directory with the following variables:
 
 ```
-VITE_SEMANTIC_SCHOLAR_API=your_api_key_here
+SEMANTIC_SCHOLAR_API=your_api_key_here
 ```
 
 ### Semantic Scholar API

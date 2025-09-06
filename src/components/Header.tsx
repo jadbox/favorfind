@@ -1,10 +1,8 @@
 import React from "react";
-import { Link, useLocation } from "react-router";
+import { Link } from "react-router";
 import { Heart, BookOpen, User } from "lucide-react";
 
 const Header: React.FC = () => {
-  const location = useLocation();
-
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between max-w-7xl mx-auto">

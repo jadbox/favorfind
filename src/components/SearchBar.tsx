@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Mic, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useNavigate } from "react-router";
 
 interface SearchBarProps {
@@ -44,22 +44,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
             setQuery(e.target.value);
           }}
           placeholder={placeholder}
-          className="input input-bordered w-full pr-24 text-lg h-16 bg-white border-2 border-gray-300 focus:border-medical-600 focus:outline-none rounded-xl"
+          className="input input-bordered w-full pr-24 pl-6 text-lg h-16 bg-white border-2 border-gray-300 focus:border-medical-600 focus:outline-none rounded-xl"
         />
-        <div className="absolute right-3 flex items-center space-x-2">
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm btn-circle hover:bg-gray-100"
-            title="Voice search"
-          >
-            <Mic className="h-5 w-5 text-gray-500" />
-          </button>
+        <div className="absolute right-3 flex items-center">
+          {/* Optional voice button could go here */}
           <button
             type="submit" // This will now submit the parent Form
-            className="btn btn-primary btn-sm"
+            aria-label="Search"
+            className="inline-flex items-center gap-2 bg-medical-600 hover:bg-medical-700 text-white text-sm font-medium px-4 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-medical-500 focus:ring-offset-2 h-12 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={!query.trim()}
           >
             <Search className="h-4 w-4" />
+            <span className="hidden sm:inline">Search</span>
           </button>
         </div>
       </div>

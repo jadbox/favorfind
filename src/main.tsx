@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import App from "./App.tsx";
-import "./index.css";
+import "./index.css"; // globals
 import SearchPage from "./pages/SearchPage.tsx";
 import SearchResultsPage from "./pages/SearchResultsPage.tsx";
 import LibraryPage from "./pages/LibraryPage.tsx";
