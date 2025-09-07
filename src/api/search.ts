@@ -1,10 +1,7 @@
-import { ActionFunctionArgs } from "react-router";
-import { SearchResult } from "../types";
+import type { SearchResult } from "../types";
 
-const SEMANTIC_SCHOLAR_API_KEY = import.meta.env.SEMANTIC_SCHOLAR_API;
+const SEMANTIC_SCHOLAR_API_KEY = process.env.SEMANTIC_SCHOLAR_API;
 const API_BASE_URL = "https://api.semanticscholar.org/graph/v1";
-
-console.log("SEMANTIC_SCHOLAR_API_KEY", SEMANTIC_SCHOLAR_API_KEY);
 
 interface SemanticScholarPaper {
   paperId: string;
@@ -30,19 +27,16 @@ const mapToSearchResult = (paper: SemanticScholarPaper): SearchResult => {
   };
 };
 
-export const searchAction = async ({
-  request,
-}: ActionFunctionArgs): Promise<SearchResult[]> => {
-  console.log("searchAction triggered!");
+export const handleSearch = async (request: Request): Promise<Response> => {
+  console.log("handleSearch triggered!");
   const formData = await request.formData();
   const query = formData.get("query") as string;
 
   console.log("Received query in action:", query);
-  //  return [];
 
   if (!query) {
     console.error("Search action received no query.");
-    return [];
+    return new Response(JSON.stringify([]), { status: 400 });
   }
 
   try {
@@ -73,12 +67,16 @@ export const searchAction = async ({
 
     if (data && data.data) {
       const searchResults: SearchResult[] = data.data.map(mapToSearchResult);
-      return searchResults;
+      return new Response(JSON.stringify(searchResults), {
+        headers: { "Content-Type": "application/json" },
+      });
     } else {
-      return [];
+      return new Response(JSON.stringify([]), {
+        headers: { "Content-Type": "application/json" },
+      });
     }
   } catch (error) {
     console.error("Error fetching from Semantic Scholar API:", error);
-    return [];
+    return new Response(JSON.stringify([]), { status: 500 });
   }
 };

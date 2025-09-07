@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { Heart, BookOpen, User } from "lucide-react";
 
 const Header: React.FC = () => {

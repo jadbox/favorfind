@@ -1,17 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {
-  useSearchParams,
-  useNavigate,
-  useActionData,
-  useNavigation,
-  useLoaderData,
-} from "react-router";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import SearchBar from "../components/SearchBar";
 import SearchResultsFilters from "../components/SearchResultsFilters";
 import SearchResultsDisplay from "../components/SearchResultsDisplay";
-import { SearchResult } from "../types";
-import { useSearchPapers } from "../services/semanticScholar";
+import type { SearchResult } from "../types";
 import {
   addSearchToHistory,
   toggleSaveToLibrary,
@@ -21,9 +14,7 @@ import {
 const SearchResultsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const actionData = useActionData() as SearchResult[] | undefined;
-  const loaderData = useLoaderData() as { query: string } | undefined; // Get data from the loader
-  const navigation = useNavigation();
+  const location = useLocation();
 
   const [results, setResults] = useState<SearchResult[]>([]);
   const [filteredResults, setFilteredResults] = useState<SearchResult[]>([]);
@@ -34,10 +25,8 @@ const SearchResultsPage: React.FC = () => {
   );
   const [savedIds, setSavedIds] = useState<string[]>([]);
 
-  const query = searchParams.get("q") || loaderData?.query || ""; // Use loaderData for initial query
-  const { searchPapers, fetcher } = useSearchPapers();
-
-  const loading = navigation.state === "loading" || fetcher.state === "loading";
+  const query = searchParams.get("q") || "";
+  const loading = false; // We'll manage loading state differently now
 
   const loadSavedIds = () => {
     const userData = getStoredUserData();
@@ -56,22 +45,15 @@ const SearchResultsPage: React.FC = () => {
     };
   }, []);
 
-  // Update results when actionData or fetcher.data changes
   useEffect(() => {
-    if (query) {
-      console.log("Effect searchPapers", query);
-      searchPapers(query);
+    if (location.state && location.state.results) {
+      const data = location.state.results as SearchResult[];
+      setResults(data);
+      setFilteredResults(data);
+      addSearchToHistory(query, data.length);
+      window.dispatchEvent(new Event("storage"));
     }
-  }, [query]);
-
-  useEffect(() => {
-    const data = actionData || (fetcher.data as SearchResult[]);
-    if (!data) return;
-    setResults(data);
-    setFilteredResults(data);
-    addSearchToHistory(query, data.length);
-    window.dispatchEvent(new Event("storage"));
-  }, [actionData, fetcher.data, query]);
+  }, [location.state, query]);
 
   useEffect(() => {
     let filtered = results;
@@ -111,8 +93,6 @@ const SearchResultsPage: React.FC = () => {
   }, [results, selectedType, selectedCategory, sortBy]);
 
   const handleNewSearch = (newQuery: string) => {
-    // Trigger the search action via the hook
-    searchPapers(newQuery);
     navigate(`/search?q=${encodeURIComponent(newQuery)}`);
   };
 

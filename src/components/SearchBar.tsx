@@ -19,19 +19,22 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const navigator = useNavigate();
   const [query, setQuery] = useState(defaultValue);
 
-  // No longer preventing default, relying on parent Form submission
-  // const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   setQuery(e.target.value);
-  // };
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log("Search form submitted");
     e.preventDefault();
     if (query.trim()) {
-      // onSearch(query.trim());
-      navigator(`/search?q=${encodeURIComponent(query.trim())}`);
+      const formData = new FormData();
+      formData.append("query", query.trim());
+      const response = await fetch("/api/search", {
+        method: "POST",
+        body: formData,
+      });
+      const results = await response.json();
+      navigator(`/search?q=${encodeURIComponent(query.trim())}`, {
+        state: { results },
+      });
     }
   };
-
-  // use react-router to nav
 
   return (
     <form onSubmit={handleSubmit}>

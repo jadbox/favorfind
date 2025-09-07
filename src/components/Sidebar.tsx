@@ -1,7 +1,7 @@
 import React from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { Grid3X3, History, Plus, Search } from "lucide-react";
-import { SearchHistory } from "../types";
+import type { SearchHistory } from "../types";
 
 interface SidebarProps {
   searchHistory: SearchHistory[];
