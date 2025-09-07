@@ -13,7 +13,7 @@ export const useSearchPapers = () => {
     console.log("searchPapers", query);
     fetcher.submit(
       { query, limit: limit.toString() },
-      { method: "post", action: "/search" } // Target the search action
+      { method: "post", action: "/api/search" } // Target the search action
     );
 
     // The results will be available via fetcher.data or useLoaderData in the component

@@ -18,9 +18,13 @@ const router = createBrowserRouter([
         element: <SearchPage />,
       },
       {
+        path: "api/search",
+        action: searchAction, // Associate the action with this route
+      },
+      {
         path: "search",
         element: <SearchResultsPage />, // onSearch prop will be handled by action
-        action: searchAction, // Associate the action with this route
+        // action: searchAction, // Associate the action with this route
         loader: async ({ request }) => {
           const url = new URL(request.url);
           const query = url.searchParams.get("q");

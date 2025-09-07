@@ -1,8 +1,10 @@
 import { ActionFunctionArgs } from "react-router";
 import { SearchResult } from "../types";
 
-const SEMANTIC_SCHOLAR_API_KEY = import.meta.env.VITE_SEMANTIC_SCHOLAR_API;
+const SEMANTIC_SCHOLAR_API_KEY = import.meta.env.SEMANTIC_SCHOLAR_API;
 const API_BASE_URL = "https://api.semanticscholar.org/graph/v1";
+
+console.log("SEMANTIC_SCHOLAR_API_KEY", SEMANTIC_SCHOLAR_API_KEY);
 
 interface SemanticScholarPaper {
   paperId: string;
@@ -48,6 +50,10 @@ export const searchAction = async ({
     const url = `${API_BASE_URL}/paper/search/relevance?query=${encodeURIComponent(
       query
     )}&fields=${fields}&limit=20`;
+
+    if (!SEMANTIC_SCHOLAR_API_KEY) {
+      throw new Error("SEMANTIC_SCHOLAR_API_KEY is not set");
+    }
 
     const headers: HeadersInit = {
       "X-API-KEY": SEMANTIC_SCHOLAR_API_KEY,
