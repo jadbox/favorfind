@@ -9,7 +9,6 @@
     "build": "bun run build.ts"
   },
   "dependencies": {
-    "@brokerloop/ttlcache": "^3.2.3",
     "bun-plugin-tailwind": "^0.0.15",
     "lucide-react": "^0.542.0",
     "react": "^19",

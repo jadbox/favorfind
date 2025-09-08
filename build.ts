@@ -72,24 +72,29 @@ function parseArgs(): Partial<Bun.BuildConfig> {
       continue;
     }
 
-    let key: string;
-    let value: string;
+    let key: string | undefined;
+    let value: string | undefined;
 
     if (arg.includes("=")) {
-      [key, value] = arg.slice(2).split("=", 2) as [string, string];
+      const parts = arg.slice(2).split("=", 2);
+      key = parts[0];
+      value = parts[1];
     } else {
       key = arg.slice(2);
-      value = args[++i] ?? "";
+      value = args[++i];
     }
+
+    if (key === undefined) continue; // Skip if key is undefined
 
     key = toCamelCase(key);
 
     if (key.includes(".")) {
       const [parentKey, childKey] = key.split(".");
+      if (parentKey === undefined || childKey === undefined) continue; // Skip if parentKey or childKey is undefined
       config[parentKey] = config[parentKey] || {};
-      config[parentKey][childKey] = parseValue(value);
+      config[parentKey][childKey] = parseValue(value ?? "");
     } else {
-      config[key] = parseValue(value);
+      config[key] = parseValue(value ?? "");
     }
   }
 
@@ -133,11 +138,9 @@ if (existsSync(assetsDir)) {
 
 const start = performance.now();
 
-const entrypoints = [...new Bun.Glob("**.html").scanSync("src")]
-  .map((a) => path.resolve("src", a))
-  .filter((dir) => !dir.includes("node_modules"));
+const entrypoints = ["./src/frontend.tsx"];
 console.log(
-  `📄 Found ${entrypoints.length} HTML ${
+  `📄 Found ${entrypoints.length} entrypoint ${
     entrypoints.length === 1 ? "file" : "files"
   } to process\n`
 );
@@ -154,6 +157,28 @@ const result = await Bun.build({
   },
   ...cliConfig,
 });
+
+// Copy index.html to outdir and update script path
+const originalIndexHtmlPath = path.join(process.cwd(), "index.html");
+const outputIndexHtmlPath = path.join(outdir, "index.html");
+
+if (existsSync(originalIndexHtmlPath)) {
+  console.log(`📄 Copying index.html to ${outputIndexHtmlPath}`);
+  await cp(originalIndexHtmlPath, outputIndexHtmlPath);
+
+  let indexHtmlContent = await Bun.file(outputIndexHtmlPath).text();
+  indexHtmlContent = indexHtmlContent.replace(
+    'src="./src/frontend.tsx"',
+    'src="./frontend.js"' // Assuming Bun outputs frontend.js
+  );
+  // Inject CSS link
+  indexHtmlContent = indexHtmlContent.replace(
+    "</head>",
+    '  <link rel="stylesheet" href="./frontend.css">\n</head>'
+  );
+  await Bun.write(outputIndexHtmlPath, indexHtmlContent);
+  console.log(`✅ Updated script and CSS paths in ${outputIndexHtmlPath}`);
+}
 
 const end = performance.now();
 

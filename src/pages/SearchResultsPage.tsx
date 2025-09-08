@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLoaderData } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import SearchBar from "../components/SearchBar";
 import SearchResultsFilters from "../components/SearchResultsFilters";
@@ -10,23 +10,29 @@ import {
   toggleSaveToLibrary,
   getStoredUserData,
 } from "../utils/localStorage";
+// Note: data loading is handled via route loader and a client fallback to /api/search
+
+interface LoaderData {
+  query: string;
+  results: SearchResult[];
+}
 
 const SearchResultsPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const { query, results: initialResults } = useLoaderData() as LoaderData;
   const navigate = useNavigate();
-  const location = useLocation();
+  const currentQuery = query; // Use query from loader data
+  console.log("SearchResultsPage: currentQuery from loader:", currentQuery);
 
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [filteredResults, setFilteredResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<SearchResult[]>(initialResults);
+  const [filteredResults, setFilteredResults] =
+    useState<SearchResult[]>(initialResults);
   const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"relevance" | "date" | "citations">(
     "relevance"
   );
   const [savedIds, setSavedIds] = useState<string[]>([]);
-
-  const query = searchParams.get("q") || "";
-  const loading = false; // We'll manage loading state differently now
+  const [loading, setLoading] = useState<boolean>(false);
 
   const loadSavedIds = () => {
     const userData = getStoredUserData();
@@ -46,14 +52,50 @@ const SearchResultsPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (location.state && location.state.results) {
-      const data = location.state.results as SearchResult[];
-      setResults(data);
-      setFilteredResults(data);
-      addSearchToHistory(query, data.length);
+    // This effect will now only handle updates to results/filteredResults
+    // when initialResults change (e.g., from a new search via loader)
+    setResults(initialResults);
+    setFilteredResults(initialResults);
+    if (currentQuery && initialResults.length > 0) {
+      addSearchToHistory(currentQuery, initialResults.length);
       window.dispatchEvent(new Event("storage"));
     }
-  }, [location.state, query]);
+  }, [initialResults, currentQuery]);
+
+  // Fallback: on direct navigation, ensure we fetch via backend if loader returned no results
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const q = url.searchParams.get("q")?.trim();
+    if (!q) return;
+    // If we already have results from loader, skip
+    if (results && results.length > 0) return;
+
+    let cancelled = false;
+    const fetchFromBackend = async () => {
+      try {
+        setLoading(true);
+        const form = new FormData();
+        form.append("query", q);
+        const res = await fetch("/api/search", { method: "POST", body: form });
+        if (!res.ok) throw new Error(`Backend error ${res.status}`);
+        const data: SearchResult[] = await res.json();
+        if (cancelled) return;
+        setResults(data);
+        setFilteredResults(data);
+        addSearchToHistory(q, data.length);
+        window.dispatchEvent(new Event("storage"));
+      } catch (e) {
+        console.error("SearchResultsPage: backend fetch failed", e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    fetchFromBackend();
+    return () => {
+      cancelled = true;
+    };
+  }, [results]);
 
   useEffect(() => {
     let filtered = results;
@@ -119,14 +161,14 @@ const SearchResultsPage: React.FC = () => {
             Back
           </button>
           <div className="flex-1">
-            <SearchBar onSearch={handleNewSearch} defaultValue={query} />
+            <SearchBar onSearch={handleNewSearch} defaultValue={currentQuery} />
           </div>
         </div>
 
         {/* Results Summary */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
-            Search Results for "{query}"
+            Search Results for "{currentQuery}"
           </h2>
           <div className="text-sm text-gray-600">
             {filteredResults.length} of {results.length} results

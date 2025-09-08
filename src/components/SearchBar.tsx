@@ -19,20 +19,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const navigator = useNavigate();
   const [query, setQuery] = useState(defaultValue);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    console.log("Search form submitted");
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (query.trim()) {
-      const formData = new FormData();
-      formData.append("query", query.trim());
-      const response = await fetch("/api/search", {
-        method: "POST",
-        body: formData,
-      });
-      const results = await response.json();
-      navigator(`/search?q=${encodeURIComponent(query.trim())}`, {
-        state: { results },
-      });
+      navigator(`/search?q=${encodeURIComponent(query.trim())}`);
     }
   };
 

@@ -1,22 +1,26 @@
 import { serve } from "bun";
-import index from "../index.html"; // Updated path to index.html
 import { handleSearch } from "./api/search";
-import { existsSync } from "fs"; // Added existsSync
-import path from "path"; // Added path
+import { existsSync } from "fs";
+import { stat } from "fs/promises"; // Import stat for directory checking
+import path from "path";
 
 const server = serve({
   routes: {
-    // Serve index.html for all unmatched routes.
-    "/*": index,
+    // Serve static assets from the /dist directory
+    "/*": async (req) => {
+      const url = new URL(req.url);
+      let filePath = path.join(process.cwd(), "dist", url.pathname);
 
-    // Serve static assets from the root /assets directory
-    "/assets/*": async (req) => {
-      const url = new URL(req.url); // Get the URL object from the request
-      const filePath = path.join(
-        process.cwd(),
-        "assets",
-        url.pathname.substring("/assets/".length) // Use url.pathname
-      );
+      // If the path is a directory or root or /search, serve index.html
+      if (url.pathname === "/" || url.pathname === "/search") {
+        filePath = path.join(process.cwd(), "dist", "index.html");
+      } else {
+        const fileStats = await stat(filePath);
+        if (fileStats.isDirectory()) {
+          filePath = path.join(filePath, "index.html");
+        }
+      }
+
       if (existsSync(filePath)) {
         return new Response(Bun.file(filePath));
       }

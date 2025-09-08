@@ -1,12 +1,10 @@
 import type { SearchResult } from "../types";
-import { TTLCache } from "@brokerloop/ttlcache";
+import {
+  getCachedSearchResults,
+  setCachedSearchResults,
+} from "../services/cache";
 
 const SEMANTIC_SCHOLAR_API_KEY = process.env.SEMANTIC_SCHOLAR_API;
-
-const searchCache = new TTLCache<string, SearchResult[]>({
-  ttl: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
-  max: 10000, // Maximum 10,000 entries
-});
 
 interface SemanticScholarPaper {
   paperId: string;
@@ -32,25 +30,21 @@ const mapToSearchResult = (paper: SemanticScholarPaper): SearchResult => {
   };
 };
 
-export const handleSearch = async (request: Request): Promise<Response> => {
-  console.log("handleSearch triggered!");
-  const formData = await request.formData();
-  const query = formData.get("query") as string;
+export const fetchSearchResults = async (
+  query: string
+): Promise<SearchResult[]> => {
+  console.log("API: fetchSearchResults triggered for query:", query);
 
-  console.log("Received query in action:", query);
-
-  // Check if the query is already in the cache
-  if (searchCache.has(query)) {
-    const cachedResult = searchCache.get(query);
-    console.log("Returning cached result for query:", query);
-    return new Response(JSON.stringify(cachedResult), {
-      headers: { "Content-Type": "application/json" },
-    });
+  // Check cache first
+  const cachedResults = getCachedSearchResults(query);
+  if (cachedResults) {
+    console.log("API: Returning cached results for query:", query);
+    return cachedResults;
   }
 
   if (!query) {
-    console.error("Search action received no query.");
-    return new Response(JSON.stringify([]), { status: 400 });
+    console.error("fetchSearchResults received no query.");
+    return [];
   }
 
   try {
@@ -78,22 +72,37 @@ export const handleSearch = async (request: Request): Promise<Response> => {
     }
 
     const data = await response.json();
-    console.log("Semantic Scholar API response:", data);
+    console.log("API: Semantic Scholar API response:", data);
 
     if (data && data.data) {
       const searchResults: SearchResult[] = data.data.map(mapToSearchResult);
-      // Cache the result before returning
-      searchCache.set(query, searchResults);
-      return new Response(JSON.stringify(searchResults), {
-        headers: { "Content-Type": "application/json" },
-      });
+      setCachedSearchResults(query, searchResults); // Cache the new results
+      console.log("API: Returning search results:", searchResults);
+      return searchResults;
     } else {
-      return new Response(JSON.stringify([]), {
-        headers: { "Content-Type": "application/json" },
-      });
+      console.log(
+        "API: No data or data.data in Semantic Scholar API response."
+      );
+      return [];
     }
   } catch (error) {
-    console.error("Error fetching from Semantic Scholar API:", error);
+    console.error("API: Error fetching from Semantic Scholar API:", error);
+    throw error; // Re-throw to be handled by the caller
+  }
+};
+
+export const handleSearch = async (request: Request): Promise<Response> => {
+  console.log("handleSearch triggered!");
+  const formData = await request.formData();
+  const query = formData.get("query") as string;
+
+  try {
+    const results = await fetchSearchResults(query);
+    return new Response(JSON.stringify(results), {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error in handleSearch:", error);
     return new Response(JSON.stringify([]), { status: 500 });
   }
 };
