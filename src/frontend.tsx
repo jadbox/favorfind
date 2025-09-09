@@ -6,7 +6,21 @@ import "./index.css"; // globals
 import SearchPage from "./pages/SearchPage";
 import SearchResultsPage from "./pages/SearchResultsPage";
 import LibraryPage from "./pages/LibraryPage";
-import { fetchSearchResults } from "./api/search";
+// Optional: read SSR JSON props if present (non-blocking)
+function readSSRProps<T = unknown>(): T | undefined {
+  const el = document.getElementById("ssr-props");
+  if (!el) return undefined;
+  try {
+    return JSON.parse(el.textContent || "");
+  } catch {
+    return undefined;
+  }
+}
+
+// Example usage later if needed:
+// const ssrData = readSSRProps<{ lastSearch?: { query: string; count: number; ts: number } }>();
+// You can pass this into context or state when booting the app.
+
 
 const router = createBrowserRouter([
   {
@@ -20,32 +34,7 @@ const router = createBrowserRouter([
       {
         path: "api/search",
       },
-      {
-        path: "search",
-        element: <SearchResultsPage />,
-        loader: async ({ request }: { request: Request }) => {
-          console.log("Frontend: Loader for /search triggered.");
-          const url = new URL(request.url);
-          const query = url.searchParams.get("q");
-          console.log("Frontend: Loader query:", query);
-
-          if (query) {
-            try {
-              const results = await fetchSearchResults(query);
-              console.log("Frontend: Loader fetched results:", results);
-              return { query, results };
-            } catch (error) {
-              console.error(
-                "Frontend: Error fetching search results in loader:",
-                error
-              );
-              return { query, results: [] };
-            }
-          }
-          console.log("Frontend: Loader returning no query or empty results.");
-          return { query, results: [] };
-        },
-      },
+  { path: "search", element: <SearchResultsPage /> },
       {
         path: "library",
         element: <LibraryPage />,

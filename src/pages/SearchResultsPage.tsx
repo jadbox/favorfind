@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLoaderData } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import SearchBar from "../components/SearchBar";
 import SearchResultsFilters from "../components/SearchResultsFilters";
@@ -12,20 +12,14 @@ import {
 } from "../utils/localStorage";
 // Note: data loading is handled via route loader and a client fallback to /api/search
 
-interface LoaderData {
-  query: string;
-  results: SearchResult[];
-}
-
 const SearchResultsPage: React.FC = () => {
-  const { query, results: initialResults } = useLoaderData() as LoaderData;
   const navigate = useNavigate();
-  const currentQuery = query; // Use query from loader data
-  console.log("SearchResultsPage: currentQuery from loader:", currentQuery);
+  const location = useLocation();
+  const currentQuery = new URLSearchParams(location.search).get("q") || "";
+  console.log("SearchResultsPage: currentQuery from URL:", currentQuery);
 
-  const [results, setResults] = useState<SearchResult[]>(initialResults);
-  const [filteredResults, setFilteredResults] =
-    useState<SearchResult[]>(initialResults);
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [filteredResults, setFilteredResults] = useState<SearchResult[]>([]);
   const [selectedType, setSelectedType] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"relevance" | "date" | "citations">(
@@ -51,21 +45,9 @@ const SearchResultsPage: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    // This effect will now only handle updates to results/filteredResults
-    // when initialResults change (e.g., from a new search via loader)
-    setResults(initialResults);
-    setFilteredResults(initialResults);
-    if (currentQuery && initialResults.length > 0) {
-      addSearchToHistory(currentQuery, initialResults.length);
-      window.dispatchEvent(new Event("storage"));
-    }
-  }, [initialResults, currentQuery]);
-
   // Fallback: on direct navigation, ensure we fetch via backend if loader returned no results
   useEffect(() => {
-    const url = new URL(window.location.href);
-    const q = url.searchParams.get("q")?.trim();
+  const q = currentQuery.trim();
     if (!q) return;
     // If we already have results from loader, skip
     if (results && results.length > 0) return;
@@ -95,7 +77,7 @@ const SearchResultsPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [results]);
+  }, [results, currentQuery]);
 
   useEffect(() => {
     let filtered = results;

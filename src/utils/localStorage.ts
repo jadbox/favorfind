@@ -1,8 +1,19 @@
-import { UserData, SearchHistory, SearchResult } from "../types";
+import type { UserData, SearchHistory, SearchResult } from "../types";
 
 const STORAGE_KEY = "medeligo-user-data";
 
+const defaultUserData: UserData = {
+  firstName: "Frank",
+  searchHistory: [],
+  savedLibrary: [],
+};
+
+function hasLocalStorage(): boolean {
+  return typeof window !== "undefined" && typeof localStorage !== "undefined";
+}
+
 export const getStoredUserData = (): UserData => {
+  if (!hasLocalStorage()) return defaultUserData;
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (data) {
@@ -11,15 +22,11 @@ export const getStoredUserData = (): UserData => {
   } catch (error) {
     console.error("Error reading from localStorage:", error);
   }
-
-  return {
-    firstName: "Frank",
-    searchHistory: [],
-    savedLibrary: [],
-  };
+  return defaultUserData;
 };
 
 export const saveUserData = (data: UserData): void => {
+  if (!hasLocalStorage()) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (error) {
@@ -31,6 +38,7 @@ export const addSearchToHistory = (
   query: string,
   resultsCount: number
 ): void => {
+  if (!hasLocalStorage()) return;
   const userData = getStoredUserData();
 
   // Remove any existing search with the same query (case-insensitive)
@@ -51,6 +59,7 @@ export const addSearchToHistory = (
 };
 
 export const saveToLibrary = (result: SearchResult): void => {
+  if (!hasLocalStorage()) return;
   const userData = getStoredUserData();
   const exists = userData.savedLibrary.find((item) => item.id === result.id);
 
@@ -61,6 +70,7 @@ export const saveToLibrary = (result: SearchResult): void => {
 };
 
 export const removeFromLibrary = (resultId: string): void => {
+  if (!hasLocalStorage()) return;
   const userData = getStoredUserData();
   userData.savedLibrary = userData.savedLibrary.filter(
     (item) => item.id !== resultId
@@ -69,6 +79,7 @@ export const removeFromLibrary = (resultId: string): void => {
 };
 
 export const toggleSaveToLibrary = (result: SearchResult): void => {
+  if (!hasLocalStorage()) return;
   const userData = getStoredUserData();
   const exists = userData.savedLibrary.find((item) => item.id === result.id);
   if (exists) {
