@@ -3,7 +3,17 @@ import { handleSearch } from "./api/search";
 import { existsSync } from "fs";
 import { stat } from "fs/promises";
 import path from "path";
-import { renderDocument, HomePage, ResultsPage, LibraryPage, readUserDataCookie, serializeUserDataCookie, addToHistory, upsertSaved, removeSaved } from "./ssr";
+import {
+  renderDocument,
+  HomePage,
+  ResultsPage,
+  LibraryPage,
+  readUserDataCookie,
+  serializeUserDataCookie,
+  addToHistory,
+  upsertSaved,
+  removeSaved,
+} from "./ssr";
 import { fetchSearchResults } from "./api/search";
 
 const server = serve({
@@ -35,7 +45,8 @@ const server = serve({
       });
     },
     "/library/toggle": async (req) => {
-      if (req.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
+      if (req.method !== "POST")
+        return new Response("Method Not Allowed", { status: 405 });
       const form = await req.formData();
       const action = (form.get("action") as string) || "save";
       const returnTo = (form.get("returnTo") as string) || "/library";
@@ -55,8 +66,10 @@ const server = serve({
           abstract: String(form.get("abstract") || ""),
           citationCount: Number(form.get("citationCount") || 0),
           url: String(form.get("url") || ""),
-          type: (String(form.get("type") || "article") as any),
-          category: (form.get("category") ? String(form.get("category")) : undefined),
+          type: String(form.get("type") || "article") as any,
+          category: form.get("category")
+            ? String(form.get("category"))
+            : undefined,
         } satisfies import("./types").SearchResult;
         updated = upsertSaved(updated, item);
       }
@@ -85,7 +98,9 @@ const server = serve({
       const user = readUserDataCookie(cookiesHeader);
 
       if (pathname === "/" || pathname === "") {
-        return renderDocument({ content: <HomePage searchHistory={user.searchHistory} /> });
+        return renderDocument({
+          content: <HomePage searchHistory={user.searchHistory} />,
+        });
       }
 
       if (pathname === "/search") {
@@ -97,7 +112,11 @@ const server = serve({
         if (q) {
           try {
             results = await fetchSearchResults(q);
-            const updatedHistory = addToHistory(user.searchHistory, q, results.length);
+            const updatedHistory = addToHistory(
+              user.searchHistory,
+              q,
+              results.length
+            );
             historyForRender = updatedHistory;
             setCookie = serializeUserDataCookie({
               searchHistory: updatedHistory,
@@ -109,7 +128,14 @@ const server = serve({
         }
         return renderDocument({
           title: q ? `Results for "${q}"` : "Search",
-          content: <ResultsPage query={q} results={results} searchHistory={historyForRender} savedIds={savedIds} />,
+          content: (
+            <ResultsPage
+              query={q}
+              results={results}
+              searchHistory={historyForRender}
+              savedIds={savedIds}
+            />
+          ),
           extraHeaders: setCookie ? { "Set-Cookie": setCookie } : undefined,
         });
       }
@@ -117,12 +143,19 @@ const server = serve({
       if (pathname === "/library") {
         return renderDocument({
           title: "Your Library",
-          content: <LibraryPage savedLibrary={user.savedLibrary} searchHistory={user.searchHistory} />,
+          content: (
+            <LibraryPage
+              savedLibrary={user.savedLibrary}
+              searchHistory={user.searchHistory}
+            />
+          ),
         });
       }
 
       // Fallback: home
-  return renderDocument({ content: <HomePage searchHistory={user.searchHistory} /> });
+      return renderDocument({
+        content: <HomePage searchHistory={user.searchHistory} />,
+      });
     },
 
     // Examples

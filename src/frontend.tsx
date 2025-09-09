@@ -21,7 +21,6 @@ function readSSRProps<T = unknown>(): T | undefined {
 // const ssrData = readSSRProps<{ lastSearch?: { query: string; count: number; ts: number } }>();
 // You can pass this into context or state when booting the app.
 
-
 const router = createBrowserRouter([
   {
     path: "/",
@@ -34,7 +33,7 @@ const router = createBrowserRouter([
       {
         path: "api/search",
       },
-  { path: "search", element: <SearchResultsPage /> },
+      { path: "search", element: <SearchResultsPage /> },
       {
         path: "library",
         element: <LibraryPage />,

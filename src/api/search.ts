@@ -3,7 +3,11 @@ import {
   getCachedSearchResults,
   setCachedSearchResults,
 } from "../services/cache";
-import { readUserDataCookie, serializeUserDataCookie, addToHistory } from "../ssr";
+import {
+  readUserDataCookie,
+  serializeUserDataCookie,
+  addToHistory,
+} from "../ssr";
 
 const SEMANTIC_SCHOLAR_API_KEY = process.env.SEMANTIC_SCHOLAR_API;
 
@@ -101,7 +105,11 @@ export const handleSearch = async (request: Request): Promise<Response> => {
     const results = await fetchSearchResults(query);
     // Update user_data cookie with new search history entry
     const user = readUserDataCookie(request.headers.get("cookie"));
-    const updatedHistory = addToHistory(user.searchHistory, query, results.length);
+    const updatedHistory = addToHistory(
+      user.searchHistory,
+      query,
+      results.length
+    );
     const setCookie = serializeUserDataCookie({
       searchHistory: updatedHistory,
       savedLibrary: user.savedLibrary,

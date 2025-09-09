@@ -47,7 +47,7 @@ const SearchResultsPage: React.FC = () => {
 
   // Fallback: on direct navigation, ensure we fetch via backend if loader returned no results
   useEffect(() => {
-  const q = currentQuery.trim();
+    const q = currentQuery.trim();
     if (!q) return;
     // If we already have results from loader, skip
     if (results && results.length > 0) return;

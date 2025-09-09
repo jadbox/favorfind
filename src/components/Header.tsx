@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { Heart, BookOpen, User } from "lucide-react";
 
 const Header: React.FC = () => {
@@ -7,20 +6,20 @@ const Header: React.FC = () => {
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2">
+        <a href="/" className="flex items-center space-x-2">
           <Heart className="h-8 w-8 text-medical-600" />
           <span className="text-2xl font-bold text-gray-900">Medeligo</span>
-        </Link>
+        </a>
 
         {/* Right Navigation */}
         <div className="flex items-center space-x-4">
-          <Link
-            to="/library"
+          <a
+            href="/library"
             className="btn btn-ghost btn-sm flex items-center space-x-2"
           >
             <BookOpen className="h-4 w-4" />
             <span>Library</span>
-          </Link>
+          </a>
 
           {/* User Profile */}
           <div className="avatar">
