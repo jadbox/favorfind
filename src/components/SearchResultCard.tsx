@@ -1,6 +1,10 @@
 import React from "react";
-import { ExternalLink, BookOpen, Presentation as Citation } from "lucide-react";
-import { SearchResult } from "../types";
+import {
+  Bookmark,
+  BookmarkCheck,
+  Presentation as Citation,
+} from "lucide-react";
+import type { SearchResult } from "../types";
 
 interface SearchResultCardProps {
   result: SearchResult;
@@ -13,10 +17,6 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
   isSaved,
   onToggleSave,
 }) => {
-  const handleOpenExternal = () => {
-    window.open(result.url, "_blank", "noopener,noreferrer");
-  };
-
   const getTypeColor = (type: string) => {
     switch (type) {
       case "article":
@@ -77,20 +77,30 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
         </p>
 
         {/* Actions */}
-        <div className="card-actions justify-end space-x-2">
+        <div className="card-actions justify-end items-center space-x-4">
+          <a
+            href={result.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+          >
+            Open in New Window
+          </a>
           <button
             onClick={() => onToggleSave(result)}
-            className="btn btn-outline btn-sm flex items-center space-x-1"
+            className={`btn btn-sm flex items-center space-x-2 rounded-md ${
+              isSaved
+                ? "bg-teal-600 text-white hover:bg-teal-700"
+                : "bg-teal-100 text-teal-800 hover:bg-teal-200"
+            }`}
+            aria-label={isSaved ? "Remove from Library" : "Save to Library"}
           >
-            <BookOpen className="h-4 w-4" />
-            <span>{isSaved ? "Unsave" : "Save to Library"}</span>
-          </button>
-          <button
-            onClick={handleOpenExternal}
-            className="btn btn-primary btn-sm flex items-center space-x-1"
-          >
-            <ExternalLink className="h-4 w-4" />
-            <span>Open Article</span>
+            <span>{isSaved ? "Saved" : "Save to Library"}</span>
+            {isSaved ? (
+              <BookmarkCheck className="h-4 w-4" />
+            ) : (
+              <Bookmark className="h-4 w-4" />
+            )}
           </button>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart, BookOpen, User } from "lucide-react";
+import { Heart, BookOpen, User, Library } from "lucide-react";
 
 const Header: React.FC = () => {
   return (
@@ -17,7 +17,7 @@ const Header: React.FC = () => {
             href="/library"
             className="btn btn-ghost btn-sm flex items-center space-x-2"
           >
-            <BookOpen className="h-4 w-4" />
+            <Library className="h-4 w-4 text-medical-600" />
             <span>Library</span>
           </a>
 

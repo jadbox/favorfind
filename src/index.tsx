@@ -110,21 +110,17 @@ const server = serve({
         let historyForRender = user.searchHistory;
         const savedIds = user.savedLibrary.map((s) => s.id);
         if (q) {
-          try {
-            results = await fetchSearchResults(q);
-            const updatedHistory = addToHistory(
-              user.searchHistory,
-              q,
-              results.length
-            );
-            historyForRender = updatedHistory;
-            setCookie = serializeUserDataCookie({
-              searchHistory: updatedHistory,
-              savedLibrary: user.savedLibrary,
-            });
-          } catch (e) {
-            console.error("SSR search failed:", e);
-          }
+          results = await fetchSearchResults(q);
+          const updatedHistory = addToHistory(
+            user.searchHistory,
+            q,
+            results.length
+          );
+          historyForRender = updatedHistory;
+          setCookie = serializeUserDataCookie({
+            searchHistory: updatedHistory,
+            savedLibrary: user.savedLibrary,
+          });
         }
         return renderDocument({
           title: q ? `Results for "${q}"` : "Search",

@@ -65,7 +65,7 @@ export const fetchSearchResults = async (
 
     const response = await fetch(url, {
       headers: {
-        // "X-API-KEY": SEMANTIC_SCHOLAR_API_KEY,
+        // "x-api-key": "8zNJLuvR2K1HuOMC3eEFD6iZK8GNuNlP8WM5JULW",
       },
     });
 
