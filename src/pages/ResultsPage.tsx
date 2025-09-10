@@ -4,6 +4,7 @@ import Header from "../components/Header";
 import Disclaimer from "../components/Disclaimer";
 import Sidebar from "../components/Sidebar";
 import SearchBar from "../components/SearchBar";
+import SearchResultCard from "../components/SearchResultCard";
 
 export function ResultsPage({
   query,
@@ -44,108 +45,12 @@ export function ResultsPage({
                 </div>
               ) : (
                 results.map((r) => (
-                  <article
+                  <SearchResultCard
                     key={r.id}
-                    className="card bg-white border border-gray-200 shadow-sm"
-                  >
-                    <div className="card-body p-6">
-                      <h3 className="card-title text-lg font-semibold text-gray-900 mb-2">
-                        <a
-                          href={r.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="hover:underline"
-                        >
-                          {r.title}
-                        </a>
-                      </h3>
-                      <div className="flex items-center space-x-4 mb-2 text-sm text-gray-600">
-                        <span className="font-medium">{r.source}</span>
-                        <span>•</span>
-                        <span>{r.publicationDate}</span>
-                        <span>•</span>
-                        <span>{r.citationCount} citations</span>
-                      </div>
-                      {r.abstract ? (
-                        <p className="text-gray-700 text-sm mb-4">
-                          {r.abstract}
-                        </p>
-                      ) : null}
-                      <div className="card-actions justify-end">
-                        <a
-                          href={r.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn btn-primary btn-sm"
-                        >
-                          Open Article
-                        </a>
-                        <form action="/library/toggle" method="post">
-                          {/* Hidden fields conveying minimal item data for cookie storage */}
-                          <input type="hidden" name="id" value={r.id} />
-                          <input type="hidden" name="title" value={r.title} />
-                          <input type="hidden" name="source" value={r.source} />
-                          <input
-                            type="hidden"
-                            name="publisher"
-                            value={r.publisher || ""}
-                          />
-                          <input
-                            type="hidden"
-                            name="publicationDate"
-                            value={r.publicationDate}
-                          />
-                          <input
-                            type="hidden"
-                            name="abstract"
-                            value={r.abstract || ""}
-                          />
-                          <input
-                            type="hidden"
-                            name="citationCount"
-                            value={String(r.citationCount || 0)}
-                          />
-                          <input type="hidden" name="url" value={r.url} />
-                          <input
-                            type="hidden"
-                            name="type"
-                            value={r.type || "article"}
-                          />
-                          {r.category ? (
-                            <input
-                              type="hidden"
-                              name="category"
-                              value={r.category}
-                            />
-                          ) : null}
-                          <input
-                            type="hidden"
-                            name="returnTo"
-                            value={`/search?q=${encodeURIComponent(query)}`}
-                          />
-                          {savedIds.includes(r.id) ? (
-                            <button
-                              type="submit"
-                              name="action"
-                              value="remove"
-                              className="btn btn-outline btn-sm"
-                            >
-                              Unsave
-                            </button>
-                          ) : (
-                            <button
-                              type="submit"
-                              name="action"
-                              value="save"
-                              className="btn btn-secondary btn-sm"
-                            >
-                              Save
-                            </button>
-                          )}
-                        </form>
-                      </div>
-                    </div>
-                  </article>
+                    result={r}
+                    isSaved={savedIds.includes(r.id)}
+                    returnTo={`/search?q=${encodeURIComponent(query)}`}
+                  />
                 ))
               )}
             </div>

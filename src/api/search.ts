@@ -22,11 +22,13 @@ interface SemanticScholarPaper {
 }
 
 const mapToSearchResult = (paper: SemanticScholarPaper): SearchResult => {
+  const publisher =
+    (paper.authors || []).map((author) => author.name).join(", ") || "N/A";
   return {
     id: paper.paperId,
     title: paper.title,
     source: "Semantic Scholar", // Default source
-    publisher: (paper.authors || []).map((author) => author.name).join(", "), // Using authors as publisher for now
+    publisher,
     publicationDate: paper.year ? paper.year.toString() : "N/A",
     abstract: paper.abstract || "No abstract available.",
     citationCount: paper.citationCount || 0,

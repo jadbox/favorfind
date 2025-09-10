@@ -9,13 +9,13 @@ import type { SearchResult } from "../types";
 interface SearchResultCardProps {
   result: SearchResult;
   isSaved: boolean;
-  onToggleSave: (result: SearchResult) => void;
+  returnTo?: string;
 }
 
 const SearchResultCard: React.FC<SearchResultCardProps> = ({
   result,
   isSaved,
-  onToggleSave,
+  returnTo,
 }) => {
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -86,22 +86,54 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
           >
             Open in New Window
           </a>
-          <button
-            onClick={() => onToggleSave(result)}
-            className={`btn btn-sm flex items-center space-x-2 rounded-md ${
-              isSaved
-                ? "bg-teal-600 text-white hover:bg-teal-700"
-                : "bg-teal-100 text-teal-800 hover:bg-teal-200"
-            }`}
-            aria-label={isSaved ? "Remove from Library" : "Save to Library"}
-          >
-            <span>{isSaved ? "Saved" : "Save to Library"}</span>
-            {isSaved ? (
-              <BookmarkCheck className="h-4 w-4" />
-            ) : (
-              <Bookmark className="h-4 w-4" />
+          <form action="/library/toggle" method="POST">
+            <input type="hidden" name="id" value={result.id} />
+            <input type="hidden" name="title" value={result.title} />
+            <input type="hidden" name="source" value={result.source} />
+            <input type="hidden" name="publisher" value={result.publisher} />
+            <input
+              type="hidden"
+              name="publicationDate"
+              value={result.publicationDate}
+            />
+            <input type="hidden" name="abstract" value={result.abstract} />
+            <input
+              type="hidden"
+              name="citationCount"
+              value={result.citationCount}
+            />
+            <input type="hidden" name="url" value={result.url} />
+            <input type="hidden" name="type" value={result.type} />
+            {result.category && (
+              <input type="hidden" name="category" value={result.category} />
             )}
-          </button>
+            {returnTo && (
+              <input type="hidden" name="returnTo" value={returnTo} />
+            )}
+            <input
+              type="hidden"
+              name="action"
+              value={isSaved ? "remove" : "save"}
+            />
+            <button
+              type="submit"
+              className={`btn btn-sm rounded-md ${
+                isSaved
+                  ? "border border-teal-600 bg-white text-teal-600 hover:bg-teal-50"
+                  : "bg-teal-100 text-teal-800 hover:bg-teal-200"
+              }`}
+              aria-label={isSaved ? "Remove from Library" : "Save to Library"}
+            >
+              <div className="flex items-center space-x-2">
+                <span>{isSaved ? "Saved" : "Save to Library"}</span>
+                {isSaved ? (
+                  <BookmarkCheck className="h-4 w-4" />
+                ) : (
+                  <Bookmark className="h-4 w-4" />
+                )}
+              </div>
+            </button>
+          </form>
         </div>
       </div>
     </div>

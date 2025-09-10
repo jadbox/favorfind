@@ -3,6 +3,7 @@ import type { SearchResult, SearchHistory } from "../types";
 import Header from "../components/Header";
 import Disclaimer from "../components/Disclaimer";
 import Sidebar from "../components/Sidebar";
+import SearchResultCard from "../components/SearchResultCard";
 
 const LibraryPage = ({
   savedLibrary,
@@ -24,36 +25,11 @@ const LibraryPage = ({
             {savedLibrary.length > 0 ? (
               <div className="grid gap-4">
                 {savedLibrary.map((item) => (
-                  <div
+                  <SearchResultCard
                     key={item.id}
-                    className="card bg-white border border-gray-200 shadow-sm"
-                  >
-                    <div className="card-body p-6">
-                      <h3 className="card-title text-lg font-semibold text-gray-900 mb-2">
-                        {item.title}
-                      </h3>
-                      <div className="flex items-center space-x-4 mb-2 text-sm text-gray-600">
-                        <span className="font-medium">{item.source}</span>
-                        <span>•</span>
-                        <span>
-                          {new Date(item.publicationDate).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="text-gray-700 text-sm mb-4">
-                        {item.abstract}
-                      </p>
-                      <div className="card-actions justify-end">
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn btn-primary btn-sm"
-                        >
-                          Open Article
-                        </a>
-                      </div>
-                    </div>
-                  </div>
+                    result={item}
+                    isSaved={true}
+                  />
                 ))}
               </div>
             ) : (
