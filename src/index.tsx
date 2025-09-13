@@ -3,23 +3,23 @@ import { handleSearch } from "./api/search";
 import { existsSync } from "fs";
 import { stat } from "fs/promises";
 import path from "path";
+import { renderDocument, HomePage, ResultsPage, LibraryPage } from "./Document";
 import {
-  renderDocument,
-  HomePage,
-  ResultsPage,
-  LibraryPage,
   readUserDataCookie,
   serializeUserDataCookie,
   addToHistory,
   upsertSaved,
   removeSaved,
-} from "./ssr";
+} from "./CookieUserData";
 import { fetchSearchResults } from "./api/search";
 
 const server = serve({
   routes: {
     "/api/search": {
       async POST(req) {
+        return handleSearch(req);
+      },
+      async GET(req) {
         return handleSearch(req);
       },
     },

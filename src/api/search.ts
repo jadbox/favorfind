@@ -7,7 +7,7 @@ import {
   readUserDataCookie,
   serializeUserDataCookie,
   addToHistory,
-} from "../ssr";
+} from "@/CookieUserData";
 
 const SEMANTIC_SCHOLAR_API_KEY = process.env.SEMANTIC_SCHOLAR_API;
 

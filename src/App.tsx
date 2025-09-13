@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom"; // Use Outlet for nested routes
+import { useState, useEffect } from "react";
+// import { Outlet } from "react-router-dom"; // Use Outlet for nested routes
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import Disclaimer from "./components/Disclaimer";
@@ -38,13 +38,11 @@ function App() {
       <Header />
 
       <div className="flex flex-1">
-        <Sidebar
-          searchHistory={searchHistory}
-          onHistoryClick={handleHistoryClick}
-        />
+        <Sidebar searchHistory={searchHistory} />
 
         <main className="flex-1 flex flex-col">
-          <Outlet /> {/* Render nested routes here */}
+          {/* Render nested routes here */}
+          {/* <Outlet /> */}
         </main>
       </div>
 
