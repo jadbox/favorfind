@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useSearch } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import SearchBar from "../components/SearchBar";
 import SearchResultsFilters from "../components/SearchResultsFilters";
@@ -13,9 +13,9 @@ import {
 // Note: data loading is handled via route loader and a client fallback to /api/search
 
 const SearchResultsPage: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const currentQuery = new URLSearchParams(location.search).get("q") || "";
+  const [location, navigate] = useLocation();
+  const search = useSearch();
+  const currentQuery = new URLSearchParams(search).get("q") || "";
   console.log("SearchResultsPage: currentQuery from URL:", currentQuery);
 
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -116,9 +116,7 @@ const SearchResultsPage: React.FC = () => {
     setFilteredResults(filtered);
   }, [results, selectedType, selectedCategory, sortBy]);
 
-  const handleNewSearch = (newQuery: string) => {
-    navigate(`/search?q=${encodeURIComponent(newQuery)}`);
-  };
+  // Navigation is handled by the SearchBar form submit (GET /search)
 
   const handleToggleSave = (result: SearchResult) => {
     toggleSaveToLibrary(result);
@@ -143,7 +141,7 @@ const SearchResultsPage: React.FC = () => {
             Back
           </button>
           <div className="flex-1">
-            <SearchBar onSearch={handleNewSearch} defaultValue={currentQuery} />
+            <SearchBar query={currentQuery} />
           </div>
         </div>
 

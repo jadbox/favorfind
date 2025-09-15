@@ -33,3 +33,13 @@ export function HomePage({
     </div>
   );
 }
+
+// Server route handler for "/"
+export async function handleHomeRequest({
+  user,
+}: import("@/server/context").RequestContext) {
+  const { renderDocument } = await import("@/Document");
+  return renderDocument({
+    content: <HomePage searchHistory={user.searchHistory} />,
+  });
+}

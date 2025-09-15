@@ -55,3 +55,19 @@ const LibraryPage = ({
 };
 
 export default LibraryPage;
+
+// Server route handler for "/library"
+export async function handleLibraryRequest({
+  user,
+}: import("@/server/context").RequestContext) {
+  const { renderDocument } = await import("@/Document");
+  return renderDocument({
+    title: "Your Library",
+    content: (
+      <LibraryPage
+        savedLibrary={user.savedLibrary}
+        searchHistory={user.searchHistory}
+      />
+    ),
+  });
+}

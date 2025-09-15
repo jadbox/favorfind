@@ -61,3 +61,43 @@ export function ResultsPage({
     </div>
   );
 }
+
+// Server route handler for "/search"
+export async function handleSearchPageRequest(
+  ctx: import("@/server/context").RequestContext
+) {
+  const { url, user } = ctx;
+  const q = url.searchParams.get("q")?.trim() || "";
+  let results: import("@/types").SearchResult[] = [];
+  let setCookie: string | undefined;
+  let historyForRender = user.searchHistory;
+  const savedIds = user.savedLibrary.map((s) => s.id);
+
+  if (q) {
+    const { fetchSearchResults } = await import("@/api/search");
+    const { addToHistory, serializeUserDataCookie } = await import(
+      "@/CookieUserData"
+    );
+    results = await fetchSearchResults(q);
+    const updatedHistory = addToHistory(user.searchHistory, q, results.length);
+    historyForRender = updatedHistory;
+    setCookie = serializeUserDataCookie({
+      searchHistory: updatedHistory,
+      savedLibrary: user.savedLibrary,
+    });
+  }
+
+  const { renderDocument } = await import("@/Document");
+  return renderDocument({
+    title: q ? `Results for "${q}"` : "Search",
+    content: (
+      <ResultsPage
+        query={q}
+        results={results}
+        searchHistory={historyForRender}
+        savedIds={savedIds}
+      />
+    ),
+    extraHeaders: setCookie ? { "Set-Cookie": setCookie } : undefined,
+  });
+}

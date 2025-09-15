@@ -46,10 +46,4 @@ export async function renderDocument({
   return new Response(stream, { headers });
 }
 
-// --------- Simple server-only components (no client JS) ---------
-
-import { HomePage } from "./pages/HomePage";
-import { ResultsPage } from "./pages/ResultsPage";
-import LibraryPage from "./pages/LibraryPage";
-
-export { HomePage, ResultsPage, LibraryPage };
+// keep this module focused on rendering only

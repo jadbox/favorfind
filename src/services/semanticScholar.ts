@@ -1,28 +1,15 @@
-import { SearchResult } from "../types";
-import { useFetcher } from "react-router"; // Import useFetcher
+import type { SearchResult } from "@/types";
 
-// The actual search logic is now in src/actions/search.ts
-export const useSearchPapers = () => {
-  const fetcher = useFetcher(); // { key: "useSearchPapers" }
-
-  const searchPapers = async (
-    query: string,
-    limit: number = 20
-  ): Promise<SearchResult[]> => {
-    // Use fetcher to call the server action
-    console.log("searchPapers", query);
-    fetcher.submit(
-      { query, limit: limit.toString() },
-      { method: "post", action: "/api/search" } // Target the search action
-    );
-
-    // The results will be available via fetcher.data or useLoaderData in the component
-    // For now, we'll return an empty array or handle loading state in the component
-    return []; // Or handle loading state in the component
-  };
-
-  return { searchPapers, fetcher };
-};
-
-// mapToSearchResult and related interfaces are now in src/actions/search.ts
-// getApiKey is now in src/actions/search.ts
+// Simple client wrapper to call the backend search API and return results.
+export async function searchPapers(
+  query: string,
+  limit: number = 20
+): Promise<SearchResult[]> {
+  if (!query.trim()) return [];
+  const form = new FormData();
+  form.append("query", query);
+  form.append("limit", String(limit));
+  const res = await fetch("/api/search", { method: "POST", body: form });
+  if (!res.ok) return [];
+  return (await res.json()) as SearchResult[];
+}

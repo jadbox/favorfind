@@ -1,52 +1,50 @@
 import { serve } from "bun";
-import { handleSearch } from "./api/search";
-import { existsSync } from "fs";
-import { stat } from "fs/promises";
-import path from "path";
-import { renderDocument, HomePage, ResultsPage, LibraryPage } from "./Document";
+import { handleSearch, fetchSearchResults } from "./api/search";
+import { createRequestContext } from "./server/context";
+import { serveAssetPrefix, serveFrontendCss } from "./server/static";
 import {
   readUserDataCookie,
   serializeUserDataCookie,
-  addToHistory,
   upsertSaved,
   removeSaved,
+  addToHistory,
 } from "./CookieUserData";
-import { fetchSearchResults } from "./api/search";
+import { renderDocument } from "./Document";
+import { HomePage } from "./pages/HomePage";
+import { ResultsPage } from "./pages/ResultsPage";
+import LibraryPage from "./pages/LibraryPage";
+import React from "react";
+import { Router as WouterRouter, Route, Switch } from "wouter";
 
 const server = serve({
-  routes: {
-    "/api/search": {
-      async POST(req) {
-        return handleSearch(req);
-      },
-      async GET(req) {
-        return handleSearch(req);
-      },
-    },
+  fetch: async (req) => {
+    const url = new URL(req.url);
+    const pathname = url.pathname;
 
-    // Static file server for built assets under /dist
-    "/assets/*": async (req) => {
-      const url = new URL(req.url);
-      const filePath = path.join(process.cwd(), "dist", url.pathname);
-      if (existsSync(filePath)) return new Response(Bun.file(filePath));
-      return new Response("Not Found", { status: 404 });
-    },
-    "/frontend.css": async () => {
-      const filePath = path.join(process.cwd(), "dist", "frontend.css");
-      if (existsSync(filePath)) return new Response(Bun.file(filePath));
-      return new Response("Not Found", { status: 404 });
-    },
+    // API: search
+    if (
+      pathname === "/api/search" &&
+      (req.method === "POST" || req.method === "GET")
+    ) {
+      return handleSearch(req);
+    }
+
+    // Static assets
+    if (pathname.startsWith("/assets/")) {
+      return serveAssetPrefix(req);
+    }
+    if (pathname === "/frontend.css") {
+      return serveFrontendCss();
+    }
 
     // Library API endpoints
-    "/library/list": async (req) => {
+    if (pathname === "/library/list") {
       const user = readUserDataCookie(req.headers.get("cookie"));
       return new Response(JSON.stringify(user.savedLibrary), {
         headers: { "Content-Type": "application/json" },
       });
-    },
-    "/library/toggle": async (req) => {
-      if (req.method !== "POST")
-        return new Response("Method Not Allowed", { status: 405 });
+    }
+    if (pathname === "/library/toggle" && req.method === "POST") {
       const form = await req.formData();
       const action = (form.get("action") as string) || "save";
       const returnTo = (form.get("returnTo") as string) || "/library";
@@ -79,7 +77,6 @@ const server = serve({
         savedLibrary: updated,
       });
 
-      // For form submissions, redirect back to the originating page
       return new Response(null, {
         status: 303,
         headers: {
@@ -87,97 +84,65 @@ const server = serve({
           "Set-Cookie": setCookie,
         },
       });
-    },
+    }
 
-    // App routes -> SSR full pages, no client JS
-    "/*": async (req) => {
-      const url = new URL(req.url);
-      const pathname = url.pathname;
+    // SSR pages via Wouter
+    const ctx = createRequestContext(req);
+    const ssrPath = url.pathname;
+    const ssrSearch = url.search || "";
 
-      const cookiesHeader = req.headers.get("cookie");
-      const user = readUserDataCookie(cookiesHeader);
+    // Preload cookie user for SSR pages
+    const user = ctx.user;
+    const q = url.searchParams.get("q")?.trim() || "";
 
-      if (pathname === "/" || pathname === "") {
-        return renderDocument({
-          content: <HomePage searchHistory={user.searchHistory} />,
-        });
-      }
+    // SSR data preparation
+    let results: Awaited<ReturnType<typeof fetchSearchResults>> = [];
+    let setCookie: string | undefined;
+    let historyForRender = user.searchHistory;
+    const savedIds = user.savedLibrary.map((s) => s.id);
 
-      if (pathname === "/search") {
-        const q = url.searchParams.get("q")?.trim() || "";
-        let results: Awaited<ReturnType<typeof fetchSearchResults>> = [];
-        let setCookie: string | undefined;
-        let historyForRender = user.searchHistory;
-        const savedIds = user.savedLibrary.map((s) => s.id);
-        if (q) {
-          results = await fetchSearchResults(q);
-          const updatedHistory = addToHistory(
-            user.searchHistory,
-            q,
-            results.length
-          );
-          historyForRender = updatedHistory;
-          setCookie = serializeUserDataCookie({
-            searchHistory: updatedHistory,
-            savedLibrary: user.savedLibrary,
-          });
-        }
-        return renderDocument({
-          title: q ? `Results for "${q}"` : "Search",
-          content: (
-            <ResultsPage
-              query={q}
-              results={results}
-              searchHistory={historyForRender}
-              savedIds={savedIds}
-            />
-          ),
-          extraHeaders: setCookie ? { "Set-Cookie": setCookie } : undefined,
-        });
-      }
-
-      if (pathname === "/library") {
-        return renderDocument({
-          title: "Your Library",
-          content: (
-            <LibraryPage
-              savedLibrary={user.savedLibrary}
-              searchHistory={user.searchHistory}
-            />
-          ),
-        });
-      }
-
-      // Fallback: home
-      return renderDocument({
-        content: <HomePage searchHistory={user.searchHistory} />,
+    if (pathname === "/search" && q) {
+      results = await fetchSearchResults(q);
+      const updatedHistory = addToHistory(
+        user.searchHistory,
+        q,
+        results.length
+      );
+      historyForRender = updatedHistory;
+      setCookie = serializeUserDataCookie({
+        searchHistory: updatedHistory,
+        savedLibrary: user.savedLibrary,
       });
-    },
+    }
 
-    // Examples
-    // "/api/hello": {
-    //   async GET(req) {
-    //     return Response.json({
-    //       message: "Hello, world!",
-    //       method: "GET",
-    //     });
-    //   },
-    //   async PUT(req) {
-    //     return Response.json({
-    //       message: "Hello, world!",
-    //       method: "PUT",
-    //     });
-    //   },
-    // },
-
-    // "/api/hello/:name": async (req) => {
-    //   const name = req.params.name;
-    //   return Response.json({
-    //     message: `Hello, ${name}!`,
-    //   });
-    // },
+    return renderDocument({
+      content: (
+        <WouterRouter ssrPath={ssrPath} ssrSearch={ssrSearch}>
+          <Switch>
+            <Route path="/">
+              <HomePage searchHistory={user.searchHistory} />
+            </Route>
+            <Route path="/search">
+              <ResultsPage
+                query={q}
+                results={results}
+                searchHistory={historyForRender}
+                savedIds={savedIds}
+              />
+            </Route>
+            <Route path="/library">
+              <LibraryPage
+                savedLibrary={user.savedLibrary}
+                searchHistory={user.searchHistory}
+              />
+            </Route>
+            <Route>Not Found</Route>
+          </Switch>
+        </WouterRouter>
+      ),
+      extraHeaders: setCookie ? { "Set-Cookie": setCookie } : undefined,
+    });
   },
-
   development: process.env.NODE_ENV !== "production" && {
     // Enable browser hot reloading in development
     hmr: true,

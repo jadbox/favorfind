@@ -15,7 +15,8 @@
     "lucide-react": "^0.544.0",
     "react": "^19",
     "react-dom": "^19",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "wouter": "^3.7.1"
   },
   "devDependencies": {
     "@types/bun": "latest",
