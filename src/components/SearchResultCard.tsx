@@ -86,7 +86,7 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
           >
             Open in New Window
           </a>
-          <form action="/library/toggle" method="GET">
+          <form action="/library/toggle" method="POST">
             <input type="hidden" name="id" value={result.id} />
             <input type="hidden" name="title" value={result.title} />
             <input type="hidden" name="source" value={result.source} />

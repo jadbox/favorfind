@@ -113,6 +113,10 @@ const server = serve({
         searchHistory: updatedHistory,
         savedLibrary: user.savedLibrary,
       });
+    } else if (pathname === "/search") {
+      // This handles the case where we redirect back to the search page
+      // and the results need to be re-fetched.
+      results = await fetchSearchResults(q);
     }
 
     return renderDocument({
