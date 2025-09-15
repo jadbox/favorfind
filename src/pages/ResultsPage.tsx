@@ -3,6 +3,7 @@ import type { SearchResult, SearchHistory } from "../types";
 import Header from "../components/Header";
 import Disclaimer from "../components/Disclaimer";
 import Sidebar from "../components/Sidebar";
+import { ArrowLeft } from "lucide-react";
 import SearchBar from "../components/SearchBar";
 import SearchResultCard from "../components/SearchResultCard";
 
@@ -23,22 +24,29 @@ export function ResultsPage({
       <main className="flex-1 flex">
         <Sidebar searchHistory={searchHistory} />
         <div className="flex-1 p-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center space-x-4 mb-6">
-              <a href="/" className="btn btn-ghost btn-sm">
-                ← Back
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-6">
+              <a
+                href="/"
+                className="btn btn-sm btn-ghost text-gray-600 hover:text-gray-900 mr-4"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
               </a>
-              <SearchBar query={query} />
+              <br />
+              <div className="flex-1">
+                <SearchBar query={query} />
+              </div>
             </div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">
                 Search Results for "{query}"
               </h2>
               <div className="text-sm text-gray-600">
                 {results.length} results
               </div>
             </div>
-            <div className="grid gap-6">
+            <div className="grid gap-4">
               {results.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   No results found
