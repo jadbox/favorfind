@@ -1,0 +1,39 @@
+---
+import Header from "../components/Header";
+import Sidebar from "../components/Sidebar";
+import Disclaimer from "../components/Disclaimer";
+import "../index.css";
+
+export interface Props {
+  title?: string;
+  searchHistory?: any[];
+}
+
+const { title = "Medeligo Cancer Research", searchHistory = [] } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/assets/images/Logo-2-scaled.png" />
+    <link rel="apple-touch-icon" href="/assets/images/Logo-2-scaled.png" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="min-h-screen bg-gray-50 flex flex-col">
+      <Header client:load />
+
+      <div class="flex flex-1">
+        <Sidebar searchHistory={searchHistory} client:load />
+
+        <main class="flex-1 flex flex-col">
+          <slot />
+        </main>
+      </div>
+
+      <Disclaimer client:load />
+    </div>
+  </body>
+</html>

@@ -5,3 +5,5 @@ dist
 mocks/
 db.sqlite
 .DS_Store
+.astro/
+.vscode/

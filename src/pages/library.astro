@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SearchResultCard from "../components/SearchResultCard";
+import type { SearchResult, SearchHistory } from "../types";
+
+// For now, we'll use empty data - this will be replaced with proper server-side data fetching
+const savedLibrary: SearchResult[] = [];
+const searchHistory: SearchHistory[] = [];
+---
+
+<BaseLayout title="Your Library" searchHistory={searchHistory}>
+  <div class="flex-1 p-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex items-center space-x-3 mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Your Library</h1>
+      </div>
+      {
+        savedLibrary.length > 0 ? (
+          <div class="grid gap-4">
+            {savedLibrary.map((item) => (
+              <SearchResultCard result={item} isSaved={true} client:load />
+            ))}
+          </div>
+        ) : (
+          <div class="text-center py-12">
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">
+              Your library is empty
+            </h3>
+            <p class="text-gray-600 mb-6">
+              Start saving articles from your search results to build your
+              personal research library.
+            </p>
+            <a href="/" class="btn btn-primary">
+              Start Searching
+            </a>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</BaseLayout>
