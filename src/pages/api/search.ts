@@ -15,8 +15,18 @@ export const GET: APIRoute = async ({ request }) => {
   );
   const page = Math.max(parseInt(url.searchParams.get("page") || "1"), 1);
 
-  console.log("Search API called with query:", query, "limit:", limit, "page:", page);
-  console.log("Using search provider:", process.env.SEARCH_PROVIDER || "gemini");
+  console.log(
+    "Search API called with query:",
+    query,
+    "limit:",
+    limit,
+    "page:",
+    page
+  );
+  console.log(
+    "Using search provider:",
+    process.env.SEARCH_PROVIDER || "gemini"
+  );
 
   if (!query) {
     return new Response(JSON.stringify([]), {
@@ -66,10 +76,10 @@ export const POST: APIRoute = async ({ request }) => {
     const formData = await request.formData();
     const query = formData.get("query") as string;
     const limit = Math.min(
-      parseInt(formData.get("limit") as string || "20"),
+      parseInt((formData.get("limit") as string) || "20"),
       50 // Max limit
     );
-    const page = Math.max(parseInt(formData.get("page") as string || "1"), 1);
+    const page = Math.max(parseInt((formData.get("page") as string) || "1"), 1);
 
     const results = await fetchSearchResults(query, limit, page);
 

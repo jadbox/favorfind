@@ -53,20 +53,22 @@ const title = query ? `Results for "${query}"` : "Search";
         </div>
       </div>
 
-      {query && (
-        <div class="mb-6">
-          <SearchResultsFilters
-            selectedType="all"
-            setSelectedType={() => {}}
-            selectedCategory="all"
-            setSelectedCategory={() => {}}
-            sortBy="relevance"
-            setSortBy={() => {}}
-            uniqueCategories={[]}
-            client:load
-          />
-        </div>
-      )}
+      {
+        query && (
+          <div class="mb-6">
+            <SearchResultsFilters
+              selectedType="all"
+              setSelectedType={() => {}}
+              selectedCategory="all"
+              setSelectedCategory={() => {}}
+              sortBy="relevance"
+              setSortBy={() => {}}
+              uniqueCategories={[]}
+              client:load
+            />
+          </div>
+        )
+      }
 
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-xl font-bold text-gray-900">
@@ -77,59 +79,72 @@ const title = query ? `Results for "${query}"` : "Search";
         </div>
       </div>
 
-      {error && (
-        <div class="alert alert-error mb-4">
-          <span>{error}</span>
-        </div>
-      )}
+      {
+        error && (
+          <div class="alert alert-error mb-4">
+            <span>{error}</span>
+          </div>
+        )
+      }
 
-      {query ? (
-        <div class="grid gap-6">
-          {results.length === 0 ? (
-            <div class="text-center py-12 text-gray-500">
-              No results found
-            </div>
-          ) : (
-            results.map((result) => (
-              <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-                <div class="flex justify-between items-start mb-3">
-                  <h3 class="text-lg font-semibold text-gray-900 leading-tight">
-                    <a href={result.url} target="_blank" rel="noopener noreferrer" class="hover:text-medical-600">
-                      {result.title}
-                    </a>
-                  </h3>
-                </div>
-
-                <div class="text-sm text-gray-600 mb-3">
-                  {result.publisher} • {result.publicationDate} • {result.citationCount} citations
-                </div>
-
-                <p class="text-gray-700 text-sm leading-relaxed mb-4">
-                  {result.abstract}
-                </p>
-
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center space-x-2">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-medical-100 text-medical-800">
-                      {result.type}
-                    </span>
+      {
+        query ? (
+          <div class="grid gap-6">
+            {results.length === 0 ? (
+              <div class="text-center py-12 text-gray-500">
+                No results found
+              </div>
+            ) : (
+              results.map((result) => (
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                  <div class="flex justify-between items-start mb-3">
+                    <h3 class="text-lg font-semibold text-gray-900 leading-tight">
+                      <a
+                        href={result.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="hover:text-medical-600"
+                      >
+                        {result.title}
+                      </a>
+                    </h3>
                   </div>
 
-                  <a href={result.url} target="_blank" rel="noopener noreferrer"
-                     class="text-medical-600 hover:text-medical-700 text-sm font-medium">
-                    View Article →
-                  </a>
+                  <div class="text-sm text-gray-600 mb-3">
+                    {result.publisher} • {result.publicationDate} •{" "}
+                    {result.citationCount} citations
+                  </div>
+
+                  <p class="text-gray-700 text-sm leading-relaxed mb-4">
+                    {result.abstract}
+                  </p>
+
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-medical-100 text-medical-800">
+                        {result.type}
+                      </span>
+                    </div>
+
+                    <a
+                      href={result.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-medical-600 hover:text-medical-700 text-sm font-medium"
+                    >
+                      View Article →
+                    </a>
+                  </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
-      ) : (
-        <div class="text-center py-12 text-gray-500">
-          Enter a search query to get started
-        </div>
-      )}
+              ))
+            )}
+          </div>
+        ) : (
+          <div class="text-center py-12 text-gray-500">
+            Enter a search query to get started
+          </div>
+        )
+      }
     </div>
   </div>
 </BaseLayout>
-
