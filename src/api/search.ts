@@ -9,18 +9,24 @@ import {
   addToHistory,
 } from "@/CookieUserData";
 
-const SEMANTIC_SCHOLAR_API_KEY = process.env.SEMANTIC_SCHOLAR_API;
-
 // --- Types for the Semantic Scholar API ---
-import type { SemanticScholarPaper } from "@/services/semanticScholarMapper";
 import { mapToSearchResult } from "@/services/semanticScholarMapper";
+import type { DataProvider } from "@/services/dataProviderInterface";
+import { SemanticScholarDataProvider } from "@/services/semanticScholarDataProvider";
+import { GeminiDataProvider } from "@/services/geminiDataProvider";
 
-interface SemanticScholarSearchResponse {
-  data: SemanticScholarPaper[];
-  total?: number;
-}
+// Choose data provider based on environment variable
+const getDataProvider = (): DataProvider => {
+  const provider = process.env.SEARCH_PROVIDER || "gemini"; // || "semantic-scholar";
 
-// mapping function moved to services/semanticScholarMapper
+  switch (provider) {
+    case "gemini":
+      return new GeminiDataProvider();
+    case "semantic-scholar":
+    default:
+      return new SemanticScholarDataProvider();
+  }
+};
 
 export const fetchSearchResults = async (
   query: string,
@@ -41,40 +47,12 @@ export const fetchSearchResults = async (
   }
 
   try {
-    const fields = "paperId,title,authors,year,url,abstract,citationCount";
-    const base = new URL(
-      "https://api.semanticscholar.org/graph/v1/paper/search"
-    );
-    base.search = new URLSearchParams({
-      query: q,
-      fields,
-      limit: String(limit),
-    }).toString();
+    const provider = getDataProvider();
+    const papers = await provider.fetchPapers(q, limit);
 
-    const headers: Record<string, string> = {};
-    if (SEMANTIC_SCHOLAR_API_KEY && SEMANTIC_SCHOLAR_API_KEY.length > 0) {
-      headers["x-api-key"] = SEMANTIC_SCHOLAR_API_KEY;
-    }
-
-    const response = await fetch(base.toString(), { headers });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Semantic Scholar API error: ${response.status} - ${errorText}`
-      );
-    }
-
-    const payload = (await response.json()) as SemanticScholarSearchResponse;
-
-    if (payload?.data) {
-      const papers = payload.data;
-      const searchResults: SearchResult[] = papers.map(mapToSearchResult);
-      setCachedSearchResults(cacheKey, searchResults); // Cache the new results
-      return searchResults;
-    } else {
-      return [];
-    }
+    const searchResults: SearchResult[] = papers.map(mapToSearchResult);
+    setCachedSearchResults(cacheKey, searchResults); // Cache the new results
+    return searchResults;
   } catch (error) {
     throw error; // Re-throw to be handled by the caller
   }

@@ -13,14 +13,20 @@ export const GET: APIRoute = async ({ request }) => {
 
   console.log("Search API called with query:", query);
   console.log(
-    "Environment check:",
-    process.env.SEMANTIC_SCHOLAR_API ? "API key found" : "API key missing"
+    "Using search provider:",
+    process.env.SEARCH_PROVIDER || "semantic-scholar"
   );
   console.log(
-    "API key value:",
+    "Environment check:",
     process.env.SEMANTIC_SCHOLAR_API
-      ? process.env.SEMANTIC_SCHOLAR_API.substring(0, 10) + "..."
-      : "none"
+      ? "Semantic Scholar API key found"
+      : "Semantic Scholar API key missing"
+  );
+  console.log(
+    "Gemini API key check:",
+    process.env.GEMINI_API_KEY
+      ? "Gemini API key found"
+      : "Gemini API key missing"
   );
 
   if (!query) {

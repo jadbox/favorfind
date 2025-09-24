@@ -1,16 +1,32 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SearchBar from "../components/SearchBar";
-import SearchResultCard from "../components/SearchResultCard";
+import SearchResultsDisplay from "../components/SearchResultsDisplay";
+import SearchResultsFilters from "../components/SearchResultsFilters";
 import { ArrowLeft } from "lucide-react";
 import type { SearchResult, SearchHistory } from "../types";
+import { fetchSearchResults } from "../api/search";
 
 // Get query parameter from URL
 const url = new URL(Astro.request.url);
 const query = url.searchParams.get("q")?.trim() || "";
 
-// For now, we'll use empty data - this will be replaced with proper server-side data fetching
-const results: SearchResult[] = [];
+// Fetch search results if query exists
+let results: SearchResult[] = [];
+let error: string | null = null;
+
+if (query) {
+  try {
+    console.log("Server-side search for:", query);
+    results = await fetchSearchResults(query, 20);
+    console.log("Server-side results:", results.length);
+  } catch (err) {
+    console.error("Search error:", err);
+    error = err instanceof Error ? err.message : "Search failed";
+  }
+}
+
+// For now, we'll use empty data for other fields
 const searchHistory: SearchHistory[] = [];
 const savedIds: string[] = [];
 
@@ -32,34 +48,84 @@ const title = query ? `Results for "${query}"` : "Search";
           <SearchBar query={query} client:load />
         </div>
       </div>
+
+      {query && (
+        <div class="mb-6">
+          <SearchResultsFilters
+            selectedType="all"
+            setSelectedType={() => {}}
+            selectedCategory="all"
+            setSelectedCategory={() => {}}
+            sortBy="relevance"
+            setSortBy={() => {}}
+            uniqueCategories={[]}
+            client:load
+          />
+        </div>
+      )}
+
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-xl font-bold text-gray-900">
-          Search Results for "{query}"
+          {query ? `Search Results for "${query}"` : "Search"}
         </h2>
         <div class="text-sm text-gray-600">
           {results.length} results
         </div>
       </div>
-      <div class="grid gap-4">
-        {
-          results.length === 0 ? (
+
+      {error && (
+        <div class="alert alert-error mb-4">
+          <span>{error}</span>
+        </div>
+      )}
+
+      {query ? (
+        <div class="grid gap-6">
+          {results.length === 0 ? (
             <div class="text-center py-12 text-gray-500">
-              {query
-                ? "No results found"
-                : "Enter a search query to get started"}
+              No results found
             </div>
           ) : (
             results.map((result) => (
-              <SearchResultCard
-                result={result}
-                isSaved={savedIds.includes(result.id)}
-                returnTo={`/search?q=${encodeURIComponent(query)}`}
-                client:load
-              />
+              <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div class="flex justify-between items-start mb-3">
+                  <h3 class="text-lg font-semibold text-gray-900 leading-tight">
+                    <a href={result.url} target="_blank" rel="noopener noreferrer" class="hover:text-medical-600">
+                      {result.title}
+                    </a>
+                  </h3>
+                </div>
+
+                <div class="text-sm text-gray-600 mb-3">
+                  {result.publisher} • {result.publicationDate} • {result.citationCount} citations
+                </div>
+
+                <p class="text-gray-700 text-sm leading-relaxed mb-4">
+                  {result.abstract}
+                </p>
+
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-medical-100 text-medical-800">
+                      {result.type}
+                    </span>
+                  </div>
+
+                  <a href={result.url} target="_blank" rel="noopener noreferrer"
+                     class="text-medical-600 hover:text-medical-700 text-sm font-medium">
+                    View Article →
+                  </a>
+                </div>
+              </div>
             ))
-          )
-        }
-      </div>
+          )}
+        </div>
+      ) : (
+        <div class="text-center py-12 text-gray-500">
+          Enter a search query to get started
+        </div>
+      )}
     </div>
   </div>
 </BaseLayout>
+
