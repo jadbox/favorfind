@@ -91,15 +91,27 @@ export const handleSearch = async (request: Request): Promise<Response> => {
   );
   const page = Math.max(parseInt((formData.get("page") as string) || "1"), 1);
   const filter_type = (formData.get("filter_type") as string) || "";
+  const primaryTumorSite = (formData.get("primaryTumorSite") as string) || "";
+  const ageGroup = (formData.get("ageGroup") as string) || "";
+  const gender = (formData.get("gender") as string) || "";
+  const sortBy = (formData.get("sortBy") as string) || "";
 
   try {
     const results = await fetchSearchResults(query, limit, page, filter_type);
     // Update user_data cookie with new search history entry
     const user = readUserDataCookie(request.headers.get("cookie"));
+    const filters = {
+      selectedType: filter_type || undefined,
+      primaryTumorSite: primaryTumorSite || undefined,
+      ageGroup: ageGroup || undefined,
+      gender: gender || undefined,
+      sortBy: sortBy || undefined,
+    };
     const updatedHistory = addToHistory(
       user.searchHistory,
       query,
-      results.length
+      results.length,
+      filters
     );
     const setCookie = serializeUserDataCookie({
       searchHistory: updatedHistory,

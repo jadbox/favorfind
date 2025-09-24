@@ -2,10 +2,11 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SearchBar from "../components/SearchBar";
 import type { SearchHistory } from "../types";
+import { readUserDataCookie } from "../CookieUserData";
 
 // In Astro, we'll need to get search history from server-side data
-// For now, we'll pass an empty array and handle this later with proper data fetching
-const searchHistory: SearchHistory[] = [];
+const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
+const searchHistory: SearchHistory[] = userData.searchHistory;
 ---
 
 <BaseLayout title="Medeligo Cancer Research" searchHistory={searchHistory}>

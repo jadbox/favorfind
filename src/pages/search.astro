@@ -5,6 +5,11 @@ import SearchResultsFilters from "../components/SearchResultsFilters";
 import { ArrowLeft } from "lucide-react";
 import type { SearchResult, SearchHistory } from "../types";
 import { fetchSearchResults } from "../api/search";
+import {
+  readUserDataCookie,
+  addToHistory,
+  serializeUserDataCookie,
+} from "../CookieUserData";
 
 // Get query parameter from URL
 const url = new URL(Astro.request.url);
@@ -22,7 +27,7 @@ let error: string | null = null;
 const limit = parseInt(url.searchParams.get("limit") || "0");
 
 const filterParams = [
-  selectedType,
+  selectedType !== "Guidelines (Default)" && selectedType,
   primaryTumorSite !== "All" && primaryTumorSite,
   ageGroup !== "All" && ageGroup,
   gender !== "All" && gender,
@@ -42,6 +47,27 @@ if (query) {
     );
     results = await fetchSearchResults(query, limit, 1, filterParams);
     console.log("Server-side results:", results.length);
+
+    // Save search to history in cookies
+    const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
+    const filters = {
+      selectedType:
+        selectedType !== "Guidelines (Default)" ? selectedType : undefined,
+      primaryTumorSite:
+        primaryTumorSite !== "All" ? primaryTumorSite : undefined,
+      ageGroup: ageGroup !== "All" ? ageGroup : undefined,
+      gender: gender !== "All" ? gender : undefined,
+      sortBy: sortBy !== "relevance" ? sortBy : undefined,
+    };
+    const updatedHistory = addToHistory(
+      userData.searchHistory,
+      query,
+      results.length,
+      filters
+    );
+    const updatedUserData = { ...userData, searchHistory: updatedHistory };
+    const setCookie = serializeUserDataCookie(updatedUserData);
+    Astro.response.headers.set("Set-Cookie", setCookie);
   } catch (err) {
     console.error("Search error:", err);
     error = err instanceof Error ? err.message : "Search failed";
@@ -49,7 +75,8 @@ if (query) {
 }
 
 // For now, we'll use empty data for other fields
-const searchHistory: SearchHistory[] = [];
+const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
+const searchHistory: SearchHistory[] = userData.searchHistory;
 
 const title = query ? `Results for "${query}"` : "Search";
 ---
@@ -179,6 +206,64 @@ const title = query ? `Results for "${query}"` : "Search";
 </BaseLayout>
 
 <script>
+  // localStorage utilities
+  const STORAGE_KEY = "medeligo-user-data";
+
+  function hasLocalStorage() {
+    return typeof window !== "undefined" && typeof localStorage !== "undefined";
+  }
+
+  function getStoredUserData() {
+    if (!hasLocalStorage()) return { searchHistory: [] };
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (data) {
+        return JSON.parse(data);
+      }
+    } catch (error) {
+      console.error("Error reading from localStorage:", error);
+    }
+    return { searchHistory: [] };
+  }
+
+  function saveUserData(data: any) {
+    if (!hasLocalStorage()) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+      console.error("Error saving to localStorage:", error);
+    }
+  }
+
+  function addSearchToHistory(
+    query: string,
+    resultsCount: number,
+    filters?: any
+  ) {
+    if (!hasLocalStorage()) return;
+    const userData = getStoredUserData();
+
+    // Remove any existing search with the same query (case-insensitive)
+    userData.searchHistory = userData.searchHistory.filter(
+      (item: any) => item.query.toLowerCase() !== query.toLowerCase()
+    );
+
+    const newSearch = {
+      id: Date.now().toString(),
+      query,
+      timestamp: new Date().toISOString(),
+      resultsCount,
+      filters,
+    };
+
+    // Add to beginning of array and limit to 20 items
+    userData.searchHistory = [
+      newSearch,
+      ...userData.searchHistory.slice(0, 19),
+    ];
+    saveUserData(userData);
+  }
+
   // Show loading overlay when forms are submitted or filters are updated
   function showLoading() {
     const overlay = document.getElementById("loading-overlay");
@@ -194,6 +279,38 @@ const title = query ? `Results for "${query}"` : "Search";
     if (overlay) {
       overlay.classList.remove("opacity-100", "pointer-events-auto");
       overlay.classList.add("opacity-0", "pointer-events-none");
+    }
+  }
+
+  // Save search to history if we have results
+  function saveSearchToHistory() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get("q");
+    const resultsText =
+      document.querySelector(".text-sm.text-gray-600")?.textContent || "";
+    const resultsMatch = resultsText.match(/(\d+) results/);
+    const resultsCount = resultsMatch ? parseInt(resultsMatch[1]!) : 0;
+
+    if (query && resultsCount > 0) {
+      const filters: any = {
+        selectedType: urlParams.get("filter_type") || undefined,
+        primaryTumorSite: urlParams.get("primaryTumorSite") || undefined,
+        ageGroup: urlParams.get("ageGroup") || undefined,
+        gender: urlParams.get("gender") || undefined,
+        sortBy: urlParams.get("sortBy") || undefined,
+      };
+
+      // Only include defined filters
+      const cleanFilters: any = {};
+      Object.keys(filters).forEach((key: string) => {
+        if (filters[key]) cleanFilters[key] = filters[key];
+      });
+
+      addSearchToHistory(
+        query,
+        resultsCount,
+        Object.keys(cleanFilters).length > 0 ? cleanFilters : undefined
+      );
     }
   }
 
@@ -220,6 +337,9 @@ const title = query ? `Results for "${query}"` : "Search";
     window.addEventListener("popstate", showLoading);
 
     // Hide loading when page is fully loaded
-    window.addEventListener("load", hideLoading);
+    window.addEventListener("load", () => {
+      hideLoading();
+      saveSearchToHistory();
+    });
   });
 </script>

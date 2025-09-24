@@ -38,6 +38,8 @@ export class GeminiDataProvider implements DataProvider {
       }
       Return a JSON array of up to ${limit} articles.`;
 
+      console.log("Generated prompt:", prompt);
+
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: prompt,

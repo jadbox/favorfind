@@ -36,7 +36,14 @@ export function serializeUserDataCookie(data: CookieUserData): string {
 export function addToHistory(
   history: SearchHistory[],
   query: string,
-  resultsCount: number
+  resultsCount: number,
+  filters?: {
+    selectedType?: string;
+    primaryTumorSite?: string;
+    ageGroup?: string;
+    gender?: string;
+    sortBy?: string;
+  }
 ): SearchHistory[] {
   const filtered = history.filter(
     (h) => h.query.toLowerCase() !== query.toLowerCase()
@@ -46,6 +53,7 @@ export function addToHistory(
     query,
     timestamp: new Date().toISOString(),
     resultsCount,
+    filters,
   };
   return [entry, ...filtered].slice(0, 20);
 }

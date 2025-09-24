@@ -36,7 +36,14 @@ export const saveUserData = (data: UserData): void => {
 
 export const addSearchToHistory = (
   query: string,
-  resultsCount: number
+  resultsCount: number,
+  filters?: {
+    selectedType?: string;
+    primaryTumorSite?: string;
+    ageGroup?: string;
+    gender?: string;
+    sortBy?: string;
+  }
 ): void => {
   if (!hasLocalStorage()) return;
   const userData = getStoredUserData();
@@ -51,6 +58,7 @@ export const addSearchToHistory = (
     query,
     timestamp: new Date().toISOString(),
     resultsCount,
+    filters,
   };
 
   // Add to beginning of array and limit to 20 items

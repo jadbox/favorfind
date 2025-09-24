@@ -7,7 +7,7 @@ export interface SearchResult {
   abstract: string;
   citationCount: number;
   url: string;
-  type: 'article' | 'trial' | 'guideline';
+  type: "article" | "trial" | "guideline";
   category?: string;
 }
 
@@ -16,6 +16,13 @@ export interface SearchHistory {
   query: string;
   timestamp: string;
   resultsCount: number;
+  filters?: {
+    selectedType?: string;
+    primaryTumorSite?: string;
+    ageGroup?: string;
+    gender?: string;
+    sortBy?: string;
+  };
 }
 
 export interface UserData {

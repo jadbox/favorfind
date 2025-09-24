@@ -9,6 +9,38 @@ const Sidebar = ({ searchHistory }: { searchHistory: SearchHistory[] }) => {
   const olderHistory = searchHistory.filter(
     (item) => new Date(item.timestamp).toDateString() !== today
   );
+
+  const buildSearchUrl = (item: SearchHistory) => {
+    const params = new URLSearchParams();
+    params.set("q", item.query);
+
+    if (item.filters) {
+      if (
+        item.filters.selectedType &&
+        item.filters.selectedType !== "Guidelines (Default)"
+      ) {
+        params.set("filter_type", item.filters.selectedType);
+      }
+      if (
+        item.filters.primaryTumorSite &&
+        item.filters.primaryTumorSite !== "All"
+      ) {
+        params.set("primaryTumorSite", item.filters.primaryTumorSite);
+      }
+      if (item.filters.ageGroup && item.filters.ageGroup !== "All") {
+        params.set("ageGroup", item.filters.ageGroup);
+      }
+      if (item.filters.gender && item.filters.gender !== "All") {
+        params.set("gender", item.filters.gender);
+      }
+      if (item.filters.sortBy && item.filters.sortBy !== "relevance") {
+        params.set("sortBy", item.filters.sortBy);
+      }
+    }
+
+    return `/search?${params.toString()}`;
+  };
+
   return (
     <aside className="w-64 bg-white border-r border-gray-200 p-4 min-h-screen">
       <a href="/" className="btn btn-primary btn-outline w-full mb-6">
@@ -32,7 +64,7 @@ const Sidebar = ({ searchHistory }: { searchHistory: SearchHistory[] }) => {
               {todayHistory.map((item) => (
                 <a
                   key={item.id}
-                  href={`/search?q=${encodeURIComponent(item.query)}`}
+                  href={buildSearchUrl(item)}
                   className="block text-sm text-gray-700 hover:text-medical-600 hover:bg-gray-50 p-2 rounded"
                 >
                   <div className="truncate">{item.query}</div>
@@ -51,7 +83,7 @@ const Sidebar = ({ searchHistory }: { searchHistory: SearchHistory[] }) => {
               {olderHistory.slice(0, 10).map((item) => (
                 <a
                   key={item.id}
-                  href={`/search?q=${encodeURIComponent(item.query)}`}
+                  href={buildSearchUrl(item)}
                   className="block text-sm text-gray-700 hover:text-medical-600 hover:bg-gray-50 p-2 rounded"
                 >
                   <div className="truncate">{item.query}</div>
