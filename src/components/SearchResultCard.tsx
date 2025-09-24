@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Bookmark,
   BookmarkCheck,
@@ -14,9 +14,99 @@ interface SearchResultCardProps {
 
 const SearchResultCard: React.FC<SearchResultCardProps> = ({
   result,
-  isSaved,
+  isSaved: initialIsSaved,
   returnTo,
 }) => {
+  const [isSaved, setIsSaved] = useState(initialIsSaved);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSaveToggle = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    const newSavedState = !isSaved;
+
+    try {
+      const formData = new FormData();
+      formData.append("action", newSavedState ? "save" : "remove");
+      formData.append("id", result.id);
+      formData.append("title", result.title);
+      formData.append("source", result.source);
+      formData.append("publisher", result.publisher);
+      formData.append("publicationDate", result.publicationDate);
+      formData.append("abstract", result.abstract);
+      formData.append("citationCount", result.citationCount.toString());
+      formData.append("url", result.url);
+      formData.append("type", result.type);
+      if (result.category) {
+        formData.append("category", result.category);
+      }
+      if (returnTo) {
+        formData.append("returnTo", returnTo);
+      }
+
+      const response = await fetch("/api/library/toggle", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        setIsSaved(newSavedState);
+        // Show toast notification
+        showToast(
+          newSavedState
+            ? "Article saved to library!"
+            : "Article removed from library",
+          "success"
+        );
+
+        // If we're on the library page and removing an article, refresh the page
+        if (!newSavedState && window.location.pathname === "/library") {
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
+      } else {
+        showToast("Failed to save article. Please try again.", "error");
+      }
+    } catch (error) {
+      showToast(
+        "Network error. Please check your connection and try again.",
+        "error"
+      );
+      console.error("Error toggling save status:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const showToast = (
+    message: string,
+    type: "success" | "error" = "success"
+  ) => {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll(".toast-notification");
+    existingToasts.forEach((toast) => toast.remove());
+
+    // Create new toast
+    const toast = document.createElement("div");
+    toast.className = `toast-notification fixed top-4 right-4 z-50 px-4 py-2 rounded-md shadow-lg text-white text-sm font-medium ${
+      type === "success" ? "bg-green-500" : "bg-red-500"
+    }`;
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.remove();
+      }
+    }, 3000);
+  };
   const getTypeColor = (type: string) => {
     switch (type) {
       case "article":
@@ -86,54 +176,33 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
           >
             Open in New Window
           </a>
-          <form action="/library/toggle" method="POST">
-            <input type="hidden" name="id" value={result.id} />
-            <input type="hidden" name="title" value={result.title} />
-            <input type="hidden" name="source" value={result.source} />
-            <input type="hidden" name="publisher" value={result.publisher} />
-            <input
-              type="hidden"
-              name="publicationDate"
-              value={result.publicationDate}
-            />
-            <input type="hidden" name="abstract" value={result.abstract} />
-            <input
-              type="hidden"
-              name="citationCount"
-              value={result.citationCount}
-            />
-            <input type="hidden" name="url" value={result.url} />
-            <input type="hidden" name="type" value={result.type} />
-            {result.category && (
-              <input type="hidden" name="category" value={result.category} />
-            )}
-            {returnTo && (
-              <input type="hidden" name="returnTo" value={returnTo} />
-            )}
-            <input
-              type="hidden"
-              name="action"
-              value={isSaved ? "remove" : "save"}
-            />
-            <button
-              type="submit"
-              className={`btn btn-sm rounded-md ${
-                isSaved
-                  ? "border border-teal-600 bg-white text-teal-600 hover:bg-teal-50"
-                  : "bg-teal-100 text-teal-800 hover:bg-teal-200"
-              }`}
-              aria-label={isSaved ? "Remove from Library" : "Save to Library"}
-            >
-              <div className="flex items-center space-x-2">
-                <span>{isSaved ? "Saved" : "Save to Library"}</span>
-                {isSaved ? (
-                  <BookmarkCheck className="h-4 w-4" />
-                ) : (
-                  <Bookmark className="h-4 w-4" />
-                )}
-              </div>
-            </button>
-          </form>
+          <button
+            onClick={handleSaveToggle}
+            disabled={isLoading}
+            className={`btn btn-sm rounded-md ${
+              isSaved
+                ? "border border-teal-600 bg-white text-teal-600 hover:bg-teal-50"
+                : "bg-teal-100 text-teal-800 hover:bg-teal-200"
+            } ${isLoading ? "cursor-not-allowed opacity-50" : ""}`}
+            aria-label={isSaved ? "Remove from Library" : "Save to Library"}
+          >
+            <div className="flex items-center space-x-2">
+              <span>
+                {isLoading
+                  ? "Saving..."
+                  : isSaved
+                  ? "Saved"
+                  : "Save to Library"}
+              </span>
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+              ) : isSaved ? (
+                <BookmarkCheck className="h-4 w-4" />
+              ) : (
+                <Bookmark className="h-4 w-4" />
+              )}
+            </div>
+          </button>
         </div>
       </div>
     </div>

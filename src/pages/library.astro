@@ -2,10 +2,25 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SearchResultCard from "../components/SearchResultCard";
 import type { SearchResult, SearchHistory } from "../types";
+import { readUserDataCookie } from "../CookieUserData";
 
-// For now, we'll use empty data - this will be replaced with proper server-side data fetching
-const savedLibrary: SearchResult[] = [];
-const searchHistory: SearchHistory[] = [];
+// Fetch saved library from API
+let savedLibrary: SearchResult[] = [];
+try {
+  const response = await fetch(`${Astro.url.origin}/api/library/list`, {
+    headers: {
+      cookie: Astro.request.headers.get("cookie") || "",
+    },
+  });
+  if (response.ok) {
+    savedLibrary = await response.json();
+  }
+} catch (error) {
+  console.error("Failed to fetch saved library:", error);
+}
+
+const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
+const searchHistory: SearchHistory[] = userData.searchHistory;
 ---
 
 <BaseLayout title="Your Library" searchHistory={searchHistory}>

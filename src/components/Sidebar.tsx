@@ -46,13 +46,13 @@ const Sidebar = ({ searchHistory }: { searchHistory: SearchHistory[] }) => {
       <a href="/" className="btn btn-primary btn-outline w-full mb-6">
         New Search
       </a>
-      <div className="mb-8">
+      {/* <div className="mb-8">
         <h3 className="font-semibold text-gray-900 mb-2">Prepared for You</h3>
         <div className="text-sm text-gray-600">
           Personalized recommendations will appear here based on your search
           patterns.
         </div>
-      </div>
+      </div> */}
       <div>
         <h3 className="font-semibold text-gray-900 mb-3">
           Your Search History

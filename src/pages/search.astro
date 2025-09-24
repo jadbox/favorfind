@@ -74,6 +74,26 @@ if (query) {
   }
 }
 
+// Check which results are saved
+let savedStatus: Record<string, boolean> = {};
+if (results.length > 0) {
+  try {
+    const response = await fetch(`${Astro.url.origin}/api/library/check`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: Astro.request.headers.get("cookie") || "",
+      },
+      body: JSON.stringify({ ids: results.map((r) => r.id) }),
+    });
+    if (response.ok) {
+      savedStatus = await response.json();
+    }
+  } catch (error) {
+    console.error("Failed to check saved status:", error);
+  }
+}
+
 // For now, we'll use empty data for other fields
 const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
 const searchHistory: SearchHistory[] = userData.searchHistory;
@@ -182,14 +202,53 @@ const title = query ? `Results for "${query}"` : "Search";
                       </span>
                     </div>
 
-                    <a
-                      href={result.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="text-medical-600 hover:text-medical-700 text-sm font-medium"
-                    >
-                      View Article →
-                    </a>
+                    <div class="flex items-center space-x-3">
+                      <a
+                        href={result.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-medical-600 hover:text-medical-700 text-sm font-medium"
+                      >
+                        View Article →
+                      </a>
+                      <button
+                        class={`save-btn btn btn-sm rounded-md ${
+                          savedStatus[result.id]
+                            ? "border border-teal-600 bg-white text-teal-600 hover:bg-teal-50"
+                            : "bg-teal-100 text-teal-800 hover:bg-teal-200"
+                        }`}
+                        data-id={result.id}
+                        data-saved={savedStatus[result.id] ? "true" : "false"}
+                        data-title={result.title}
+                        data-source={result.source}
+                        data-publisher={result.publisher}
+                        data-publication-date={result.publicationDate}
+                        data-abstract={result.abstract}
+                        data-citation-count={result.citationCount}
+                        data-url={result.url}
+                        data-type={result.type}
+                        data-category={result.category || ""}
+                      >
+                        <div class="flex items-center space-x-2">
+                          <span>
+                            {savedStatus[result.id] ? "Saved" : "Save"}
+                          </span>
+                          <svg
+                            class={`h-4 w-4 ${savedStatus[result.id] ? "fill-current" : ""}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                            />
+                          </svg>
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))
@@ -340,6 +399,158 @@ const title = query ? `Results for "${query}"` : "Search";
     window.addEventListener("load", () => {
       hideLoading();
       saveSearchToHistory();
+      initializeSaveButtons();
     });
   });
+
+  // Initialize save button functionality
+  function initializeSaveButtons() {
+    const saveButtons = document.querySelectorAll(".save-btn");
+    saveButtons.forEach((button) => {
+      button.addEventListener("click", handleSaveToggle);
+    });
+  }
+
+  // Show toast notification
+  function showToast(message: string, type: "success" | "error" = "success") {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll(".toast-notification");
+    existingToasts.forEach((toast) => toast.remove());
+
+    // Create new toast
+    const toast = document.createElement("div");
+    toast.className = `toast-notification fixed top-4 right-4 z-50 px-4 py-2 rounded-md shadow-lg text-white text-sm font-medium ${
+      type === "success" ? "bg-green-500" : "bg-red-500"
+    }`;
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.remove();
+      }
+    }, 3000);
+  }
+
+  // Handle save/unsave toggle
+  async function handleSaveToggle(event: Event) {
+    event.preventDefault();
+    const button = event.target as HTMLElement;
+    const btn = button.closest(".save-btn") as HTMLButtonElement;
+    if (!btn) return;
+
+    // Prevent double-clicks
+    if (btn.disabled) return;
+
+    const isSaved = btn.dataset.saved === "true";
+    const originalText = btn.querySelector("span")?.textContent || "";
+    const originalClasses = btn.className;
+
+    // Set loading state
+    btn.disabled = true;
+    const span = btn.querySelector("span");
+    const svg = btn.querySelector("svg");
+    if (span) span.textContent = "Saving...";
+    if (svg) {
+      svg.innerHTML =
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>';
+      svg.setAttribute("class", "h-4 w-4 animate-spin");
+    }
+    btn.className =
+      "save-btn btn btn-sm rounded-md bg-gray-100 text-gray-500 cursor-not-allowed";
+
+    const articleData = {
+      id: btn.dataset.id!,
+      title: btn.dataset.title!,
+      source: btn.dataset.source!,
+      publisher: btn.dataset.publisher!,
+      publicationDate: btn.dataset.publicationDate!,
+      abstract: btn.dataset.abstract!,
+      citationCount: parseInt(btn.dataset.citationCount!),
+      url: btn.dataset.url!,
+      type: btn.dataset.type!,
+      category: btn.dataset.category || undefined,
+    };
+
+    try {
+      const formData = new FormData();
+      formData.append("action", isSaved ? "remove" : "save");
+      formData.append("id", articleData.id);
+      formData.append("title", articleData.title);
+      formData.append("source", articleData.source);
+      formData.append("publisher", articleData.publisher);
+      formData.append("publicationDate", articleData.publicationDate);
+      formData.append("abstract", articleData.abstract);
+      formData.append("citationCount", articleData.citationCount.toString());
+      formData.append("url", articleData.url);
+      formData.append("type", articleData.type);
+      if (articleData.category) {
+        formData.append("category", articleData.category);
+      }
+
+      const response = await fetch("/api/library/toggle", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        // Success - update button state
+        const newSavedState = !isSaved;
+        btn.dataset.saved = newSavedState.toString();
+        btn.className = `save-btn btn btn-sm rounded-md ${
+          newSavedState
+            ? "border border-teal-600 bg-white text-teal-600 hover:bg-teal-50"
+            : "bg-teal-100 text-teal-800 hover:bg-teal-200"
+        }`;
+        if (span) span.textContent = newSavedState ? "Saved" : "Save";
+        if (svg) {
+          svg.innerHTML =
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>';
+          svg.setAttribute(
+            "class",
+            `h-4 w-4 ${newSavedState ? "fill-current" : ""}`
+          );
+        }
+
+        // Show brief success feedback
+        showToast(
+          newSavedState
+            ? "Article saved to library!"
+            : "Article removed from library",
+          "success"
+        );
+      } else {
+        // Error - revert to original state
+        btn.className = originalClasses;
+        if (span) span.textContent = originalText;
+        if (svg) {
+          svg.innerHTML =
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>';
+          svg.setAttribute("class", `h-4 w-4 ${isSaved ? "fill-current" : ""}`);
+        }
+        showToast("Failed to save article. Please try again.", "error");
+      }
+    } catch (error) {
+      // Network error - revert to original state
+      btn.className = originalClasses;
+      if (span) span.textContent = originalText;
+      if (svg) {
+        svg.innerHTML =
+          '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>';
+        svg.setAttribute("class", `h-4 w-4 ${isSaved ? "fill-current" : ""}`);
+      }
+      showToast(
+        "Network error. Please check your connection and try again.",
+        "error"
+      );
+      console.error("Error toggling save status:", error);
+    } finally {
+      btn.disabled = false;
+    }
+  }
 </script>

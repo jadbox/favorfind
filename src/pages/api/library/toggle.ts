@@ -42,18 +42,50 @@ export const POST: APIRoute = async ({ request }) => {
       savedLibrary: updated,
     });
 
-    return new Response(null, {
-      status: 303,
-      headers: {
-        Location: returnTo,
-        "Set-Cookie": setCookie,
-      },
-    });
+    // Check if this is an AJAX request (fetch)
+    const accept = request.headers.get("accept");
+    const isAjax = accept && accept.includes("application/json");
+
+    if (isAjax) {
+      // Return JSON response for AJAX requests
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Set-Cookie": setCookie,
+        },
+      });
+    } else {
+      // Return redirect for form submissions
+      return new Response(null, {
+        status: 303,
+        headers: {
+          Location: returnTo,
+          "Set-Cookie": setCookie,
+        },
+      });
+    }
   } catch (error) {
     console.error("Library toggle API error:", error);
-    return new Response(JSON.stringify({ error: "Failed to update library" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    const accept = request.headers.get("accept");
+    const isAjax = accept && accept.includes("application/json");
+
+    if (isAjax) {
+      return new Response(
+        JSON.stringify({ error: "Failed to update library" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    } else {
+      return new Response(
+        JSON.stringify({ error: "Failed to update library" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
   }
 };
