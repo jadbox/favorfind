@@ -24,10 +24,10 @@ export class GeminiDataProvider implements DataProvider {
       const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
       console.log("Using GeminiDataProvider with query:", q);
-      const prompt = `Search only for the 3 most useful articles listed by PubMed about: "${q}". Return a JSON array of up to ${limit} articles.`;
+      const prompt = `Search only for the ${limit} most useful articles listed by PubMed about: "${q}". Return a JSON array of up to ${limit} articles.`;
 
       const response = await ai.models.generateContent({
-        model: "gemini-1.5-flash",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",

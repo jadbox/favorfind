@@ -10,7 +10,7 @@ export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
   const query = url.searchParams.get("q")?.trim() || "";
   const limit = Math.min(
-    parseInt(url.searchParams.get("limit") || "20"),
+    parseInt(url.searchParams.get("limit") || "0"),
     50 // Max limit
   );
   const page = Math.max(parseInt(url.searchParams.get("page") || "1"), 1);

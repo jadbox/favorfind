@@ -14,10 +14,7 @@ const query = url.searchParams.get("q")?.trim() || "";
 // Fetch search results if query exists
 let results: SearchResult[] = [];
 let error: string | null = null;
-const limit = Math.min(
-  parseInt(url.searchParams.get("limit") || "20"),
-  50 // Max limit
-);
+const limit = parseInt(url.searchParams.get("limit") || "0");
 
 if (query) {
   try {

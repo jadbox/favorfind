@@ -19,7 +19,9 @@ db.run(`
 const cleanupCache = () => {
   const now = Date.now();
   const cutoff = now - CACHE_TTL_MS;
-  const deleted = db.run("DELETE FROM search_cache WHERE timestamp < ?", [cutoff]);
+  const deleted = db.run("DELETE FROM search_cache WHERE timestamp < ?", [
+    cutoff,
+  ]);
   if (deleted.changes > 0) {
     console.log(`Cache cleanup: removed ${deleted.changes} expired entries`);
   }
@@ -75,14 +77,27 @@ export const setCachedSearchResults = (
 
 // Get cache statistics
 export const getCacheStats = () => {
-  const totalEntries = db.query("SELECT COUNT(*) as count FROM search_cache").get() as { count: number };
-  const expiredEntries = db.query("SELECT COUNT(*) as count FROM search_cache WHERE timestamp < $timestamp").get({
-    $timestamp: Date.now() - CACHE_TTL_MS
-  }) as { count: number };
+  const totalEntries = db
+    .query("SELECT COUNT(*) as count FROM search_cache")
+    .get() as { count: number };
+  const expiredEntries = db
+    .query(
+      "SELECT COUNT(*) as count FROM search_cache WHERE timestamp < $timestamp"
+    )
+    .get({
+      $timestamp: Date.now() - CACHE_TTL_MS,
+    }) as { count: number };
 
   return {
     totalEntries: totalEntries.count,
     expiredEntries: expiredEntries.count,
-    validEntries: totalEntries.count - expiredEntries.count
+    validEntries: totalEntries.count - expiredEntries.count,
   };
+};
+
+// Clear all cache entries
+export const clearCache = (): number => {
+  const result = db.run("DELETE FROM search_cache");
+  console.log(`Cache cleared: removed ${result.changes} entries`);
+  return result.changes;
 };

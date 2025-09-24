@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun --bun astro dev",
+    "dev": "PORT=4321 && (lsof -ti:$PORT | xargs kill -9 2>/dev/null || true) && sleep 1 && bun --bun astro dev --port $PORT",
     "start": "bun --bun astro preview",
     "build": "bun --bun astro build",
     "check": "bun --bun astro check"

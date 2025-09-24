@@ -17,8 +17,8 @@ import { SemanticScholarDataProvider } from "@/services/semanticScholarDataProvi
 import { GeminiDataProvider } from "@/services/geminiDataProvider";
 
 // Configuration constants
-const DEFAULT_SEARCH_LIMIT = parseInt(process.env.DEFAULT_SEARCH_LIMIT || "20");
-const MAX_SEARCH_LIMIT = parseInt(process.env.MAX_SEARCH_LIMIT || "50");
+const DEFAULT_SEARCH_LIMIT = parseInt(process.env.DEFAULT_SEARCH_LIMIT || "8");
+const MAX_SEARCH_LIMIT = parseInt(process.env.MAX_SEARCH_LIMIT || "20");
 
 // Choose data provider based on environment variable
 const getDataProvider = (): DataProvider => {
@@ -46,7 +46,9 @@ export const fetchSearchResults = async (
   const q = query.trim();
 
   // Validate and clamp limit
-  const clampedLimit = Math.min(Math.max(limit, 1), MAX_SEARCH_LIMIT);
+  const clampedLimit = !limit
+    ? DEFAULT_SEARCH_LIMIT
+    : Math.min(Math.max(limit, 1), MAX_SEARCH_LIMIT);
 
   // Check cache first
   const provider = getProviderName();
@@ -77,10 +79,10 @@ export const handleSearch = async (request: Request): Promise<Response> => {
   const formData = await request.formData();
   const query = formData.get("query") as string;
   const limit = Math.min(
-    parseInt(formData.get("limit") as string || "20"),
+    Math.max(parseInt(formData.get("limit") as string), DEFAULT_SEARCH_LIMIT),
     MAX_SEARCH_LIMIT
   );
-  const page = Math.max(parseInt(formData.get("page") as string || "1"), 1);
+  const page = Math.max(parseInt((formData.get("page") as string) || "1"), 1);
 
   try {
     const results = await fetchSearchResults(query, limit, page);

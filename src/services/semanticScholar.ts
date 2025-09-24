@@ -3,7 +3,7 @@ import type { SearchResult } from "@/types";
 // Simple client wrapper to call the backend search API and return results.
 export async function searchPapers(
   query: string,
-  limit: number = 20
+  limit: number = 0
 ): Promise<SearchResult[]> {
   if (!query.trim()) return [];
   const form = new FormData();
