@@ -9,25 +9,14 @@ import {
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
   const query = url.searchParams.get("q")?.trim() || "";
-  const limit = Number(url.searchParams.get("limit") || 20);
+  const limit = Math.min(
+    parseInt(url.searchParams.get("limit") || "20"),
+    50 // Max limit
+  );
+  const page = Math.max(parseInt(url.searchParams.get("page") || "1"), 1);
 
-  console.log("Search API called with query:", query);
-  console.log(
-    "Using search provider:",
-    process.env.SEARCH_PROVIDER || "semantic-scholar"
-  );
-  console.log(
-    "Environment check:",
-    process.env.SEMANTIC_SCHOLAR_API
-      ? "Semantic Scholar API key found"
-      : "Semantic Scholar API key missing"
-  );
-  console.log(
-    "Gemini API key check:",
-    process.env.GEMINI_API_KEY
-      ? "Gemini API key found"
-      : "Gemini API key missing"
-  );
+  console.log("Search API called with query:", query, "limit:", limit, "page:", page);
+  console.log("Using search provider:", process.env.SEARCH_PROVIDER || "gemini");
 
   if (!query) {
     return new Response(JSON.stringify([]), {
@@ -37,7 +26,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const results = await fetchSearchResults(query, limit);
+    const results = await fetchSearchResults(query, limit, page);
     console.log("Search results:", results.length);
 
     // Update user_data cookie with new search history entry
@@ -76,9 +65,13 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const formData = await request.formData();
     const query = formData.get("query") as string;
-    const limit = Number(formData.get("limit") || 20);
+    const limit = Math.min(
+      parseInt(formData.get("limit") as string || "20"),
+      50 // Max limit
+    );
+    const page = Math.max(parseInt(formData.get("page") as string || "1"), 1);
 
-    const results = await fetchSearchResults(query, limit);
+    const results = await fetchSearchResults(query, limit, page);
 
     // Update user_data cookie with new search history entry
     const user = readUserDataCookie(request.headers.get("cookie"));

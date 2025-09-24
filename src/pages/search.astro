@@ -14,11 +14,15 @@ const query = url.searchParams.get("q")?.trim() || "";
 // Fetch search results if query exists
 let results: SearchResult[] = [];
 let error: string | null = null;
+const limit = Math.min(
+  parseInt(url.searchParams.get("limit") || "20"),
+  50 // Max limit
+);
 
 if (query) {
   try {
-    console.log("Server-side search for:", query);
-    results = await fetchSearchResults(query, 20);
+    console.log("Server-side search for:", query, "limit:", limit);
+    results = await fetchSearchResults(query, limit);
     console.log("Server-side results:", results.length);
   } catch (err) {
     console.error("Search error:", err);
