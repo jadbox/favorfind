@@ -11,7 +11,8 @@ interface SemanticScholarSearchResponse {
 export class SemanticScholarDataProvider implements DataProvider {
   async fetchPapers(
     query: string,
-    limit: number
+    limit: number,
+    filter_type: string = ""
   ): Promise<SemanticScholarPaper[]> {
     const q = query.trim();
 
@@ -24,8 +25,11 @@ export class SemanticScholarDataProvider implements DataProvider {
       const base = new URL(
         "https://api.semanticscholar.org/graph/v1/paper/search"
       );
+
+      const searchQuery = filter_type ? `${query} ${filter_type}` : query;
+
       base.search = new URLSearchParams({
-        query: q,
+        query: searchQuery,
         fields,
         limit: String(limit),
       }).toString();

@@ -1,23 +1,26 @@
-import React from 'react';
-import { DivideIcon as LucideIcon } from 'lucide-react';
+import React from "react";
+import {
+  DivideIcon as LucideIcon,
+  type LucideIcon as LucideIconType,
+} from "lucide-react";
 
 interface FeatureCardProps {
   title: string;
   subtitle: string;
-  icon: LucideIcon;
+  icon: LucideIconType;
   onClick?: () => void;
   gradient: string;
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ 
-  title, 
-  subtitle, 
-  icon: Icon, 
+const FeatureCard: React.FC<FeatureCardProps> = ({
+  title,
+  subtitle,
+  icon: Icon,
   onClick,
-  gradient 
+  gradient,
 }) => {
   return (
-    <div 
+    <div
       className={`card cursor-pointer transform hover:scale-105 transition-all duration-200 ${gradient} text-white shadow-lg`}
       onClick={onClick}
     >

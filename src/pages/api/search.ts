@@ -14,6 +14,7 @@ export const GET: APIRoute = async ({ request }) => {
     50 // Max limit
   );
   const page = Math.max(parseInt(url.searchParams.get("page") || "1"), 1);
+  const filter_type = url.searchParams.get("filter_type") || "";
 
   console.log(
     "Search API called with query:",
@@ -21,7 +22,9 @@ export const GET: APIRoute = async ({ request }) => {
     "limit:",
     limit,
     "page:",
-    page
+    page,
+    "filter_type:",
+    filter_type
   );
   console.log(
     "Using search provider:",
@@ -36,7 +39,7 @@ export const GET: APIRoute = async ({ request }) => {
   }
 
   try {
-    const results = await fetchSearchResults(query, limit, page);
+    const results = await fetchSearchResults(query, limit, page, filter_type);
     console.log("Search results:", results.length);
 
     // Update user_data cookie with new search history entry
@@ -80,8 +83,9 @@ export const POST: APIRoute = async ({ request }) => {
       50 // Max limit
     );
     const page = Math.max(parseInt((formData.get("page") as string) || "1"), 1);
+    const filter_type = (formData.get("filter_type") as string) || "";
 
-    const results = await fetchSearchResults(query, limit, page);
+    const results = await fetchSearchResults(query, limit, page, filter_type);
 
     // Update user_data cookie with new search history entry
     const user = readUserDataCookie(request.headers.get("cookie"));

@@ -31,14 +31,16 @@ const cleanupCache = () => {
 setInterval(cleanupCache, 60 * 60 * 1000); // Every hour
 cleanupCache(); // Run once on startup
 
-// Generate cache key that includes provider, query, limit, and pagination
+// Generate cache key that includes provider, query, limit, pagination, and filters
 export const generateCacheKey = (
   provider: string,
   query: string,
   limit: number,
-  page: number = 1
+  page: number = 1,
+  filter_type: string = ""
 ): string => {
-  return `${provider}:${query.toLowerCase()}:${limit}:${page}`;
+  const filterPart = filter_type ? `:${filter_type}` : "";
+  return `${provider}:${query.toLowerCase()}:${limit}:${page}${filterPart}`;
 };
 
 export const getCachedSearchResults = (

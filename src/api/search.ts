@@ -41,7 +41,8 @@ const getProviderName = (): string => {
 export const fetchSearchResults = async (
   query: string,
   limit: number = DEFAULT_SEARCH_LIMIT,
-  page: number = 1
+  page: number = 1,
+  filter_type: string = ""
 ): Promise<SearchResult[]> => {
   const q = query.trim();
 
@@ -52,7 +53,13 @@ export const fetchSearchResults = async (
 
   // Check cache first
   const provider = getProviderName();
-  const cacheKey = generateCacheKey(provider, q, clampedLimit, page);
+  const cacheKey = generateCacheKey(
+    provider,
+    q,
+    clampedLimit,
+    page,
+    filter_type
+  );
   const cachedResults = getCachedSearchResults(cacheKey);
   if (cachedResults) {
     return cachedResults;
@@ -64,7 +71,7 @@ export const fetchSearchResults = async (
 
   try {
     const dataProvider = getDataProvider();
-    const papers = await dataProvider.fetchPapers(q, clampedLimit);
+    const papers = await dataProvider.fetchPapers(q, clampedLimit, filter_type);
 
     const searchResults: SearchResult[] = papers.map(mapToSearchResult);
     setCachedSearchResults(cacheKey, searchResults);
@@ -83,9 +90,10 @@ export const handleSearch = async (request: Request): Promise<Response> => {
     MAX_SEARCH_LIMIT
   );
   const page = Math.max(parseInt((formData.get("page") as string) || "1"), 1);
+  const filter_type = (formData.get("filter_type") as string) || "";
 
   try {
-    const results = await fetchSearchResults(query, limit, page);
+    const results = await fetchSearchResults(query, limit, page, filter_type);
     // Update user_data cookie with new search history entry
     const user = readUserDataCookie(request.headers.get("cookie"));
     const updatedHistory = addToHistory(

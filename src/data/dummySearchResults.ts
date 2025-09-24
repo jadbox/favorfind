@@ -1,4 +1,4 @@
-import { SearchResult } from "../types";
+import type { SearchResult } from "../types";
 
 export const dummySearchResults: SearchResult[] = [
   {

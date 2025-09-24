@@ -6,7 +6,8 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 export class GeminiDataProvider implements DataProvider {
   async fetchPapers(
     query: string,
-    limit: number
+    limit: number,
+    filter_type: string = ""
   ): Promise<SemanticScholarPaper[]> {
     const q = query.trim();
 
@@ -23,8 +24,19 @@ export class GeminiDataProvider implements DataProvider {
 
       const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-      console.log("Using GeminiDataProvider with query:", q);
-      const prompt = `Search only for the ${limit} most useful articles listed by PubMed about: "${q}". Return a JSON array of up to ${limit} articles.`;
+      console.log(
+        "Using GeminiDataProvider with query:",
+        q,
+        "filter:",
+        filter_type
+      );
+      const prompt = `Search only for the ${limit} most useful articles listed by PubMed about: "${q}". 
+      ${
+        filter_type
+          ? `The search should be filtered by the following filter criteria: ${filter_type}.`
+          : ""
+      }
+      Return a JSON array of up to ${limit} articles.`;
 
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",

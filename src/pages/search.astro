@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SearchBar from "../components/SearchBar";
-import SearchResultsDisplay from "../components/SearchResultsDisplay";
 import SearchResultsFilters from "../components/SearchResultsFilters";
 import { ArrowLeft } from "lucide-react";
 import type { SearchResult, SearchHistory } from "../types";
@@ -10,16 +9,38 @@ import { fetchSearchResults } from "../api/search";
 // Get query parameter from URL
 const url = new URL(Astro.request.url);
 const query = url.searchParams.get("q")?.trim() || "";
+const selectedType =
+  url.searchParams.get("filter_type") || "Guidelines (Default)";
+const primaryTumorSite = url.searchParams.get("primaryTumorSite") || "All";
+const ageGroup = url.searchParams.get("ageGroup") || "All";
+const gender = url.searchParams.get("gender") || "All";
+const sortBy = url.searchParams.get("sortBy") || "relevance";
 
 // Fetch search results if query exists
 let results: SearchResult[] = [];
 let error: string | null = null;
 const limit = parseInt(url.searchParams.get("limit") || "0");
 
+const filterParams = [
+  selectedType,
+  primaryTumorSite !== "All" && primaryTumorSite,
+  ageGroup !== "All" && ageGroup,
+  gender !== "All" && gender,
+]
+  .filter(Boolean)
+  .join(",");
+
 if (query) {
   try {
-    console.log("Server-side search for:", query, "limit:", limit);
-    results = await fetchSearchResults(query, limit);
+    console.log(
+      "Server-side search for:",
+      query,
+      "limit:",
+      limit,
+      "filters:",
+      filterParams
+    );
+    results = await fetchSearchResults(query, limit, 1, filterParams);
     console.log("Server-side results:", results.length);
   } catch (err) {
     console.error("Search error:", err);
@@ -29,7 +50,6 @@ if (query) {
 
 // For now, we'll use empty data for other fields
 const searchHistory: SearchHistory[] = [];
-const savedIds: string[] = [];
 
 const title = query ? `Results for "${query}"` : "Search";
 ---
@@ -46,7 +66,7 @@ const title = query ? `Results for "${query}"` : "Search";
           Back to Home
         </a>
         <div class="flex-1 mt-4">
-          <SearchBar query={query} client:load />
+          <SearchBar query={query} />
         </div>
       </div>
 
@@ -54,14 +74,12 @@ const title = query ? `Results for "${query}"` : "Search";
         query && (
           <div class="mb-6">
             <SearchResultsFilters
-              selectedType="all"
-              setSelectedType={() => {}}
-              selectedCategory="all"
-              setSelectedCategory={() => {}}
-              sortBy="relevance"
-              setSortBy={() => {}}
-              uniqueCategories={[]}
-              client:load
+              selectedType={selectedType}
+              primaryTumorSite={primaryTumorSite}
+              ageGroup={ageGroup}
+              gender={gender}
+              sortBy={sortBy as any}
+              client:only="react"
             />
           </div>
         )
@@ -83,6 +101,20 @@ const title = query ? `Results for "${query}"` : "Search";
           </div>
         )
       }
+
+      {/* Loading overlay */}
+      <div
+        id="loading-overlay"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-200"
+      >
+        <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600"
+          >
+          </div>
+          <span class="text-gray-700">Loading...</span>
+        </div>
+      </div>
 
       {
         query ? (
@@ -145,3 +177,49 @@ const title = query ? `Results for "${query}"` : "Search";
     </div>
   </div>
 </BaseLayout>
+
+<script>
+  // Show loading overlay when forms are submitted or filters are updated
+  function showLoading() {
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) {
+      overlay.classList.remove("opacity-0", "pointer-events-none");
+      overlay.classList.add("opacity-100", "pointer-events-auto");
+    }
+  }
+
+  // Hide loading overlay
+  function hideLoading() {
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) {
+      overlay.classList.remove("opacity-100", "pointer-events-auto");
+      overlay.classList.add("opacity-0", "pointer-events-none");
+    }
+  }
+
+  // Add loading to search form submission
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchForm = document.querySelector('form[action="/search"]');
+    if (searchForm) {
+      searchForm.addEventListener("submit", showLoading);
+    }
+
+    // Listen for filter updates (when URL changes)
+    let currentUrl = window.location.href;
+    const observer = new MutationObserver(() => {
+      if (window.location.href !== currentUrl) {
+        currentUrl = window.location.href;
+        showLoading();
+      }
+    });
+
+    // Observe changes to the body or a specific element
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Also listen for popstate events (back/forward navigation)
+    window.addEventListener("popstate", showLoading);
+
+    // Hide loading when page is fully loaded
+    window.addEventListener("load", hideLoading);
+  });
+</script>

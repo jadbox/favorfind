@@ -1,19 +1,17 @@
 import React from "react";
 import SearchResultCard from "./SearchResultCard";
-import { SearchResult } from "../types";
+import type { SearchResult } from "../types";
 
 interface SearchResultsDisplayProps {
   loading: boolean;
   filteredResults: SearchResult[];
   savedIds: string[];
-  onToggleSave: (result: SearchResult) => void;
 }
 
 const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
   loading,
   filteredResults,
   savedIds,
-  onToggleSave,
 }) => {
   return (
     <div className="grid gap-6">
@@ -30,7 +28,6 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
             key={result.id}
             result={result}
             isSaved={savedIds.includes(result.id)}
-            onToggleSave={onToggleSave}
           />
         ))
       ) : (
