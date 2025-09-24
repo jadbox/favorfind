@@ -44,7 +44,10 @@ const Sidebar = ({ searchHistory }: { searchHistory: SearchHistory[] }) => {
   return (
     <aside className="w-64 bg-white border-r border-gray-200 p-4 min-h-screen">
       <div className="text-center mb-6">
-        <a href="/" className="btn btn-primary btn-outline btn-sm px-4 py-2 hover:text-medical-600 hover:bg-gray-50">
+        <a
+          href="/"
+          className="btn btn-primary btn-outline btn-sm px-4 py-2 hover:text-medical-600 hover:bg-gray-50"
+        >
           New Search
         </a>
       </div>
