@@ -174,13 +174,14 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
 
         {/* Source and Date */}
         <div className="flex items-center space-x-4 mb-3 text-sm text-gray-600">
-          <span className="font-medium">{result.source}</span>
+          <span className="font-medium">
+            {extractDomain(result.url)}
+            <span className="grayscale text-gray-400 ml-1">
+              ({result.source})
+            </span>
+          </span>
           <span>•</span>
           <span>{formatDate(result.publicationDate)}</span>
-          <span>•</span>
-          <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-medium">
-            {extractDomain(result.url)}
-          </span>
         </div>
 
         {/* Abstract */}

@@ -5,7 +5,7 @@ const Disclaimer: React.FC = () => {
     <footer className="bg-white border-t border-gray-200 px-6 py-4 mt-8">
       <div className="max-w-7xl mx-auto text-sm text-gray-500">
         For informational purposes only — not a substitute for professional
-        medical advice.
+        medical advice. DEBUG: (<a href="/api/del_cache">delete cache</a>)
       </div>
     </footer>
   );

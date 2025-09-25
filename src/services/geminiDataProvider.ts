@@ -39,7 +39,7 @@ export class GeminiDataProvider implements DataProvider {
           ? `The search should be filtered by the following filter criteria: ${filter_type}.`
           : ""
       }
-      Return only a concise JSON array of up to ${limit} articles.`;
+      No preamble. Return only a concise JSON array of up to ${limit} articles.`;
 
       console.log("Generated prompt:", prompt);
 
@@ -60,17 +60,17 @@ export class GeminiDataProvider implements DataProvider {
                 title: {
                   type: Type.STRING,
                 },
-                authors: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      name: {
-                        type: Type.STRING,
-                      },
-                    },
-                  },
-                },
+                // authors: {
+                //   type: Type.ARRAY,
+                //   items: {
+                //     type: Type.OBJECT,
+                //     properties: {
+                //       name: {
+                //         type: Type.STRING,
+                //       },
+                //     },
+                //   },
+                // },
                 year: {
                   type: Type.INTEGER,
                 },
@@ -87,7 +87,7 @@ export class GeminiDataProvider implements DataProvider {
               required: [
                 "paperId",
                 "title",
-                "authors",
+                // "authors",
                 "year",
                 "url",
                 "abstract",
@@ -104,8 +104,9 @@ export class GeminiDataProvider implements DataProvider {
       // Validate and clean the data
       return papers.map((paper, index) => ({
         paperId: paper.paperId || `gemini-${Date.now()}-${index}`,
+        source: "Gemini",
         title: paper.title || "Untitled",
-        authors: Array.isArray(paper.authors) ? paper.authors : [],
+        // authors: [], // Array.isArray(paper.authors) ? paper.authors : [],
         year:
           typeof paper.year === "number"
             ? paper.year
