@@ -17,7 +17,7 @@ import { SemanticScholarDataProvider } from "@/services/semanticScholarDataProvi
 import { GeminiDataProvider } from "@/services/geminiDataProvider";
 
 // Configuration constants
-const DEFAULT_SEARCH_LIMIT = parseInt(process.env.DEFAULT_SEARCH_LIMIT || "8");
+const DEFAULT_SEARCH_LIMIT = parseInt(process.env.DEFAULT_SEARCH_LIMIT || "10");
 const MAX_SEARCH_LIMIT = parseInt(process.env.MAX_SEARCH_LIMIT || "20");
 
 // Choose data provider based on environment variable
