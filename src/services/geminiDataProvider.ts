@@ -24,6 +24,11 @@ export class GeminiDataProvider implements DataProvider {
 
       const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
+      // Define the grounding tool
+      //   const groundingTool = {
+      //     googleSearch: {},
+      //   };
+
       console.log(
         "Using GeminiDataProvider with query:",
         q,
@@ -44,6 +49,7 @@ export class GeminiDataProvider implements DataProvider {
         model: "gemini-2.5-flash",
         contents: prompt,
         config: {
+          // tools: [groundingTool],
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.ARRAY,

@@ -31,6 +31,7 @@ const filterParams = [
   primaryTumorSite !== "All" && primaryTumorSite,
   ageGroup !== "All" && ageGroup,
   gender !== "All" && gender,
+  sortBy !== "relevance" && `sort:${sortBy}`,
 ]
   .filter(Boolean)
   .join(",");

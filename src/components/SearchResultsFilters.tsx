@@ -11,7 +11,6 @@ interface SearchResultsFiltersProps {
 
 const generalFilters = [
   "Guidelines (Default)",
-  "Recent Articles",
   "Overview",
   "Risk Factors",
   "Imaging",
@@ -19,8 +18,7 @@ const generalFilters = [
   "Histology / Pathology",
   "Staging",
   "Prognostic Factors",
-  "Societies",
-  "Wikipedia",
+  // "Wikipedia",
 ];
 
 const therapyFilters = [
@@ -52,11 +50,11 @@ const primaryTumorSites = [
 ];
 const ageGroups = [
   "All",
-  "ages_0-12",
-  "ages_13-21",
-  "ages_22-44",
-  "ages_45-64",
-  "ages_65+",
+  "ages 0-12",
+  "ages 13-21",
+  "ages 22-44",
+  "ages 45-64",
+  "ages 65+",
 ];
 const genders = ["All", "male", "female"];
 
@@ -76,9 +74,7 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
   );
   const [ageGroup, setAgeGroup] = useState(props.ageGroup);
   const [gender, setGender] = useState(props.gender);
-  const [sortBy, setSortBy] = useState<"relevance" | "date" | "citations">(
-    props.sortBy
-  );
+  const [sortBy, setSortBy] = useState<string>(props.sortBy);
   const [activeTab, setActiveTab] = useState("general");
 
   // Check if filters have changed from initial values
@@ -286,16 +282,14 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
                 </label>
                 <select
                   value={sortBy}
-                  onChange={(e) =>
-                    setSortBy(
-                      e.target.value as "relevance" | "date" | "citations"
-                    )
-                  }
+                  onChange={(e) => setSortBy(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                 >
                   <option value="relevance">Relevance</option>
-                  <option value="date">Recent Publication Date</option>
-                  <option value="citations">Popular Articles</option>
+                  <option value="trending_recent_articles">
+                    Recent Publication Date
+                  </option>
+                  <option value="most_citations">Popular Articles</option>
                 </select>
               </div>
             </div>

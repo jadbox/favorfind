@@ -14,7 +14,9 @@ export const GET: APIRoute = async ({ request }) => {
     50 // Max limit
   );
   const page = Math.max(parseInt(url.searchParams.get("page") || "1"), 1);
-  const filter_type = url.searchParams.get("filter_type") || "";
+  let filter_type = url.searchParams.get("filter_type") || "";
+  const sortBy = url.searchParams.get("sortBy") || "";
+  filter_type += sortBy ? ` ${sortBy}` : "";
 
   console.log(
     "Search API called with query:",
