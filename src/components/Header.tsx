@@ -22,13 +22,13 @@ const Header: React.FC = () => {
           </a>
 
           {/* User Profile */}
-          <div className="avatar">
+          {/* <div className="avatar">
             <div className="w-10 rounded-full ring ring-medical-600 ring-offset-2">
               <div className="bg-medical-600 flex items-center justify-center h-full w-full rounded-full">
                 <User className="h-6 w-6 text-white" />
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </header>
