@@ -1,359 +1,74 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SearchBar from "../components/SearchBar";
-import SearchResultCard from "../components/SearchResultCard";
-import SearchResultsFilters from "../components/SearchResultsFilters";
-import { ArrowLeft } from "lucide-react";
-import type { SearchResult, SearchHistory } from "../types";
-import { fetchSearchResults } from "../api/search";
+import SearchBar from "../components/SearchBar.tsx";
+import SearchResultsDisplay from "../components/SearchResultsDisplay.tsx";
+import SearchResultsFilters from "../components/SearchResultsFilters.tsx";
+import Sidebar from "../components/Sidebar.tsx";
 import {
-  readUserDataCookie,
-  addToHistory,
-  serializeUserDataCookie,
-} from "../CookieUserData";
+  parseSearchParams,
+  performSearch,
+  checkSavedStatus,
+} from "../utils/searchHelpers";
+import { readUserDataCookie } from "../CookieUserData";
 
-// Get query parameter from URL
-const url = new URL(Astro.request.url);
-const query = url.searchParams.get("q")?.trim() || "";
-const selectedType =
-  url.searchParams.get("filter_type") || "Guidelines (Default)";
-const primaryTumorSite = url.searchParams.get("primaryTumorSite") || "All";
-const ageGroup = url.searchParams.get("ageGroup") || "All";
-const gender = url.searchParams.get("gender") || "All";
-const sortBy = url.searchParams.get("sortBy") || "relevance";
+// Parse search parameters
+const searchParams = parseSearchParams(new URL(Astro.request.url));
 
-// Fetch search results if query exists
-let results: SearchResult[] = [];
-let error: string | null = null;
-const limit = parseInt(url.searchParams.get("limit") || "0");
-
-const filterParams = [
-  selectedType !== "Guidelines (Default)" && selectedType,
-  primaryTumorSite !== "All" && primaryTumorSite,
-  ageGroup !== "All" && ageGroup,
-  gender !== "All" && gender,
-  sortBy !== "relevance" && `sort:${sortBy}`,
-]
-  .filter(Boolean)
-  .join(",");
-
-if (query) {
-  try {
-    console.log(
-      "Server-side search for:",
-      query,
-      "limit:",
-      limit,
-      "filters:",
-      filterParams
-    );
-    results = await fetchSearchResults(query, limit, 1, filterParams);
-    console.log("Server-side results:", results.length);
-
-    // Save search to history in cookies
-    const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
-    const filters = {
-      selectedType:
-        selectedType !== "Guidelines (Default)" ? selectedType : undefined,
-      primaryTumorSite:
-        primaryTumorSite !== "All" ? primaryTumorSite : undefined,
-      ageGroup: ageGroup !== "All" ? ageGroup : undefined,
-      gender: gender !== "All" ? gender : undefined,
-      sortBy: sortBy !== "relevance" ? sortBy : undefined,
-    };
-    const updatedHistory = addToHistory(
-      userData.searchHistory,
-      query,
-      results.length,
-      filters
-    );
-    const updatedUserData = { ...userData, searchHistory: updatedHistory };
-    const setCookie = serializeUserDataCookie(updatedUserData);
-    Astro.response.headers.set("Set-Cookie", setCookie);
-  } catch (err) {
-    console.error("Search error:", err);
-    error = err instanceof Error ? err.message : "Search failed";
+// Perform server-side search
+const searchData = await performSearch(
+  searchParams,
+  Astro.request.headers.get("cookie"),
+  (cookie: string) => {
+    Astro.response.headers.set("Set-Cookie", cookie);
   }
-}
+);
 
-// Check which results are saved
-let savedStatus: Record<string, boolean> = {};
-if (results.length > 0) {
-  try {
-    const response = await fetch(`${Astro.url.origin}/api/library/check`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        cookie: Astro.request.headers.get("cookie") || "",
-      },
-      body: JSON.stringify({ ids: results.map((r) => r.id) }),
-    });
-    if (response.ok) {
-      savedStatus = await response.json();
-    }
-  } catch (error) {
-    console.error("Failed to check saved status:", error);
-  }
-}
+// Check saved status for results
+const savedStatus = await checkSavedStatus(
+  searchData.results,
+  new URL(Astro.request.url).origin,
+  Astro.request.headers.get("cookie")
+);
 
-// For now, we'll use empty data for other fields
+// Get user data for sidebar
 const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
-const searchHistory: SearchHistory[] = userData.searchHistory;
-
-const title = query ? `Results for "${query}"` : "Search";
 ---
 
-<BaseLayout title={title} searchHistory={searchHistory}>
-  <div class="flex-1 p-6">
-    <div class="max-w-4xl mx-auto">
-      <div class="mb-6">
-        <a
-          href="/"
-          class="btn btn-sm btn-ghost text-gray-600 hover:text-gray-900 mr-4 inline-flex items-center"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Home
-        </a>
-        <div class="flex-1 mt-4">
-          <SearchBar query={query} />
-        </div>
+<BaseLayout title="Search Results" searchHistory={userData.searchHistory}>
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Search Results Area -->
+    <main class="flex-1 flex flex-col p-4 overflow-hidden">
+      <SearchBar client:load query={searchParams.query} />
+
+      <div class="mb-4">
+        <SearchResultsFilters
+          client:load
+          selectedType={searchParams.selectedType}
+          primaryTumorSite={searchParams.primaryTumorSite}
+          ageGroup={searchParams.ageGroup}
+          gender={searchParams.gender}
+          sortBy={searchParams.sortBy as "relevance" | "date" | "citations"}
+        />
       </div>
 
-      {
-        query && (
-          <div class="mb-6">
-            <SearchResultsFilters
-              selectedType={selectedType}
-              primaryTumorSite={primaryTumorSite}
-              ageGroup={ageGroup}
-              gender={gender}
-              sortBy={sortBy as any}
-              client:only="react"
+      <div class="flex-1 overflow-auto">
+        {
+          searchData.error ? (
+            <div class="alert alert-error">
+              <span>{searchData.error}</span>
+            </div>
+          ) : (
+            <SearchResultsDisplay
+              client:load
+              loading={false}
+              filteredResults={searchData.results}
+              savedIds={Object.keys(savedStatus).filter(
+                (id) => savedStatus[id]
+              )}
             />
-          </div>
-        )
-      }
-
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-bold text-gray-900">
-          {query ? `Search Results for "${query}"` : "Search"}
-        </h2>
-        <div class="text-sm text-gray-600">
-          {results.length} results
-        </div>
+          )
+        }
       </div>
-
-      {
-        error && (
-          <div class="alert alert-error mb-4">
-            <span>{error}</span>
-          </div>
-        )
-      }
-
-      {/* Loading overlay */}
-      <div
-        id="loading-overlay"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-200"
-        transition:persist
-      >
-        <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
-          <div
-            class="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600"
-          >
-          </div>
-          <span class="text-gray-700">Loading...</span>
-        </div>
-      </div>
-
-      {
-        query ? (
-          <div class="grid gap-6">
-            {results.length === 0 ? (
-              <div class="text-center py-12 text-gray-500">
-                No results found
-              </div>
-            ) : (
-              results.map((result) => (
-                <SearchResultCard
-                  result={result}
-                  isSaved={savedStatus[result.id] || false}
-                  returnTo="/search"
-                  client:visible
-                />
-              ))
-            )}
-          </div>
-        ) : (
-          <div class="text-center py-12 text-gray-500">
-            Enter a search query to get started
-          </div>
-        )
-      }
-    </div>
+    </main>
   </div>
 </BaseLayout>
-
-<script>
-  // localStorage utilities for search history
-  const STORAGE_KEY = "medeligo-user-data";
-
-  function hasLocalStorage() {
-    return typeof window !== "undefined" && typeof localStorage !== "undefined";
-  }
-
-  function getStoredUserData() {
-    if (!hasLocalStorage()) return { searchHistory: [] };
-    try {
-      const data = localStorage.getItem(STORAGE_KEY);
-      if (data) {
-        return JSON.parse(data);
-      }
-    } catch (error) {
-      console.error("Error reading from localStorage:", error);
-    }
-    return { searchHistory: [] };
-  }
-
-  function saveUserData(data: any) {
-    if (!hasLocalStorage()) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch (error) {
-      console.error("Error saving to localStorage:", error);
-    }
-  }
-
-  function addSearchToHistory(
-    query: string,
-    resultsCount: number,
-    filters?: any
-  ) {
-    if (!hasLocalStorage()) return;
-    const userData = getStoredUserData();
-
-    // Remove any existing search with the same query (case-insensitive)
-    userData.searchHistory = userData.searchHistory.filter(
-      (item: any) => item.query.toLowerCase() !== query.toLowerCase()
-    );
-
-    const newSearch = {
-      id: Date.now().toString(),
-      query,
-      timestamp: new Date().toISOString(),
-      resultsCount,
-      filters,
-    };
-
-    // Add to beginning of array and limit to 20 items
-    userData.searchHistory = [
-      newSearch,
-      ...userData.searchHistory.slice(0, 19),
-    ];
-    saveUserData(userData);
-  }
-
-  // Show loading overlay
-  function showLoading() {
-    const overlay = document.getElementById("loading-overlay");
-    if (overlay) {
-      overlay.classList.remove("opacity-0", "pointer-events-none");
-      overlay.classList.add("opacity-100", "pointer-events-auto");
-    }
-  }
-
-  // Hide loading overlay
-  function hideLoading() {
-    const overlay = document.getElementById("loading-overlay");
-    if (overlay) {
-      overlay.classList.remove("opacity-100", "pointer-events-auto");
-      overlay.classList.add("opacity-0", "pointer-events-none");
-    }
-  }
-
-  // Save search to history if we have results
-  function saveSearchToHistory() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const query = urlParams.get("q");
-    const resultsText =
-      document.querySelector(".text-sm.text-gray-600")?.textContent || "";
-    const resultsMatch = resultsText.match(/(\d+) results/);
-    const resultsCount = resultsMatch ? parseInt(resultsMatch[1]!) : 0;
-
-    if (query && resultsCount > 0) {
-      const filters: any = {
-        selectedType: urlParams.get("filter_type") || undefined,
-        primaryTumorSite: urlParams.get("primaryTumorSite") || undefined,
-        ageGroup: urlParams.get("ageGroup") || undefined,
-        gender: urlParams.get("gender") || undefined,
-        sortBy: urlParams.get("sortBy") || undefined,
-      };
-
-      // Only include defined filters
-      const cleanFilters: any = {};
-      Object.keys(filters).forEach((key: string) => {
-        if (filters[key]) cleanFilters[key] = filters[key];
-      });
-
-      addSearchToHistory(
-        query,
-        resultsCount,
-        Object.keys(cleanFilters).length > 0 ? cleanFilters : undefined
-      );
-    }
-  }
-
-  // Initialize page functionality
-  document.addEventListener("DOMContentLoaded", () => {
-    // Show loading on navigation start
-    document.addEventListener("astro:page-load", showLoading);
-
-    // Hide loading after page transition completes
-    document.addEventListener("astro:after-swap", hideLoading);
-
-    // Also handle traditional form submissions and filter updates
-    const searchForm = document.querySelector('form[action="/search"]');
-    if (searchForm) {
-      searchForm.addEventListener("submit", showLoading);
-    }
-
-    // Listen for filter updates (when URL changes)
-    let currentUrl = window.location.href;
-    const observer = new MutationObserver(() => {
-      if (window.location.href !== currentUrl) {
-        currentUrl = window.location.href;
-        showLoading();
-      }
-    });
-
-    // Observe changes to the body or a specific element
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Also listen for popstate events (back/forward navigation)
-    window.addEventListener("popstate", showLoading);
-
-    // Handle all link clicks that navigate away
-    document.addEventListener("click", (e) => {
-      const target = e.target as HTMLElement;
-      const link = target?.closest("a") as HTMLAnchorElement;
-      if (
-        link &&
-        link.href &&
-        !link.href.startsWith("javascript:") &&
-        !link.hasAttribute("download")
-      ) {
-        // Check if it's an external link or same-origin navigation
-        const url = new URL(link.href, window.location.origin);
-        if (url.origin === window.location.origin) {
-          showLoading();
-        }
-      }
-    });
-
-    // Hide loading when page is fully loaded
-    window.addEventListener("load", () => {
-      hideLoading();
-      saveSearchToHistory();
-    });
-  });
-</script>

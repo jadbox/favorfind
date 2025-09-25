@@ -14,10 +14,6 @@ function App() {
     setSearchHistory(userData.searchHistory);
   }, []);
 
-  const handleHistoryClick = (query: string) => {
-    window.location.href = `/search?q=${encodeURIComponent(query)}`;
-  };
-
   const refreshSearchHistory = () => {
     const userData = getStoredUserData();
     setSearchHistory(userData.searchHistory);

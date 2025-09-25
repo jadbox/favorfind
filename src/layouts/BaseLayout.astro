@@ -2,6 +2,7 @@
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
 import Disclaimer from "../components/Disclaimer";
+import LoadingOverlay from "../components/LoadingOverlay.astro";
 import "../index.css";
 
 export interface Props {
@@ -34,6 +35,15 @@ const { title = "Medeligo Cancer Research", searchHistory = [] } = Astro.props;
       </div>
 
       <Disclaimer client:load />
+      <LoadingOverlay />
     </div>
+
+    <script>
+      import { LoadingUtils } from "../utils/loadingUtils";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        LoadingUtils.initializeForPage();
+      });
+    </script>
   </body>
 </html>

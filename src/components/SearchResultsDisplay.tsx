@@ -10,8 +10,8 @@ interface SearchResultsDisplayProps {
 
 const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
   loading,
-  filteredResults,
-  savedIds,
+  filteredResults = [],
+  savedIds = [],
 }) => {
   return (
     <div className="grid gap-6">

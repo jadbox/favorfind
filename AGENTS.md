@@ -1,6 +1,6 @@
 # Development Tips & Lessons Learned
 
-This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Scholar API to provide a research paper search interface. Below are patterns, best practices, and lessons learned during development. Most pages are server-side rendered for SEO and performance. Deployed to fly.io cloud with CLI and Docker.
+This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Scholar API to provide a research paper search interface. Below are patterns, best practices, and lessons learned during development. Most pages are server-side rendered for SEO and performance. Deployed to fly.io cloud with CLI and Docker. We are NOT using page transitions- only SSR SPA.
 
 ## Modular Architecture Patterns
 
@@ -17,11 +17,6 @@ This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Schol
 - **Define TypeScript interfaces** that match the responseSchema exactly for type safety
 - **Handle AI hallucinations** by constraining responses to PubMed-only articles with specific prompts
 - **Fallback error handling** when AI returns malformed JSON
-
-### API Key Management
-- **Environment variables** for API keys (`GEMINI_API_KEY`, `SEMANTIC_SCHOLAR_API_KEY`)
-- **Early validation** in provider constructors to fail fast if keys are missing
-- **Never log API keys** in console output or error messages
 
 ## Caching Strategies
 
@@ -40,9 +35,7 @@ This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Schol
 
 ### Astro Server-Side Rendering
 - **Server-side search rendering** improves SEO and initial page load performance
-- **Frontmatter variable scoping** issues: declare variables before using them in try/catch blocks
 - **Import order matters** in Astro frontmatter - BaseLayout imports must come first
-- **Error handling** in server-side rendering prevents broken pages
 
 ### API Route Patterns
 - **GET/POST duality** in Astro API routes for flexibility
@@ -52,15 +45,13 @@ This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Schol
 ## Debugging & Development Workflow
 
 ### Environment Setup
-- **Multiple environment variables** needed: `SEARCH_PROVIDER`, `GEMINI_API_KEY`, `DEFAULT_SEARCH_LIMIT`, `MAX_SEARCH_LIMIT`
+- **environment variables** needed: `GEMINI_API_KEY`
 - **Test providers individually** before integration using direct API calls
 - **Cache debugging** by inspecting SQLite database directly with Bun scripts
 
 ### Error Patterns to Watch For
-- **"no such column" SQLite errors** indicate schema mismatches - check table structure
 - **Variable scoping issues** in Astro frontmatter when using try/catch blocks
 - **Import path resolution** failures - ensure `@/` aliases are configured correctly
-- **AI API timeouts** - implement retry logic for production use
 
 ## Tool-Specific Insights
 
@@ -71,8 +62,8 @@ This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Schol
 
 ### Development Tools
 - **Bun runtime** provides excellent SQLite integration and fast development server
-- **Astro dev server** with hot reload supports server-side rendering debugging
-- **Simple Browser** integration in VS Code for quick UI testing without leaving editor
+- **Astro dev server** with hot reload supports server-side rendering debugging. Server does not need restart on code changes. Assume dev server is always running.
+- **Simple Browser** integration in VS Code allows quick bowser UI testing
 
 ## Production Considerations
 
@@ -88,6 +79,8 @@ This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Schol
 
 ## Code Organization Tips
 
+Keep code modular and maintainable. Be critical to make code simple, concise, using modern standards, and avoid over-engineering. Split very large files into smaller focused modules.
+
 ### File Structure Benefits
 - **Separate provider modules** (`semanticScholarDataProvider.ts`, `geminiDataProvider.ts`) enable independent testing
 - **Centralized configuration** in main search module with environment variable fallbacks
@@ -96,5 +89,7 @@ This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Schol
 ### Type Safety
 - **Shared interfaces** (`SemanticScholarPaper`) ensure consistency across providers
 - **Strict TypeScript** catches integration issues early
-- **Runtime validation** of AI responses prevents malformed data from breaking the UI</content>
-<filePath>/home/jdunlap/github/medeligo/medeligo-cancer-net/AGENTS.md
+- **Runtime validation** of AI responses prevents malformed data from breaking the UI
+
+# Frontend
+- DO not use setTimeout for UI state management. Keep code short, concise, and easy to read.

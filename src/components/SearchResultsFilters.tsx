@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Filter } from "lucide-react";
+import { LoadingUtils } from "../utils/loadingUtils";
 
 interface SearchResultsFiltersProps {
   selectedType: string;
@@ -94,51 +95,46 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
   }, [props.selectedType]);
 
   const handleUpdateFilters = () => {
-    // Show loading state
-    const loadingOverlay = document.getElementById("loading-overlay");
-    if (loadingOverlay) {
-      loadingOverlay.classList.remove("opacity-0", "pointer-events-none");
-      loadingOverlay.classList.add("opacity-100", "pointer-events-auto");
+    // Show loading overlay using the centralized utility
+    LoadingUtils.show();
+
+    const createHiddenInput = (name: string, value: string) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      return input;
+    };
+
+    const form = document.createElement("form");
+    form.method = "GET";
+    form.action = "/search";
+    form.style.display = "none";
+
+    const currentUrl = new URL(window.location.href);
+    const query = currentUrl.searchParams.get("q");
+    if (query) {
+      form.appendChild(createHiddenInput("q", query));
     }
 
-    const params = new URLSearchParams(window.location.search);
+    const filters = {
+      filter_type: { value: selectedType, default: "Guidelines (Default)" },
+      primaryTumorSite: { value: primaryTumorSite, default: "All" },
+      ageGroup: { value: ageGroup, default: "All" },
+      gender: { value: gender, default: "All" },
+      sortBy: { value: sortBy, default: "relevance" },
+    };
 
-    // Only set filter_type if it's not the default
-    if (selectedType !== "Guidelines (Default)") {
-      params.set("filter_type", selectedType);
-    } else {
-      params.delete("filter_type");
+    for (const [name, { value, default: defaultValue }] of Object.entries(
+      filters
+    )) {
+      if (value !== defaultValue) {
+        form.appendChild(createHiddenInput(name, value));
+      }
     }
 
-    // Only set primaryTumorSite if it's not "All"
-    if (primaryTumorSite !== "All") {
-      params.set("primaryTumorSite", primaryTumorSite);
-    } else {
-      params.delete("primaryTumorSite");
-    }
-
-    // Only set ageGroup if it's not "All"
-    if (ageGroup !== "All") {
-      params.set("ageGroup", ageGroup);
-    } else {
-      params.delete("ageGroup");
-    }
-
-    // Only set gender if it's not "All"
-    if (gender !== "All") {
-      params.set("gender", gender);
-    } else {
-      params.delete("gender");
-    }
-
-    // Only set sortBy if it's not the default "relevance"
-    if (sortBy !== "relevance") {
-      params.set("sortBy", sortBy);
-    } else {
-      params.delete("sortBy");
-    }
-
-    window.location.search = params.toString();
+    document.body.appendChild(form);
+    form.submit();
   };
 
   return (
