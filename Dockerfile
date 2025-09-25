@@ -13,8 +13,15 @@ RUN bun install
 # Copy source code
 COPY . .
 
+# Build the application
+RUN bun run build
+
 # Expose the port the app runs on
 EXPOSE 4321
 
-# Start the development server with host binding for container access
-CMD ["bun", "--bun", "astro", "dev", "--port", "4321", "--host", "0.0.0.0"]
+# Set environment variables for the server
+ENV PORT=4321
+ENV HOST=0.0.0.0
+
+# Start the production server
+CMD ["bun", "dist/server/entry.mjs"]

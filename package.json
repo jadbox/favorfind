@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "PORT=4321 && (lsof -ti:$PORT | xargs kill -9 2>/dev/null || true) && sleep 1 && bun --bun astro dev --port $PORT",
-    "start": "bun --bun astro preview",
+    "preview": "bun --bun astro preview",
+    "start": "bun dist/server/entry.mjs",
     "build": "bun --bun astro build",
     "check": "bun --bun astro check"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/node": "^9.4.4",
     "@astrojs/react": "^4.3.1",
     "@astrojs/tailwind": "^6.0.2",
     "@google/genai": "^1.20.0",
