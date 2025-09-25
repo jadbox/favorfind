@@ -8,6 +8,7 @@ primary_region = "iad"
   SEARCH_PROVIDER = "gemini"
   DEFAULT_SEARCH_LIMIT = "8"
   MAX_SEARCH_LIMIT = "20"
+  HOST = "0.0.0.0"
 
 [[services]]
   internal_port = 4321
