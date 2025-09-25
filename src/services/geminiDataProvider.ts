@@ -39,7 +39,7 @@ export class GeminiDataProvider implements DataProvider {
           ? `The search should be filtered by the following filter criteria: ${filter_type}.`
           : ""
       }
-      Return a JSON array of up to ${limit} articles.`;
+      Return only a concise JSON array of up to ${limit} articles.`;
 
       console.log("Generated prompt:", prompt);
 

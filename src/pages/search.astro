@@ -155,6 +155,7 @@ const title = query ? `Results for "${query}"` : "Search";
       <div
         id="loading-overlay"
         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-200"
+        transition:persist
       >
         <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
           <div
@@ -252,7 +253,7 @@ const title = query ? `Results for "${query}"` : "Search";
     saveUserData(userData);
   }
 
-  // Show loading overlay when forms are submitted or filters are updated
+  // Show loading overlay
   function showLoading() {
     const overlay = document.getElementById("loading-overlay");
     if (overlay) {
@@ -304,6 +305,13 @@ const title = query ? `Results for "${query}"` : "Search";
 
   // Initialize page functionality
   document.addEventListener("DOMContentLoaded", () => {
+    // Show loading on navigation start
+    document.addEventListener("astro:page-load", showLoading);
+
+    // Hide loading after page transition completes
+    document.addEventListener("astro:after-swap", hideLoading);
+
+    // Also handle traditional form submissions and filter updates
     const searchForm = document.querySelector('form[action="/search"]');
     if (searchForm) {
       searchForm.addEventListener("submit", showLoading);
@@ -323,6 +331,24 @@ const title = query ? `Results for "${query}"` : "Search";
 
     // Also listen for popstate events (back/forward navigation)
     window.addEventListener("popstate", showLoading);
+
+    // Handle all link clicks that navigate away
+    document.addEventListener("click", (e) => {
+      const target = e.target as HTMLElement;
+      const link = target?.closest("a") as HTMLAnchorElement;
+      if (
+        link &&
+        link.href &&
+        !link.href.startsWith("javascript:") &&
+        !link.hasAttribute("download")
+      ) {
+        // Check if it's an external link or same-origin navigation
+        const url = new URL(link.href, window.location.origin);
+        if (url.origin === window.location.origin) {
+          showLoading();
+        }
+      }
+    });
 
     // Hide loading when page is fully loaded
     window.addEventListener("load", () => {
