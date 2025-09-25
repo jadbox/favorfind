@@ -8,16 +8,16 @@ WORKDIR /app
 COPY package.json bun.lock ./
 
 # Install dependencies
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN bun run build
+# RUN bun run build
 
 # Expose the port the app runs on
 EXPOSE 4321
 
 # Start the application
-CMD ["bun", "run", "start"]
+CMD ["bun", "run", "dev"]
