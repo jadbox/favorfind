@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "PORT=4321 && (lsof -ti:$PORT | xargs kill -9 2>/dev/null || true) && sleep 1 && bun --bun astro dev --port $PORT",
+    "dev": "fuser -k -n tcp 4322 2>/dev/null || true && sleep 0.2 && bun --bun astro dev --port 4322",
     "preview": "bun --bun astro preview",
     "start": "bun dist/server/entry.mjs",
     "build": "bun --bun astro build",

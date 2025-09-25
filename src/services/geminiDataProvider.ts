@@ -1,7 +1,13 @@
 import type { DataProvider } from "./dataProviderInterface";
 import type { SemanticScholarPaper } from "./semanticScholarMapper";
+import { GoogleGenAI, Type } from "@google/genai";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+
+if (!GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY environment variable is not set");
+}
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 export class GeminiDataProvider implements DataProvider {
   async fetchPapers(
@@ -15,15 +21,7 @@ export class GeminiDataProvider implements DataProvider {
       return [];
     }
 
-    if (!GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY environment variable is not set");
-    }
-
     try {
-      const { GoogleGenAI, Type } = await import("@google/genai");
-
-      const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
       // Define the grounding tool
       //   const groundingTool = {
       //     googleSearch: {},
@@ -35,7 +33,7 @@ export class GeminiDataProvider implements DataProvider {
         "filter:",
         filter_type
       );
-      const prompt = `Search only for the ${limit} most useful articles listed by PubMed about: "${q}". 
+      const prompt = `Search only for the ${limit} most useful open-access articles listed by PubMed about: "${q}". 
       ${
         filter_type
           ? `The search should be filtered by the following filter criteria: ${filter_type}.`

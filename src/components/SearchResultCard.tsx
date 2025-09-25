@@ -64,11 +64,11 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
         );
 
         // If we're on the library page and removing an article, refresh the page
-        if (!newSavedState && window.location.pathname === "/library") {
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
-        }
+        // if (!newSavedState && window.location.pathname === "/library") {
+        //   setTimeout(() => {
+        //     window.location.reload();
+        //   }, 1000);
+        // }
       } else {
         showToast("Failed to save article. Please try again.", "error");
       }
@@ -128,6 +128,24 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
     });
   };
 
+  const extractDomain = (url: string) => {
+    try {
+      const domain = new URL(url).hostname;
+
+      // if domain contains PUBMED, return PubMed
+      if (
+        domain.toLowerCase().includes("pubmed") ||
+        domain.toLowerCase().includes("ncbi")
+      ) {
+        return "PubMed";
+      }
+      // Remove 'www.' prefix if present
+      return domain.replace(/^www\./, "");
+    } catch {
+      return "Unknown";
+    }
+  };
+
   return (
     <div className="card bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="card-body p-6">
@@ -159,6 +177,10 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
           <span className="font-medium">{result.source}</span>
           <span>•</span>
           <span>{formatDate(result.publicationDate)}</span>
+          <span>•</span>
+          <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md font-medium">
+            {extractDomain(result.url)}
+          </span>
         </div>
 
         {/* Abstract */}
