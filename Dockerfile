@@ -13,11 +13,8 @@ RUN bun install
 # Copy source code
 COPY . .
 
-# Build the application
-# RUN bun run build
-
 # Expose the port the app runs on
 EXPOSE 4321
 
-# Start the application
-CMD ["bun", "run", "dev"]
+# Start the development server with host binding for container access
+CMD ["bun", "--bun", "astro", "dev", "--port", "4321", "--host", "0.0.0.0"]
