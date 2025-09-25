@@ -9,6 +9,7 @@ export interface SemanticScholarPaper {
   url: string;
   abstract: string;
   citationCount: number;
+  category: "article" | "trial" | "guideline";
 }
 
 export const mapToSearchResult = (
@@ -25,6 +26,6 @@ export const mapToSearchResult = (
     abstract: paper.abstract || "No abstract available.",
     citationCount: paper.citationCount || 0,
     url: paper.url,
-    type: "article",
+    category: paper.category || "article",
   };
 };

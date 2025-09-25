@@ -7,8 +7,7 @@ export interface SearchResult {
   abstract: string;
   citationCount: number;
   url: string;
-  type: "article" | "trial" | "guideline";
-  category?: string;
+  category: "article" | "trial" | "guideline";
 }
 
 export interface SearchHistory {

@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { fetchSearchResults } from "../../api/search";
+import { _fetchSearchResults as fetchSearchResults } from "../../api/search";
 import {
   readUserDataCookie,
   serializeUserDataCookie,

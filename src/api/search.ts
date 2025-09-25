@@ -17,8 +17,8 @@ import { SemanticScholarDataProvider } from "@/services/semanticScholarDataProvi
 import { GeminiDataProvider } from "@/services/geminiDataProvider";
 
 // Configuration constants
-const DEFAULT_SEARCH_LIMIT = parseInt(process.env.DEFAULT_SEARCH_LIMIT || "10");
-const MAX_SEARCH_LIMIT = parseInt(process.env.MAX_SEARCH_LIMIT || "20");
+const DEFAULT_SEARCH_LIMIT = 10;
+const MAX_SEARCH_LIMIT = 20;
 
 // Choose data provider based on environment variable
 const getDataProvider = (): DataProvider => {
@@ -38,10 +38,11 @@ const getProviderName = (): string => {
   return process.env.SEARCH_PROVIDER || "gemini";
 };
 
-export const fetchSearchResults = async (
+export const _fetchSearchResults = async (
   query: string,
   limit: number = DEFAULT_SEARCH_LIMIT,
   page: number = 1,
+  sortBy: string = "",
   filter_type: string = ""
 ): Promise<SearchResult[]> => {
   const q = query.trim();
@@ -97,7 +98,7 @@ export const handleSearch = async (request: Request): Promise<Response> => {
   const sortBy = (formData.get("sortBy") as string) || "";
 
   try {
-    const results = await fetchSearchResults(query, limit, page, filter_type);
+    const results = await _fetchSearchResults(query, limit, page, filter_type);
     // Update user_data cookie with new search history entry
     const user = readUserDataCookie(request.headers.get("cookie"));
     const filters = {

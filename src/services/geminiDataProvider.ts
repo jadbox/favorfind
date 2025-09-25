@@ -33,7 +33,8 @@ export class GeminiDataProvider implements DataProvider {
         "filter:",
         filter_type
       );
-      const prompt = `This tool is for doctors to get the best useful information to understand and treat types of cancers. Results must be practical or useful insightful. Search only for the ${limit} most useful open-access articles listed by PubMed about: "${q}". 
+      const prompt = `This tool is for doctors to get the best useful information to understand and treat types of cancers. Results must be practical or useful insightful. 
+                      Search only for the ${limit} most useful open-access articles listed by PubMed about: "${q}". 
       ${
         filter_type
           ? `The search should be filtered by the following filter criteria: ${filter_type}.`
@@ -54,6 +55,10 @@ export class GeminiDataProvider implements DataProvider {
             items: {
               type: Type.OBJECT,
               properties: {
+                category: {
+                  type: Type.STRING,
+                  enum: ["article", "trial", "guideline"],
+                },
                 paperId: {
                   type: Type.STRING,
                 },
@@ -106,6 +111,7 @@ export class GeminiDataProvider implements DataProvider {
         paperId: paper.paperId || `gemini-${Date.now()}-${index}`,
         source: "Gemini",
         title: paper.title || "Untitled",
+        category: paper.category || "article",
         // authors: [], // Array.isArray(paper.authors) ? paper.authors : [],
         year:
           typeof paper.year === "number"

@@ -1,5 +1,7 @@
+// CANNOT USE /api/ logic here in the frontend
 import type { SearchResult } from "../types";
-import { fetchSearchResults } from "../api/search";
+import { _fetchSearchResults as fetchSearchResults } from "../api/search";
+// import { searchPapers } from "@/services/searchService";
 import {
   readUserDataCookie,
   addToHistory,
@@ -40,7 +42,7 @@ export function buildFilterParams(params: SearchParams): string {
     params.primaryTumorSite !== "All" && params.primaryTumorSite,
     params.ageGroup !== "All" && params.ageGroup,
     params.gender !== "All" && params.gender,
-    params.sortBy !== "relevance" && `sort:${params.sortBy}`,
+    params.sortBy !== "relevance" && `${params.sortBy}`,
   ]
     .filter(Boolean)
     .join(",");
@@ -65,6 +67,7 @@ export async function performSearch(
       params.query,
       params.limit,
       1,
+      params.sortBy,
       filterParams
     );
 

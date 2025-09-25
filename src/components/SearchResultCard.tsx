@@ -152,14 +152,10 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
         {/* Header with badges */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center space-x-2">
-            <span className={`badge badge-sm ${getTypeColor(result.type)}`}>
-              {result.type.charAt(0).toUpperCase() + result.type.slice(1)}
+            <span className={`badge badge-sm ${getTypeColor(result.category)}`}>
+              {result.category.charAt(0).toUpperCase() +
+                result.category.slice(1)}
             </span>
-            {result.category && (
-              <span className="badge badge-outline badge-sm">
-                {result.category}
-              </span>
-            )}
           </div>
           <div className="flex items-center space-x-1 text-sm text-gray-500">
             <Citation className="h-4 w-4" />
