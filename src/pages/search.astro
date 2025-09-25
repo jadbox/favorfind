@@ -1,0 +1,557 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SearchBar from "../components/SearchBar";
+import SearchResultsFilters from "../components/SearchResultsFilters";
+import { ArrowLeft } from "lucide-react";
+import type { SearchResult, SearchHistory } from "../types";
+import { fetchSearchResults } from "../api/search";
+import {
+  readUserDataCookie,
+  addToHistory,
+  serializeUserDataCookie,
+} from "../CookieUserData";
+
+// Get query parameter from URL
+const url = new URL(Astro.request.url);
+const query = url.searchParams.get("q")?.trim() || "";
+const selectedType =
+  url.searchParams.get("filter_type") || "Guidelines (Default)";
+const primaryTumorSite = url.searchParams.get("primaryTumorSite") || "All";
+const ageGroup = url.searchParams.get("ageGroup") || "All";
+const gender = url.searchParams.get("gender") || "All";
+const sortBy = url.searchParams.get("sortBy") || "relevance";
+
+// Fetch search results if query exists
+let results: SearchResult[] = [];
+let error: string | null = null;
+const limit = parseInt(url.searchParams.get("limit") || "0");
+
+const filterParams = [
+  selectedType !== "Guidelines (Default)" && selectedType,
+  primaryTumorSite !== "All" && primaryTumorSite,
+  ageGroup !== "All" && ageGroup,
+  gender !== "All" && gender,
+  sortBy !== "relevance" && `sort:${sortBy}`,
+]
+  .filter(Boolean)
+  .join(",");
+
+if (query) {
+  try {
+    console.log(
+      "Server-side search for:",
+      query,
+      "limit:",
+      limit,
+      "filters:",
+      filterParams
+    );
+    results = await fetchSearchResults(query, limit, 1, filterParams);
+    console.log("Server-side results:", results.length);
+
+    // Save search to history in cookies
+    const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
+    const filters = {
+      selectedType:
+        selectedType !== "Guidelines (Default)" ? selectedType : undefined,
+      primaryTumorSite:
+        primaryTumorSite !== "All" ? primaryTumorSite : undefined,
+      ageGroup: ageGroup !== "All" ? ageGroup : undefined,
+      gender: gender !== "All" ? gender : undefined,
+      sortBy: sortBy !== "relevance" ? sortBy : undefined,
+    };
+    const updatedHistory = addToHistory(
+      userData.searchHistory,
+      query,
+      results.length,
+      filters
+    );
+    const updatedUserData = { ...userData, searchHistory: updatedHistory };
+    const setCookie = serializeUserDataCookie(updatedUserData);
+    Astro.response.headers.set("Set-Cookie", setCookie);
+  } catch (err) {
+    console.error("Search error:", err);
+    error = err instanceof Error ? err.message : "Search failed";
+  }
+}
+
+// Check which results are saved
+let savedStatus: Record<string, boolean> = {};
+if (results.length > 0) {
+  try {
+    const response = await fetch(`${Astro.url.origin}/api/library/check`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: Astro.request.headers.get("cookie") || "",
+      },
+      body: JSON.stringify({ ids: results.map((r) => r.id) }),
+    });
+    if (response.ok) {
+      savedStatus = await response.json();
+    }
+  } catch (error) {
+    console.error("Failed to check saved status:", error);
+  }
+}
+
+// For now, we'll use empty data for other fields
+const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
+const searchHistory: SearchHistory[] = userData.searchHistory;
+
+const title = query ? `Results for "${query}"` : "Search";
+---
+
+<BaseLayout title={title} searchHistory={searchHistory}>
+  <div class="flex-1 p-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="mb-6">
+        <a
+          href="/"
+          class="btn btn-sm btn-ghost text-gray-600 hover:text-gray-900 mr-4 inline-flex items-center"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </a>
+        <div class="flex-1 mt-4">
+          <SearchBar query={query} />
+        </div>
+      </div>
+
+      {
+        query && (
+          <div class="mb-6">
+            <SearchResultsFilters
+              selectedType={selectedType}
+              primaryTumorSite={primaryTumorSite}
+              ageGroup={ageGroup}
+              gender={gender}
+              sortBy={sortBy as any}
+              client:only="react"
+            />
+          </div>
+        )
+      }
+
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-900">
+          {query ? `Search Results for "${query}"` : "Search"}
+        </h2>
+        <div class="text-sm text-gray-600">
+          {results.length} results
+        </div>
+      </div>
+
+      {
+        error && (
+          <div class="alert alert-error mb-4">
+            <span>{error}</span>
+          </div>
+        )
+      }
+
+      {/* Loading overlay */}
+      <div
+        id="loading-overlay"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-200"
+      >
+        <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
+          <div
+            class="animate-spin rounded-full h-8 w-8 border-b-2 border-medical-600"
+          >
+          </div>
+          <span class="text-gray-700">Loading...</span>
+        </div>
+      </div>
+
+      {
+        query ? (
+          <div class="grid gap-6">
+            {results.length === 0 ? (
+              <div class="text-center py-12 text-gray-500">
+                No results found
+              </div>
+            ) : (
+              results.map((result) => (
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                  <div class="flex justify-between items-start mb-3">
+                    <h3 class="text-lg font-semibold text-gray-900 leading-tight">
+                      <a
+                        href={result.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="hover:text-medical-600"
+                      >
+                        {result.title}
+                      </a>
+                    </h3>
+                  </div>
+
+                  <div class="text-sm text-gray-600 mb-3">
+                    {result.publisher} • {result.publicationDate} •{" "}
+                    {result.citationCount} citations
+                  </div>
+
+                  <p class="text-gray-700 text-sm leading-relaxed mb-4">
+                    {result.abstract}
+                  </p>
+
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-medical-100 text-medical-800">
+                        {result.type}
+                      </span>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                      <a
+                        href={result.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-medical-600 hover:text-medical-700 text-sm font-medium"
+                      >
+                        View Article →
+                      </a>
+                      <button
+                        class={`save-btn btn btn-sm rounded-md ${
+                          savedStatus[result.id]
+                            ? "border border-teal-600 bg-white text-teal-600 hover:bg-teal-50"
+                            : "bg-teal-100 text-teal-800 hover:bg-teal-200"
+                        }`}
+                        data-id={result.id}
+                        data-saved={savedStatus[result.id] ? "true" : "false"}
+                        data-title={result.title}
+                        data-source={result.source}
+                        data-publisher={result.publisher}
+                        data-publication-date={result.publicationDate}
+                        data-abstract={result.abstract}
+                        data-citation-count={result.citationCount}
+                        data-url={result.url}
+                        data-type={result.type}
+                        data-category={result.category || ""}
+                      >
+                        <div class="flex items-center space-x-2">
+                          <span>
+                            {savedStatus[result.id] ? "Saved" : "Save"}
+                          </span>
+                          <svg
+                            class={`h-4 w-4 ${savedStatus[result.id] ? "fill-current" : ""}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
+                            />
+                          </svg>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div class="text-center py-12 text-gray-500">
+            Enter a search query to get started
+          </div>
+        )
+      }
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // localStorage utilities
+  const STORAGE_KEY = "medeligo-user-data";
+
+  function hasLocalStorage() {
+    return typeof window !== "undefined" && typeof localStorage !== "undefined";
+  }
+
+  function getStoredUserData() {
+    if (!hasLocalStorage()) return { searchHistory: [] };
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      if (data) {
+        return JSON.parse(data);
+      }
+    } catch (error) {
+      console.error("Error reading from localStorage:", error);
+    }
+    return { searchHistory: [] };
+  }
+
+  function saveUserData(data: any) {
+    if (!hasLocalStorage()) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (error) {
+      console.error("Error saving to localStorage:", error);
+    }
+  }
+
+  function addSearchToHistory(
+    query: string,
+    resultsCount: number,
+    filters?: any
+  ) {
+    if (!hasLocalStorage()) return;
+    const userData = getStoredUserData();
+
+    // Remove any existing search with the same query (case-insensitive)
+    userData.searchHistory = userData.searchHistory.filter(
+      (item: any) => item.query.toLowerCase() !== query.toLowerCase()
+    );
+
+    const newSearch = {
+      id: Date.now().toString(),
+      query,
+      timestamp: new Date().toISOString(),
+      resultsCount,
+      filters,
+    };
+
+    // Add to beginning of array and limit to 20 items
+    userData.searchHistory = [
+      newSearch,
+      ...userData.searchHistory.slice(0, 19),
+    ];
+    saveUserData(userData);
+  }
+
+  // Show loading overlay when forms are submitted or filters are updated
+  function showLoading() {
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) {
+      overlay.classList.remove("opacity-0", "pointer-events-none");
+      overlay.classList.add("opacity-100", "pointer-events-auto");
+    }
+  }
+
+  // Hide loading overlay
+  function hideLoading() {
+    const overlay = document.getElementById("loading-overlay");
+    if (overlay) {
+      overlay.classList.remove("opacity-100", "pointer-events-auto");
+      overlay.classList.add("opacity-0", "pointer-events-none");
+    }
+  }
+
+  // Save search to history if we have results
+  function saveSearchToHistory() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const query = urlParams.get("q");
+    const resultsText =
+      document.querySelector(".text-sm.text-gray-600")?.textContent || "";
+    const resultsMatch = resultsText.match(/(\d+) results/);
+    const resultsCount = resultsMatch ? parseInt(resultsMatch[1]!) : 0;
+
+    if (query && resultsCount > 0) {
+      const filters: any = {
+        selectedType: urlParams.get("filter_type") || undefined,
+        primaryTumorSite: urlParams.get("primaryTumorSite") || undefined,
+        ageGroup: urlParams.get("ageGroup") || undefined,
+        gender: urlParams.get("gender") || undefined,
+        sortBy: urlParams.get("sortBy") || undefined,
+      };
+
+      // Only include defined filters
+      const cleanFilters: any = {};
+      Object.keys(filters).forEach((key: string) => {
+        if (filters[key]) cleanFilters[key] = filters[key];
+      });
+
+      addSearchToHistory(
+        query,
+        resultsCount,
+        Object.keys(cleanFilters).length > 0 ? cleanFilters : undefined
+      );
+    }
+  }
+
+  // Add loading to search form submission
+  document.addEventListener("DOMContentLoaded", () => {
+    const searchForm = document.querySelector('form[action="/search"]');
+    if (searchForm) {
+      searchForm.addEventListener("submit", showLoading);
+    }
+
+    // Listen for filter updates (when URL changes)
+    let currentUrl = window.location.href;
+    const observer = new MutationObserver(() => {
+      if (window.location.href !== currentUrl) {
+        currentUrl = window.location.href;
+        showLoading();
+      }
+    });
+
+    // Observe changes to the body or a specific element
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Also listen for popstate events (back/forward navigation)
+    window.addEventListener("popstate", showLoading);
+
+    // Hide loading when page is fully loaded
+    window.addEventListener("load", () => {
+      hideLoading();
+      saveSearchToHistory();
+      initializeSaveButtons();
+    });
+  });
+
+  // Initialize save button functionality
+  function initializeSaveButtons() {
+    const saveButtons = document.querySelectorAll(".save-btn");
+    saveButtons.forEach((button) => {
+      button.addEventListener("click", handleSaveToggle);
+    });
+  }
+
+  // Show toast notification
+  function showToast(message: string, type: "success" | "error" = "success") {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll(".toast-notification");
+    existingToasts.forEach((toast) => toast.remove());
+
+    // Create new toast
+    const toast = document.createElement("div");
+    toast.className = `toast-notification fixed top-4 right-4 z-50 px-4 py-2 rounded-md shadow-lg text-white text-sm font-medium ${
+      type === "success" ? "bg-green-500" : "bg-red-500"
+    }`;
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.remove();
+      }
+    }, 3000);
+  }
+
+  // Handle save/unsave toggle
+  async function handleSaveToggle(event: Event) {
+    event.preventDefault();
+    const button = event.target as HTMLElement;
+    const btn = button.closest(".save-btn") as HTMLButtonElement;
+    if (!btn) return;
+
+    // Prevent double-clicks
+    if (btn.disabled) return;
+
+    const isSaved = btn.dataset.saved === "true";
+    const originalText = btn.querySelector("span")?.textContent || "";
+    const originalClasses = btn.className;
+
+    // Set loading state
+    btn.disabled = true;
+    const span = btn.querySelector("span");
+    const svg = btn.querySelector("svg");
+    if (span) span.textContent = "Saving...";
+    if (svg) {
+      svg.innerHTML =
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>';
+      svg.setAttribute("class", "h-4 w-4 animate-spin");
+    }
+    btn.className =
+      "save-btn btn btn-sm rounded-md bg-gray-100 text-gray-500 cursor-not-allowed";
+
+    const articleData = {
+      id: btn.dataset.id!,
+      title: btn.dataset.title!,
+      source: btn.dataset.source!,
+      publisher: btn.dataset.publisher!,
+      publicationDate: btn.dataset.publicationDate!,
+      abstract: btn.dataset.abstract!,
+      citationCount: parseInt(btn.dataset.citationCount!),
+      url: btn.dataset.url!,
+      type: btn.dataset.type!,
+      category: btn.dataset.category || undefined,
+    };
+
+    try {
+      const formData = new FormData();
+      formData.append("action", isSaved ? "remove" : "save");
+      formData.append("id", articleData.id);
+      formData.append("title", articleData.title);
+      formData.append("source", articleData.source);
+      formData.append("publisher", articleData.publisher);
+      formData.append("publicationDate", articleData.publicationDate);
+      formData.append("abstract", articleData.abstract);
+      formData.append("citationCount", articleData.citationCount.toString());
+      formData.append("url", articleData.url);
+      formData.append("type", articleData.type);
+      if (articleData.category) {
+        formData.append("category", articleData.category);
+      }
+
+      const response = await fetch("/api/library/toggle", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        // Success - update button state
+        const newSavedState = !isSaved;
+        btn.dataset.saved = newSavedState.toString();
+        btn.className = `save-btn btn btn-sm rounded-md ${
+          newSavedState
+            ? "border border-teal-600 bg-white text-teal-600 hover:bg-teal-50"
+            : "bg-teal-100 text-teal-800 hover:bg-teal-200"
+        }`;
+        if (span) span.textContent = newSavedState ? "Saved" : "Save";
+        if (svg) {
+          svg.innerHTML =
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>';
+          svg.setAttribute(
+            "class",
+            `h-4 w-4 ${newSavedState ? "fill-current" : ""}`
+          );
+        }
+
+        // Show brief success feedback
+        showToast(
+          newSavedState
+            ? "Article saved to library!"
+            : "Article removed from library",
+          "success"
+        );
+      } else {
+        // Error - revert to original state
+        btn.className = originalClasses;
+        if (span) span.textContent = originalText;
+        if (svg) {
+          svg.innerHTML =
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>';
+          svg.setAttribute("class", `h-4 w-4 ${isSaved ? "fill-current" : ""}`);
+        }
+        showToast("Failed to save article. Please try again.", "error");
+      }
+    } catch (error) {
+      // Network error - revert to original state
+      btn.className = originalClasses;
+      if (span) span.textContent = originalText;
+      if (svg) {
+        svg.innerHTML =
+          '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>';
+        svg.setAttribute("class", `h-4 w-4 ${isSaved ? "fill-current" : ""}`);
+      }
+      showToast(
+        "Network error. Please check your connection and try again.",
+        "error"
+      );
+      console.error("Error toggling save status:", error);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+</script>

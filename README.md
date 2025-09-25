@@ -7,7 +7,7 @@ An advanced knowledge discovery platform designed for oncology professionals to 
 Create a `.env` file in the root directory with the following variables:
 
 ```
-VITE_SEMANTIC_SCHOLAR_API=your_api_key_here
+SEMANTIC_SCHOLAR_API=your_api_key_here
 ```
 
 ### Semantic Scholar API
@@ -28,8 +28,8 @@ npm run dev
 
 ## Features
 
-- Unified search interface for medical literature
-- Real-time search results from Semantic Scholar
+- Unified search interface for cancer medical literature
+- Real-time search results (powered by Semantic Scholar and other APIs)
 - Search history persistence (localStorage)
 - Personal library for saving articles
 - Professional medical interface design
