@@ -29,10 +29,11 @@ export const POST: APIRoute = async ({ request }) => {
         abstract: String(form.get("abstract") || ""),
         citationCount: Number(form.get("citationCount") || 0),
         url: String(form.get("url") || ""),
-        type: String(form.get("type") || "article") as any,
-        category: form.get("category")
-          ? String(form.get("category"))
-          : undefined,
+        // type: String(form.get("type") || "article") as any,
+        category: String(form.get("category")) as
+          | "article"
+          | "trial"
+          | "guideline",
       };
       updated = upsertSaved(updated, item);
     }

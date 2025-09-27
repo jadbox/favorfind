@@ -37,7 +37,9 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
       formData.append("abstract", result.abstract);
       formData.append("citationCount", result.citationCount.toString());
       formData.append("url", result.url);
-      formData.append("type", result.type);
+      formData.append("category", result.category);
+      // formData.append("type", result.type);
+
       if (result.category) {
         formData.append("category", result.category);
       }

@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite";
 import type { SearchResult } from "../types";
 
 const DB_PATH = "db.sqlite";
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const CACHE_TTL_MS = 5 * 1000; // 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 const db = new Database(DB_PATH);
 
