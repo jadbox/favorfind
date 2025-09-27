@@ -1,13 +1,17 @@
+import Perplexity from "@perplexity-ai/perplexity_ai";
 import type { DataProvider } from "./dataProviderInterface";
 import type { SemanticScholarPaper } from "./semanticScholarMapper";
 
-const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
-
-if (!PERPLEXITY_API_KEY) {
-  throw new Error("PERPLEXITY_API_KEY environment variable is not set");
-}
+// The Perplexity SDK reads the API key from the PERPLEXITY_API_KEY environment variable.
+// No need to check for it manually if the SDK handles it.
 
 export class PerplexityDataProvider implements DataProvider {
+  private client: Perplexity;
+
+  constructor() {
+    this.client = new Perplexity();
+  }
+
   async fetchPapers(
     query: string,
     limit: number,
@@ -20,122 +24,117 @@ export class PerplexityDataProvider implements DataProvider {
     }
 
     try {
-      console.log(
-        "Using PerplexityDataProvider with query:",
-        q,
-        "filter:",
-        filter_type
-      );
+      // console.log(
+      //   "Using PerplexityDataProvider with query:",
+      //   q,
+      //   "filter:",
+      //   filter_type
+      // );
 
       const systemMessage = `You are a research assistant specializing in medical literature. You help doctors find the most useful and practical open-access articles from PubMed about cancer research and treatment.`;
 
-      limit = 10; // override
-      const userMessage = `Search for exactly ${limit} most relevant open-access articles listed by PubMed that matches this search:
-      <SEARCH>
+      const effectiveLimit = 10; // Perplexity has a hard limit for this feature
+
+      const userMessage = `Search for exactly ${effectiveLimit} top relevant medical articles listed that matches:
+      <SEARCH_TERM>
         ${q}
-      </SEARCH>
+      </SEARCH_TERM>
       ${
         filter_type
-          ? `The search should also have the following criteria: ${filter_type}.`
+          ? `Extra search criterias: <PARAMS>${filter_type}</PARAMS>.`
           : ""
       }
 
-      Focus on practical, useful insights for cancer treatment and identification.`;
+      Focus on practical, useful insights for cancer treatment and identification.
+      No preamble. No duplicate articles.`;
 
-      const response = await fetch(
-        "https://api.perplexity.ai/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${PERPLEXITY_API_KEY}`,
-            "Content-Type": "application/json",
+      console.log("::Generated prompt::");
+      console.log(userMessage);
+
+      const completion = await this.client.chat.completions.create({
+        model: "sonar-pro",
+        messages: [
+          {
+            role: "system",
+            content: systemMessage,
           },
-          body: JSON.stringify({
-            model: "sonar-pro",
-            messages: [
-              {
-                role: "system",
-                content: systemMessage,
-              },
-              {
-                role: "user",
-                content: userMessage,
-              },
-            ],
-            maxResults: 10,
-            search_mode: "academic",
-            temperature: 0.1,
-            max_tokens: 4000,
-            response_format: {
-              type: "json_schema",
-              json_schema: {
-                schema: {
-                  type: "object",
-                  properties: {
-                    papers: {
-                      type: "array",
-                      items: {
-                        type: "object",
-                        properties: {
-                          category: {
-                            type: "string",
-                            enum: ["article", "trial", "guideline"],
-                          },
-                          paperId: {
-                            type: "string",
-                          },
-                          title: {
-                            type: "string",
-                          },
-                          year: {
-                            type: "integer",
-                          },
-                          url: {
-                            type: "string",
-                          },
-                          abstract: {
-                            type: "string",
-                          },
-                          citationCount: {
-                            type: "integer",
-                          },
-                        },
-                        required: [
-                          "paperId",
-                          "title",
-                          "year",
-                          "url",
-                          "abstract",
-                          "citationCount",
-                        ],
+          {
+            role: "user",
+            content: userMessage,
+          },
+        ],
+        // temperature: 0.4,
+        max_tokens: 6000,
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            schema: {
+              type: "object",
+              properties: {
+                papers: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      category: {
+                        type: "string",
+                        enum: ["article", "trial", "guideline"],
+                      },
+                      paperId: {
+                        type: "string",
+                      },
+                      paper_title: {
+                        type: "string",
+                      },
+                      publish_date: {
+                        type: "integer",
+                      },
+                      url: {
+                        type: "string",
+                      },
+                      abstract: {
+                        type: "string",
+                      },
+                      citationCount: {
+                        type: "integer",
                       },
                     },
+                    required: [
+                      "paperId",
+                      "title",
+                      "year",
+                      "url",
+                      "abstract",
+                      "citationCount",
+                    ],
                   },
-                  required: ["papers"],
                 },
               },
+              required: ["papers"],
             },
-          }),
-        }
-      );
+          },
+        },
+        search_domain_filter: ["pubmed.ncbi.nlm.nih.gov", "nih.gov"],
+        num_search_results: effectiveLimit,
+      });
 
-      if (!response.ok) {
-        throw new Error(
-          `Perplexity API error: ${response.status} ${response.statusText}`
-        );
-      }
+      const content = completion.choices?.[0]?.message?.content;
 
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content;
-
-      if (!content) {
-        throw new Error("No content received from Perplexity API");
+      if (typeof content !== "string") {
+        throw new Error("No string content received from Perplexity API");
       }
 
       console.log("Perplexity response content:", content);
 
       const parsedResponse = JSON.parse(content.trim());
+
       const papers: SemanticScholarPaper[] = parsedResponse.papers || [];
+      papers.forEach((element) => {
+        element.title = (element as any).paper_title;
+      });
+      papers.forEach((element) => {
+        element.year = (element as any).publish_date;
+      });
 
       // Validate and clean the data
       return papers.map((paper, index) => ({
@@ -144,10 +143,7 @@ export class PerplexityDataProvider implements DataProvider {
         title: paper.title || "Untitled",
         category: paper.category || "article",
         // authors: [], // Array.isArray(paper.authors) ? paper.authors : [],
-        year:
-          typeof paper.year === "number"
-            ? paper.year
-            : new Date().getFullYear(),
+        year: paper.year,
         url: paper.url || "",
         abstract: paper.abstract || "No abstract available",
         citationCount:

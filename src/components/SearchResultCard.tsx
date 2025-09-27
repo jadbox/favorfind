@@ -123,11 +123,12 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    // return new Date(dateString).toLocaleDateString("en-US", {
+    //   year: "numeric",
+    //   month: "short",
+    //   day: "numeric",
+    // });
+    return dateString;
   };
 
   const extractDomain = (url: string) => {
@@ -167,7 +168,9 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
 
         {/* Title */}
         <h3 className="card-title text-lg font-semibold text-gray-900 mb-2 leading-tight">
-          {result.title}
+          <a href={result.url} target="_blank" rel="noopener noreferrer">
+            {result.title}
+          </a>
         </h3>
 
         {/* Source and Date */}
