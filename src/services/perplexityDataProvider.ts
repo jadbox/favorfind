@@ -159,6 +159,7 @@ export function extractSummary(snippet: string): string {
 
   // 1. Prioritized Keyword Search
   const summaryMarkers = [
+    "# ",
     "**Conclusions:**",
     "## Abstract",
     "**Summary**",
@@ -168,7 +169,13 @@ export function extractSummary(snippet: string): string {
   for (const marker of summaryMarkers) {
     const markerIndex = snippet.indexOf(marker);
     if (markerIndex !== -1) {
+      if (marker === "# " && markerIndex > 0) continue; // only accept # at start of snippet
+
       let summaryText = snippet.substring(markerIndex + marker.length).trim();
+
+      // if summaryTexts starts with a number, skip
+      if (/^\d/.test(summaryText)) continue;
+
       const nextSectionIndex = summaryText.indexOf("\n## ");
       if (nextSectionIndex !== -1) {
         summaryText = summaryText.substring(0, nextSectionIndex).trim();
@@ -180,6 +187,8 @@ export function extractSummary(snippet: string): string {
   // 2. First Meaningful Paragraph Fallback
   const paragraphs = snippet.split("\n\n");
   for (const paragraph of paragraphs) {
+    if (/^\d/.test(paragraph)) continue;
+
     const cleaned = cleanText(paragraph);
     if (cleaned.length > 200) {
       // Heuristic for a "meaningful" paragraph
