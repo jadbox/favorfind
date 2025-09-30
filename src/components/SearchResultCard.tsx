@@ -37,7 +37,9 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
       formData.append("abstract", result.abstract);
       formData.append("citationCount", result.citationCount.toString());
       formData.append("url", result.url);
-      formData.append("type", result.type);
+      formData.append("category", result.category);
+      // formData.append("type", result.type);
+
       if (result.category) {
         formData.append("category", result.category);
       }
@@ -121,11 +123,12 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    // return new Date(dateString).toLocaleDateString("en-US", {
+    //   year: "numeric",
+    //   month: "short",
+    //   day: "numeric",
+    // });
+    return dateString;
   };
 
   const extractDomain = (url: string) => {
@@ -157,15 +160,17 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
                 result.category.slice(1)}
             </span>
           </div>
-          <div className="flex items-center space-x-1 text-sm text-gray-500">
+          {/* <div className="flex items-center space-x-1 text-sm text-gray-500">
             <Citation className="h-4 w-4" />
             <span>{result.citationCount}</span>
-          </div>
+          </div> */}
         </div>
 
         {/* Title */}
         <h3 className="card-title text-lg font-semibold text-gray-900 mb-2 leading-tight">
-          {result.title}
+          <a href={result.url} target="_blank" rel="noopener noreferrer">
+            {result.title}
+          </a>
         </h3>
 
         {/* Source and Date */}

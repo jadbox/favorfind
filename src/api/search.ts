@@ -15,18 +15,21 @@ import { mapToSearchResult } from "@/services/semanticScholarMapper";
 import type { DataProvider } from "@/services/dataProviderInterface";
 import { SemanticScholarDataProvider } from "@/services/semanticScholarDataProvider";
 import { GeminiDataProvider } from "@/services/geminiDataProvider";
+import { PerplexityDataProvider } from "@/services/perplexityDataProvider";
 
 // Configuration constants
-const DEFAULT_SEARCH_LIMIT = 12;
+const DEFAULT_SEARCH_LIMIT = 20;
 const MAX_SEARCH_LIMIT = 20;
 
 // Choose data provider based on environment variable
 const getDataProvider = (): DataProvider => {
-  const provider = process.env.SEARCH_PROVIDER || "gemini";
+  const provider = process.env.SEARCH_PROVIDER || "perplexity" || "gemini";
 
   switch (provider) {
     case "gemini":
       return new GeminiDataProvider();
+    case "perplexity":
+      return new PerplexityDataProvider();
     case "semantic-scholar":
     default:
       return new SemanticScholarDataProvider();
