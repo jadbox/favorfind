@@ -18,7 +18,7 @@ import { GeminiDataProvider } from "@/services/geminiDataProvider";
 import { PerplexityDataProvider } from "@/services/perplexityDataProvider";
 
 // Configuration constants
-const DEFAULT_SEARCH_LIMIT = 12;
+const DEFAULT_SEARCH_LIMIT = 20;
 const MAX_SEARCH_LIMIT = 20;
 
 // Choose data provider based on environment variable

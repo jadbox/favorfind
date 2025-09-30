@@ -24,131 +24,62 @@ export class PerplexityDataProvider implements DataProvider {
     }
 
     try {
-      // console.log(
-      //   "Using PerplexityDataProvider with query:",
-      //   q,
-      //   "filter:",
-      //   filter_type
-      // );
+      // Build the search query with domain filtering
+      let searchQuery = `${q} article, guideline, or trial study most helpful to clinicians. Must be a cancer treatment, trial report, and cancer research. site:fda.gov site:clinicaltrials.gov site:pubmed.ncbi.nlm.nih.gov site:nih.gov site:cancer.gov`;
 
-      const systemMessage = `You are a research assistant specializing in medical literature. You help doctors find the most useful and practical open-access articles from PubMed about cancer research and treatment.`;
-
-      const effectiveLimit = 10; // Perplexity has a hard limit for this feature
-
-      const userMessage = `Search for exactly ${effectiveLimit} top relevant medical articles listed that matches:
-      <SEARCH_TERM>
-        ${q}
-      </SEARCH_TERM>
-      ${
-        filter_type
-          ? `Extra search criterias: <PARAMS>${filter_type}</PARAMS>.`
-          : ""
+      // Add filter type if provided
+      if (filter_type) {
+        searchQuery += ` ${filter_type}`;
       }
 
-      Focus on practical, useful insights for cancer treatment and identification.
-      No preamble. No duplicate articles.`;
+      // Add domain filtering to restrict to PubMed and NIH sites
+      searchQuery += ` (site:pubmed.ncbi.nlm.nih.gov OR site:nih.gov)`;
 
-      console.log("::Generated prompt::");
-      console.log(userMessage);
+      console.log("::Perplexity Search Query::");
+      console.log(searchQuery);
 
-      const completion = await this.client.chat.completions.create({
-        model: "sonar-pro",
-        messages: [
-          {
-            role: "system",
-            content: systemMessage,
-          },
-          {
-            role: "user",
-            content: userMessage,
-          },
-        ],
-        // temperature: 0.4,
-        max_tokens: 6000,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            schema: {
-              type: "object",
-              properties: {
-                papers: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      category: {
-                        type: "string",
-                        enum: ["article", "trial", "guideline"],
-                      },
-                      paperId: {
-                        type: "string",
-                      },
-                      paper_title: {
-                        type: "string",
-                      },
-                      publish_date: {
-                        type: "integer",
-                      },
-                      url: {
-                        type: "string",
-                      },
-                      abstract: {
-                        type: "string",
-                      },
-                      citationCount: {
-                        type: "integer",
-                      },
-                    },
-                    required: [
-                      "paperId",
-                      "title",
-                      "year",
-                      "url",
-                      "abstract",
-                      "citationCount",
-                    ],
-                  },
-                },
-              },
-              required: ["papers"],
-            },
-          },
-        },
-        search_domain_filter: ["pubmed.ncbi.nlm.nih.gov", "nih.gov"],
-        num_search_results: effectiveLimit,
+      // Use the Search API for direct web search results
+      const effectiveLimit = Math.min(limit, 20); // Search API max is 20
+
+      const searchResponse = await this.client.search.create({
+        query: searchQuery,
+        max_results: effectiveLimit,
+        max_tokens_per_page: 1024, // Balanced extraction for abstracts 1024
       });
 
-      const content = completion.choices?.[0]?.message?.content;
+      // console.log("Perplexity search response:", searchResponse);
 
-      if (typeof content !== "string") {
-        throw new Error("No string content received from Perplexity API");
-      }
+      // Map search results to SemanticScholarPaper format
+      const papers: SemanticScholarPaper[] = (searchResponse.results || []).map(
+        (result, index) => {
+          // Extract year from date if available
+          let year: number | undefined;
+          if (result.date) {
+            const yearMatch = result.date.match(/\d{4}/);
+            if (yearMatch) {
+              year = parseInt(yearMatch[0], 10);
+            }
+          }
 
-      console.log("Perplexity response content:", content);
+          // search for most common word in title and snippet that matches "article", "trial", "guideline"
+          const category = getMostCommonCategory(
+            result.title + ": " + result.snippet
+          );
 
-      const parsedResponse = JSON.parse(content.trim());
+          return {
+            paperId: `perplexity-${Date.now()}-${index}`,
+            source: "Perplexity",
+            title: result.title || "Untitled",
+            category, // Default category since search API doesn't provide this
+            year: year || new Date().getFullYear(), // Default to current year if not available
+            url: result.url || "",
+            abstract: result.snippet || "No abstract available",
+            citationCount: 0, // Search API doesn't provide citation counts
+          };
+        }
+      );
 
-      const papers: SemanticScholarPaper[] = parsedResponse.papers || [];
-      papers.forEach((element) => {
-        element.title = (element as any).paper_title;
-      });
-      papers.forEach((element) => {
-        element.year = (element as any).publish_date;
-      });
-
-      // Validate and clean the data
-      return papers.map((paper, index) => ({
-        paperId: paper.paperId || `perplexity-${Date.now()}-${index}`,
-        source: "Perplexity",
-        title: paper.title || "Untitled",
-        category: paper.category || "article",
-        // authors: [], // Array.isArray(paper.authors) ? paper.authors : [],
-        year: paper.year,
-        url: paper.url || "",
-        abstract: paper.abstract || "No abstract available",
-        citationCount:
-          typeof paper.citationCount === "number" ? paper.citationCount : 0,
-      }));
+      return papers;
     } catch (error) {
       console.error("Perplexity API error:", error);
       throw new Error(
@@ -158,4 +89,39 @@ export class PerplexityDataProvider implements DataProvider {
       );
     }
   }
+}
+
+function getMostCommonCategory(
+  text: string
+): "article" | "trial" | "guideline" {
+  const categories: Array<"article" | "trial" | "guideline"> = [
+    "article",
+    "trial",
+    "guideline",
+  ];
+  const textLower = text.toLowerCase();
+  const counts: Record<"article" | "trial" | "guideline", number> = {
+    article: 0,
+    trial: 0,
+    guideline: 0,
+  };
+
+  categories.forEach((category) => {
+    const regex = new RegExp(`\\b${category}\\b`, "g");
+    const matches = textLower.match(regex);
+    counts[category] = matches ? matches.length : 0;
+  });
+
+  // Find the category with the highest count, fallback to "article" if all are zero
+  let maxCategory: "article" | "trial" | "guideline" = "article";
+  let maxCount = counts[maxCategory];
+
+  for (const category of categories) {
+    if (counts[category] > maxCount) {
+      maxCategory = category;
+      maxCount = counts[category];
+    }
+  }
+
+  return maxCount > 0 ? maxCategory : "article";
 }

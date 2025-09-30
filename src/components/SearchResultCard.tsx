@@ -160,10 +160,10 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
                 result.category.slice(1)}
             </span>
           </div>
-          <div className="flex items-center space-x-1 text-sm text-gray-500">
+          {/* <div className="flex items-center space-x-1 text-sm text-gray-500">
             <Citation className="h-4 w-4" />
             <span>{result.citationCount}</span>
-          </div>
+          </div> */}
         </div>
 
         {/* Title */}
