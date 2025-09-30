@@ -67,7 +67,6 @@ export async function performSearch(
       params.query,
       params.limit,
       1,
-      params.sortBy,
       filterParams
     );
 

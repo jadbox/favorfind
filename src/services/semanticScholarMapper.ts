@@ -5,7 +5,7 @@ export interface SemanticScholarPaper {
   source?: string;
   title: string;
   // authors: { name: string }[];
-  year: number;
+  year: string;
   url: string;
   abstract: string;
   citationCount: number;

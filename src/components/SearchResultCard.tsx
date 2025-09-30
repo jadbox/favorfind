@@ -1,9 +1,5 @@
 import React, { useState } from "react";
-import {
-  Bookmark,
-  BookmarkCheck,
-  Presentation as Citation,
-} from "lucide-react";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 import type { SearchResult } from "../types";
 
 interface SearchResultCardProps {

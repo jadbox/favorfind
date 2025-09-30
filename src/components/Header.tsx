@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart, BookOpen, User, Library } from "lucide-react";
+import { Heart, Library } from "lucide-react";
 
 const Header: React.FC = () => {
   return (

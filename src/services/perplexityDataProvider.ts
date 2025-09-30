@@ -25,12 +25,14 @@ export class PerplexityDataProvider implements DataProvider {
 
     try {
       // Build the search query with domain filtering
-      let searchQuery = `${q} top PubMed articles, guidelines, trial study for clinicians for cancer Treatment and Analysis. site:fda.gov site:clinicaltrials.gov site:pubmed.ncbi.nlm.nih.gov site:nih.gov -site:cancer.gov`;
+      let searchQuery = `${q} PubMed article for cancer clinicians.`; //  -site:cancer.gov
 
       // Add filter type if provided
       if (filter_type) {
-        searchQuery = `${filter_type} for ${searchQuery}`;
+        searchQuery += ` ${filter_type}`;
       }
+
+      searchQuery += ` (site:pubmed.ncbi.nlm.nih.gov OR site:nih.gov)`;
 
       // Add domain filtering to restrict to PubMed and NIH sites
       searchQuery += ` (site:pubmed.ncbi.nlm.nih.gov OR site:nih.gov)`;
@@ -47,33 +49,49 @@ export class PerplexityDataProvider implements DataProvider {
         max_tokens_per_page: 1024, // Balanced extraction for abstracts 1024
       });
 
-      // console.log("Perplexity search response:", searchResponse);
+      console.log("Perplexity search response:", searchResponse);
+
+      //filter results at a root domain without a page path
+      searchResponse.results = (searchResponse.results || []).filter(
+        (result) => {
+          const url = new URL(result.url || "");
+          return url.pathname.split("/").filter(Boolean).length > 0; // Ensure there's a path after the domain
+        }
+      );
 
       // Map search results to SemanticScholarPaper format
       const papers: SemanticScholarPaper[] = (searchResponse.results || []).map(
         (result, index) => {
           // Extract year from date if available
-          let year: number | undefined;
-          if (result.date) {
-            const yearMatch = result.date.match(/\d{4}/);
-            if (yearMatch) {
-              year = parseInt(yearMatch[0], 10);
-            }
-          }
+          let year: string = (result.date as string) || "";
+          // if (result.date) {
+          //   const yearMatch = result.date.match(/\d{4}/);
+          //   if (yearMatch) {
+          //     year = parseInt(yearMatch[0], 10);
+          //   }
+          // }
 
           // search for most common word in title and snippet that matches "article", "trial", "guideline"
           const category = getMostCommonCategory(
             result.title + ": " + result.snippet
           );
 
+          // result.snippet = result.snippet.split("^")[0] as string; // Remove any trailing "^ " and beyond
+
+          // if (result.snippet.includes("# ")) {
+          //   result.snippet = result.snippet.split("# ")[1] as string; // Remove any leading "# " if present
+          //   // cut anything after \n line break
+          //   result.snippet = result.snippet.split("\n")[0] as string;
+          // }
+
           return {
             paperId: `perplexity-${Date.now()}-${index}`,
             source: "Perplexity",
             title: result.title?.replace("www.", " ") || "Untitled",
             category, // Default category since search API doesn't provide this
-            year: year || new Date().getFullYear(), // Default to current year if not available
+            year: year, // Default to current year if not available
             url: result.url || "",
-            abstract: result.snippet || "No abstract available",
+            abstract: extractSummary(result.snippet) || "No abstract available",
             citationCount: 0, // Search API doesn't provide citation counts
           };
         }
@@ -132,4 +150,74 @@ function getMostCommonCategory(
   }
 
   return firstMatch ? firstMatch.category : "article";
+}
+
+export function extractSummary(snippet: string): string {
+  if (!snippet) {
+    return "";
+  }
+
+  // 1. Prioritized Keyword Search
+  const summaryMarkers = [
+    "**Conclusions:**",
+    "## Abstract",
+    "**Summary**",
+    "**Background:**",
+  ];
+
+  for (const marker of summaryMarkers) {
+    const markerIndex = snippet.indexOf(marker);
+    if (markerIndex !== -1) {
+      let summaryText = snippet.substring(markerIndex + marker.length).trim();
+      const nextSectionIndex = summaryText.indexOf("\n## ");
+      if (nextSectionIndex !== -1) {
+        summaryText = summaryText.substring(0, nextSectionIndex).trim();
+      }
+      return cleanText(summaryText);
+    }
+  }
+
+  // 2. First Meaningful Paragraph Fallback
+  const paragraphs = snippet.split("\n\n");
+  for (const paragraph of paragraphs) {
+    const cleaned = cleanText(paragraph);
+    if (cleaned.length > 200) {
+      // Heuristic for a "meaningful" paragraph
+      return cleaned;
+    }
+  }
+
+  return cleanText(snippet); // Fallback to cleaning the whole snippet
+}
+
+function cleanText(text: string): string {
+  let cleanedText = text;
+
+  // Remove markdown, tables, and other noise
+  cleanedText = cleanedText
+    .replace(/(\*\*|##|###)/g, "") // Bold and headers
+    .replace(/\^(\d+|\^|,|✉|\*)\^/g, "") // Caret-enclosed characters
+    .replace(/\[\d+\]/g, "") // Numbered citations
+    .replace(/https?:\/\/[^\s]+/g, "") // URLs
+    .replace(/\|--*\|/g, "") // Table lines
+    .replace(/\|/g, " ") // Table pipes
+    .replace(/\b(p-value|<0.0001)\b/g, ""); // Specific noise
+
+  // Normalize whitespace
+  cleanedText = cleanedText.replace(/\s+/g, " ").trim();
+
+  // Remove first sentance if it's lower case
+  if (cleanedText.startsWith(cleanedText.charAt(0).toLowerCase())) {
+    const firstPeriod = cleanedText.indexOf(". ");
+    if (firstPeriod !== -1) {
+      cleanedText = cleanedText.substring(firstPeriod + 2).trim();
+    }
+  }
+
+  // Truncate if it's too long
+  if (cleanedText.length > 800) {
+    cleanedText = cleanedText.substring(0, 800) + "...";
+  }
+
+  return cleanedText;
 }

@@ -1,8 +1,5 @@
 import React from "react";
-import {
-  DivideIcon as LucideIcon,
-  type LucideIcon as LucideIconType,
-} from "lucide-react";
+import { type LucideIcon as LucideIconType } from "lucide-react";
 
 interface FeatureCardProps {
   title: string;

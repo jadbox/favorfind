@@ -1,5 +1,3 @@
-import type { SearchResult } from "@/types";
-
 // Simple client wrapper to call the backend search API and return results.
 // export async function searchPapers(
 //   query: string,
