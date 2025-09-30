@@ -288,12 +288,10 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                 >
                   <option value="relevance">Relevance</option>
-                  <option
-                    value={`recent_trending_${new Date().getFullYear()}_articles`}
-                  >
+                  <option value={`${new Date().getFullYear()}`}>
                     Recent Publication Date
                   </option>
-                  <option value="most_citations">Popular Articles</option>
+                  <option value="popular">Popular Articles</option>
                 </select>
               </div>
             </div>

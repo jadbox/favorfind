@@ -25,11 +25,11 @@ export class PerplexityDataProvider implements DataProvider {
 
     try {
       // Build the search query with domain filtering
-      let searchQuery = `${q} article, guideline, or trial study most helpful to clinicians. Must be a cancer treatment, trial report, and cancer research. site:fda.gov site:clinicaltrials.gov site:pubmed.ncbi.nlm.nih.gov site:nih.gov site:cancer.gov`;
+      let searchQuery = `${q} top PubMed articles, guidelines, trial study for clinicians for cancer Treatment and Analysis. site:fda.gov site:clinicaltrials.gov site:pubmed.ncbi.nlm.nih.gov site:nih.gov -site:cancer.gov`;
 
       // Add filter type if provided
       if (filter_type) {
-        searchQuery += ` ${filter_type}`;
+        searchQuery = `${filter_type} for ${searchQuery}`;
       }
 
       // Add domain filtering to restrict to PubMed and NIH sites
@@ -69,7 +69,7 @@ export class PerplexityDataProvider implements DataProvider {
           return {
             paperId: `perplexity-${Date.now()}-${index}`,
             source: "Perplexity",
-            title: result.title || "Untitled",
+            title: result.title?.replace("www.", " ") || "Untitled",
             category, // Default category since search API doesn't provide this
             year: year || new Date().getFullYear(), // Default to current year if not available
             url: result.url || "",
@@ -94,34 +94,42 @@ export class PerplexityDataProvider implements DataProvider {
 function getMostCommonCategory(
   text: string
 ): "article" | "trial" | "guideline" {
-  const categories: Array<"article" | "trial" | "guideline"> = [
-    "article",
-    "trial",
-    "guideline",
-  ];
   const textLower = text.toLowerCase();
-  const counts: Record<"article" | "trial" | "guideline", number> = {
-    article: 0,
-    trial: 0,
-    guideline: 0,
-  };
 
-  categories.forEach((category) => {
-    const regex = new RegExp(`\\b${category}\\b`, "g");
-    const matches = textLower.match(regex);
-    counts[category] = matches ? matches.length : 0;
-  });
+  // Define category patterns with alternates
+  const categoryPatterns: Array<{
+    category: "article" | "trial" | "guideline";
+    patterns: string[];
+  }> = [
+    {
+      category: "article",
+      patterns: ["article", "paper", "research", "analysis", "review"],
+    },
+    { category: "trial", patterns: ["trial", "study"] },
+    {
+      category: "guideline",
+      patterns: ["guideline", "guidance", "recommendation", "overview"],
+    },
+  ];
 
-  // Find the category with the highest count, fallback to "article" if all are zero
-  let maxCategory: "article" | "trial" | "guideline" = "article";
-  let maxCount = counts[maxCategory];
+  // Find the first occurrence of any category word
+  let firstMatch: {
+    position: number;
+    category: "article" | "trial" | "guideline";
+  } | null = null;
 
-  for (const category of categories) {
-    if (counts[category] > maxCount) {
-      maxCategory = category;
-      maxCount = counts[category];
+  for (const { category, patterns } of categoryPatterns) {
+    for (const pattern of patterns) {
+      const regex = new RegExp(`\\b${pattern}\\b`, "i");
+      const match = textLower.match(regex);
+
+      if (match && match.index !== undefined) {
+        if (!firstMatch || match.index < firstMatch.position) {
+          firstMatch = { position: match.index, category };
+        }
+      }
     }
   }
 
-  return maxCount > 0 ? maxCategory : "article";
+  return firstMatch ? firstMatch.category : "article";
 }
