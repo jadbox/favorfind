@@ -159,24 +159,29 @@ export function extractSummary(snippet: string): string {
 
   // 1. Prioritized Keyword Search
   const summaryMarkers = [
-    "# ",
+    "This article ",
     "**Conclusions:**",
+    "# Editorial: ",
+    "# Abstract",
     "## Abstract",
     "**Summary**",
     "**Background:**",
+    "# Summary",
+    "# ",
   ];
 
   for (const marker of summaryMarkers) {
     const markerIndex = snippet.indexOf(marker);
     if (markerIndex !== -1) {
       if (marker === "# " && markerIndex > 0) continue; // only accept # at start of snippet
-
       let summaryText = snippet.substring(markerIndex + marker.length).trim();
+      if (marker === "This article ")
+        summaryText = "This article " + summaryText;
 
       // if summaryTexts starts with a number, skip
       if (/^\d/.test(summaryText)) continue;
 
-      const nextSectionIndex = summaryText.indexOf("\n## ");
+      const nextSectionIndex = summaryText.indexOf("\n# ");
       if (nextSectionIndex !== -1) {
         summaryText = summaryText.substring(0, nextSectionIndex).trim();
       }
