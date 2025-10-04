@@ -1,5 +1,8 @@
 import type { APIRoute } from "astro";
-import { readUserDataCookie } from "../../../CookieUserData";
+
+// NOTE: This is now a stub endpoint for future database integration.
+// Saved status is checked client-side via localStorage.
+// When adding a database, implement the logic here to check saved status.
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -12,19 +15,24 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const user = readUserDataCookie(request.headers.get("cookie"));
-    const savedIds = new Set(user.savedLibrary.map((item) => item.id));
+    console.log("[Check API Stub] Checking saved status for", ids.length, "items");
 
+    // TODO: When implementing database:
+    // 1. Read user session/auth
+    // 2. Query database for saved items
+    // 3. Return status for each ID
+
+    // For now, return empty result since data is client-side
     const result: Record<string, boolean> = {};
     ids.forEach((id) => {
-      result[id] = savedIds.has(id);
+      result[id] = false;
     });
 
     return new Response(JSON.stringify(result), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Library check API error:", error);
+    console.error("[Check API Stub] Error:", error);
     return new Response(
       JSON.stringify({ error: "Failed to check saved status" }),
       {

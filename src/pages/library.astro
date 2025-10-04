@@ -1,56 +1,15 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SearchResultCard from "../components/SearchResultCard";
-import type { SearchResult, SearchHistory } from "../types";
-import { readUserDataCookie } from "../CookieUserData";
-
-// Fetch saved library from API
-let savedLibrary: SearchResult[] = [];
-try {
-  const response = await fetch(`${Astro.url.origin}/api/library/list`, {
-    headers: {
-      cookie: Astro.request.headers.get("cookie") || "",
-    },
-  });
-  if (response.ok) {
-    savedLibrary = await response.json();
-  }
-} catch (error) {
-  console.error("Failed to fetch saved library:", error);
-}
-
-const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
-const searchHistory: SearchHistory[] = userData.searchHistory;
+import LibraryDisplay from "../components/LibraryDisplay";
 ---
 
-<BaseLayout title="Your Library" searchHistory={searchHistory}>
+<BaseLayout title="Your Library">
   <div class="flex-1 p-6">
     <div class="max-w-7xl mx-auto">
       <div class="flex items-center space-x-3 mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Your Library</h1>
       </div>
-      {
-        savedLibrary.length > 0 ? (
-          <div class="grid gap-4">
-            {savedLibrary.map((item) => (
-              <SearchResultCard result={item} isSaved={true} client:load />
-            ))}
-          </div>
-        ) : (
-          <div class="text-center py-12">
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">
-              Your library is empty
-            </h3>
-            <p class="text-gray-600 mb-6">
-              Start saving articles from your search results to build your
-              personal research library.
-            </p>
-            <a href="/" class="btn btn-primary">
-              Start Searching
-            </a>
-          </div>
-        )
-      }
+      <LibraryDisplay client:load />
     </div>
   </div>
 </BaseLayout>

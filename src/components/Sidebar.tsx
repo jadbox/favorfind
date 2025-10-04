@@ -1,7 +1,33 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import type { SearchHistory } from "../types";
+import { getStoredUserData } from "../utils/localStorage";
 
-const Sidebar = ({ searchHistory }: { searchHistory: SearchHistory[] }) => {
+const Sidebar = () => {
+  const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
+
+  useEffect(() => {
+    // Function to load search history from localStorage
+    const loadHistory = () => {
+      const userData = getStoredUserData();
+      setSearchHistory(userData.searchHistory);
+    };
+
+    // Load on mount
+    loadHistory();
+
+    // Listen for search history updates
+    const handleHistoryUpdate = () => {
+      console.log("Search history updated, reloading...");
+      loadHistory();
+    };
+
+    window.addEventListener("search-history-updated", handleHistoryUpdate);
+
+    return () => {
+      window.removeEventListener("search-history-updated", handleHistoryUpdate);
+    };
+  }, []);
+
   const today = new Date().toDateString();
   const todayHistory = searchHistory.filter(
     (item) => new Date(item.timestamp).toDateString() === today
@@ -15,10 +41,7 @@ const Sidebar = ({ searchHistory }: { searchHistory: SearchHistory[] }) => {
     params.set("q", item.query);
 
     if (item.filters) {
-      if (
-        item.filters.selectedType &&
-        item.filters.selectedType !== "Guidelines (Default)"
-      ) {
+      if (item.filters.selectedType && item.filters.selectedType !== "All") {
         params.set("filter_type", item.filters.selectedType);
       }
       if (
@@ -49,7 +72,7 @@ const Sidebar = ({ searchHistory }: { searchHistory: SearchHistory[] }) => {
     // Source type - exclude defaults
     if (
       filters.selectedType &&
-      filters.selectedType !== "Guidelines (Default)" &&
+      filters.selectedType !== "All" &&
       !filters.selectedType.toLowerCase().includes("default")
     ) {
       activeFilters.push(filters.selectedType);

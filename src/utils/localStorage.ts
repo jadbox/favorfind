@@ -3,7 +3,6 @@ import type { UserData, SearchHistory, SearchResult } from "../types";
 const STORAGE_KEY = "medeligo-user-data";
 
 const defaultUserData: UserData = {
-  firstName: "Frank",
   searchHistory: [],
   savedLibrary: [],
 };
@@ -100,4 +99,29 @@ export const toggleSaveToLibrary = (result: SearchResult): void => {
     userData.savedLibrary = [result, ...userData.savedLibrary];
   }
   saveUserData(userData);
+};
+
+export const getSavedLibrary = (): SearchResult[] => {
+  if (!hasLocalStorage()) return [];
+  const userData = getStoredUserData();
+  return userData.savedLibrary;
+};
+
+export const isArticleSaved = (resultId: string): boolean => {
+  if (!hasLocalStorage()) return false;
+  const userData = getStoredUserData();
+  return userData.savedLibrary.some((item) => item.id === resultId);
+};
+
+export const getSavedStatus = (
+  resultIds: string[]
+): Record<string, boolean> => {
+  if (!hasLocalStorage()) return {};
+  const userData = getStoredUserData();
+  const savedIds = new Set(userData.savedLibrary.map((item) => item.id));
+  const result: Record<string, boolean> = {};
+  resultIds.forEach((id) => {
+    result[id] = savedIds.has(id);
+  });
+  return result;
 };

@@ -1,20 +1,30 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SearchResultCard from "./SearchResultCard";
 import type { SearchResult } from "../types";
+import { getSavedStatus } from "../utils/localStorage";
 
 interface SearchResultsDisplayProps {
   loading: boolean;
   filteredResults: SearchResult[];
-  savedIds: string[];
 }
 
 const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
   loading,
   filteredResults = [],
-  savedIds = [],
 }) => {
+  const [savedStatus, setSavedStatus] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    // Get saved status from localStorage whenever results change
+    if (filteredResults.length > 0) {
+      const ids = filteredResults.map((r) => r.id);
+      const status = getSavedStatus(ids);
+      setSavedStatus(status);
+    }
+  }, [filteredResults]);
+
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-6" data-results-count={filteredResults.length}>
       {loading ? (
         <div className="text-center py-12">
           <div className="loading loading-spinner loading-lg text-medical-600"></div>
@@ -27,7 +37,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
           <SearchResultCard
             key={result.id}
             result={result}
-            isSaved={savedIds.includes(result.id)}
+            isSaved={savedStatus[result.id] || false}
           />
         ))
       ) : (

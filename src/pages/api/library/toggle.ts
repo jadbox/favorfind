@@ -1,25 +1,31 @@
 import type { APIRoute } from "astro";
-import {
-  readUserDataCookie,
-  serializeUserDataCookie,
-  upsertSaved,
-  removeSaved,
-} from "../../../CookieUserData";
 import type { SearchResult } from "../../../types";
+
+// NOTE: This is now a stub endpoint for future database integration.
+// The actual save/remove logic happens client-side in localStorage.
+// When adding a database, implement the logic here to persist to DB.
 
 export const POST: APIRoute = async ({ request }) => {
   try {
     const form = await request.formData();
     const action = (form.get("action") as string) || "save";
-    const returnTo = (form.get("returnTo") as string) || "/library";
 
-    const user = readUserDataCookie(request.headers.get("cookie"));
-
-    let updated = user.savedLibrary;
     if (action === "remove") {
-      const id = String(form.get("id") || "");
-      updated = removeSaved(updated, id);
+      const itemId = String(form.get("id") || "");
+      console.log("[Toggle API Stub] Remove item:", itemId);
+
+      // TODO: When implementing database:
+      // 1. Read user session/auth
+      // 2. Delete item from database
+      // 3. Return success/failure
     } else {
+      // Parse the full search result item from form data
+      const categoryValue = form.get("category");
+      const category =
+        categoryValue && categoryValue !== "null"
+          ? (categoryValue as "article" | "trial" | "guideline")
+          : "article";
+
       const item: SearchResult = {
         id: String(form.get("id") || ""),
         title: String(form.get("title") || ""),
@@ -29,64 +35,32 @@ export const POST: APIRoute = async ({ request }) => {
         abstract: String(form.get("abstract") || ""),
         citationCount: Number(form.get("citationCount") || 0),
         url: String(form.get("url") || ""),
-        // type: String(form.get("type") || "article") as any,
-        category: String(form.get("category")) as
-          | "article"
-          | "trial"
-          | "guideline",
+        category: category,
       };
-      updated = upsertSaved(updated, item);
+
+      console.log(
+        "[Toggle API Stub] Save item:",
+        item.id,
+        item.title.substring(0, 50)
+      );
+
+      // TODO: When implementing database:
+      // 1. Read user session/auth
+      // 2. Save/update item in database
+      // 3. Return success/failure
     }
 
-    const setCookie = serializeUserDataCookie({
-      searchHistory: user.searchHistory,
-      savedLibrary: updated,
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
-
-    // Check if this is an AJAX request (fetch)
-    const accept = request.headers.get("accept");
-    const isAjax = accept && accept.includes("application/json");
-
-    if (isAjax) {
-      // Return JSON response for AJAX requests
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Set-Cookie": setCookie,
-        },
-      });
-    } else {
-      // Return redirect for form submissions
-      return new Response(null, {
-        status: 303,
-        headers: {
-          Location: returnTo,
-          "Set-Cookie": setCookie,
-        },
-      });
-    }
   } catch (error) {
-    console.error("Library toggle API error:", error);
-    const accept = request.headers.get("accept");
-    const isAjax = accept && accept.includes("application/json");
-
-    if (isAjax) {
-      return new Response(
-        JSON.stringify({ error: "Failed to update library" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } else {
-      return new Response(
-        JSON.stringify({ error: "Failed to update library" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
+    console.error("[Toggle API Stub] Error:", error);
+    return new Response(JSON.stringify({ error: "Failed to update library" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };

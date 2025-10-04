@@ -11,7 +11,7 @@ interface SearchResultsFiltersProps {
 }
 
 const generalFilters = [
-  "Guidelines (Default)",
+  "All",
   "Genetic Mutations",
   "Histology / Pathology",
   "Imaging",
@@ -124,7 +124,7 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
     }
 
     const filters = {
-      filter_type: { value: selectedType, default: "Guidelines (Default)" },
+      filter_type: { value: selectedType, default: "All" },
       primaryTumorSite: { value: primaryTumorSite, default: "All" },
       ageGroup: { value: ageGroup, default: "All" },
       gender: { value: gender, default: "All" },

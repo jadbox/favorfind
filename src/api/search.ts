@@ -4,11 +4,6 @@ import {
   setCachedSearchResults,
   generateCacheKey,
 } from "../services/cache";
-import {
-  readUserDataCookie,
-  serializeUserDataCookie,
-  addToHistory,
-} from "@/CookieUserData";
 
 // --- Types for the Semantic Scholar API ---
 import { mapToSearchResult } from "@/services/semanticScholarMapper";
@@ -101,29 +96,12 @@ export const handleSearch = async (request: Request): Promise<Response> => {
 
   try {
     const results = await _fetchSearchResults(query, limit, page, filter_type);
-    // Update user_data cookie with new search history entry
-    const user = readUserDataCookie(request.headers.get("cookie"));
-    const filters = {
-      selectedType: filter_type || undefined,
-      primaryTumorSite: primaryTumorSite || undefined,
-      ageGroup: ageGroup || undefined,
-      gender: gender || undefined,
-      sortBy: sortBy || undefined,
-    };
-    const updatedHistory = addToHistory(
-      user.searchHistory,
-      query,
-      results.length,
-      filters
-    );
-    const setCookie = serializeUserDataCookie({
-      searchHistory: updatedHistory,
-      savedLibrary: user.savedLibrary,
-    });
+    
+    // Note: Search history is now saved client-side via localStorage
+    
     return new Response(JSON.stringify(results), {
       headers: {
         "Content-Type": "application/json",
-        "Set-Cookie": setCookie,
       },
     });
   } catch (error) {

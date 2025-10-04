@@ -3,37 +3,16 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import SearchBar from "../components/SearchBar.tsx";
 import SearchResultsDisplay from "../components/SearchResultsDisplay.tsx";
 import SearchResultsFilters from "../components/SearchResultsFilters.tsx";
-import {
-  parseSearchParams,
-  performSearch,
-  checkSavedStatus,
-} from "../utils/searchHelpers";
-import { readUserDataCookie } from "../CookieUserData";
+import { parseSearchParams, performSearch } from "../utils/searchHelpers.server";
 
 // Parse search parameters
 const searchParams = parseSearchParams(new URL(Astro.request.url));
 
 // Perform server-side search
-const searchData = await performSearch(
-  searchParams,
-  Astro.request.headers.get("cookie"),
-  (cookie: string) => {
-    Astro.response.headers.set("Set-Cookie", cookie);
-  }
-);
-
-// Check saved status for results
-const savedStatus = await checkSavedStatus(
-  searchData.results,
-  new URL(Astro.request.url).origin,
-  Astro.request.headers.get("cookie")
-);
-
-// Get user data for sidebar
-const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
+const searchData = await performSearch(searchParams);
 ---
 
-<BaseLayout title="Search Results" searchHistory={userData.searchHistory}>
+<BaseLayout title="Search Results">
   <div class="flex-1 flex overflow-hidden">
     <!-- Search Results Area -->
     <main class="flex-1 flex flex-col p-4 overflow-hidden">
@@ -61,13 +40,39 @@ const userData = readUserDataCookie(Astro.request.headers.get("cookie"));
               client:load
               loading={false}
               filteredResults={searchData.results}
-              savedIds={Object.keys(savedStatus).filter(
-                (id) => savedStatus[id]
-              )}
             />
           )
         }
       </div>
     </main>
   </div>
+
+  <script>
+    import {
+      saveSearchToHistory,
+      parseSearchParams,
+    } from "../utils/searchHelpers.client";
+
+    // Save search to history when page loads (client-side)
+    document.addEventListener("DOMContentLoaded", () => {
+      const url = new URL(window.location.href);
+      const params = parseSearchParams(url);
+
+      if (params.query) {
+        // Get the results count from the page
+        const resultsContainer = document.querySelector("[data-results-count]");
+        const resultsCount = resultsContainer
+          ? parseInt(
+              resultsContainer.getAttribute("data-results-count") || "0",
+              10
+            )
+          : 0;
+
+        saveSearchToHistory(params, resultsCount);
+
+        // Dispatch event to update sidebar
+        window.dispatchEvent(new CustomEvent("search-history-updated"));
+      }
+    });
+  </script>
 </BaseLayout>

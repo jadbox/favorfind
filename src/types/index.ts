@@ -25,7 +25,6 @@ export interface SearchHistory {
 }
 
 export interface UserData {
-  firstName: string;
   searchHistory: SearchHistory[];
   savedLibrary: SearchResult[];
 }

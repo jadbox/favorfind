@@ -1,10 +1,5 @@
 import type { APIRoute } from "astro";
 import { _fetchSearchResults as fetchSearchResults } from "../../api/search";
-import {
-  readUserDataCookie,
-  serializeUserDataCookie,
-  addToHistory,
-} from "../../CookieUserData";
 
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
@@ -44,22 +39,12 @@ export const GET: APIRoute = async ({ request }) => {
     const results = await fetchSearchResults(query, limit, page, filter_type);
     console.log("Search results:", results.length);
 
-    // Update user_data cookie with new search history entry
-    const user = readUserDataCookie(request.headers.get("cookie"));
-    const updatedHistory = addToHistory(
-      user.searchHistory,
-      query,
-      results.length
-    );
-    const setCookie = serializeUserDataCookie({
-      searchHistory: updatedHistory,
-      savedLibrary: user.savedLibrary,
-    });
+    // Note: Search history is now saved client-side via localStorage
+    // See search.astro <script> tag for client-side history saving
 
     return new Response(JSON.stringify(results), {
       headers: {
         "Content-Type": "application/json",
-        "Set-Cookie": setCookie,
       },
     });
   } catch (error) {
@@ -89,22 +74,11 @@ export const POST: APIRoute = async ({ request }) => {
 
     const results = await fetchSearchResults(query, limit, page, filter_type);
 
-    // Update user_data cookie with new search history entry
-    const user = readUserDataCookie(request.headers.get("cookie"));
-    const updatedHistory = addToHistory(
-      user.searchHistory,
-      query,
-      results.length
-    );
-    const setCookie = serializeUserDataCookie({
-      searchHistory: updatedHistory,
-      savedLibrary: user.savedLibrary,
-    });
+    // Note: Search history is now saved client-side via localStorage
 
     return new Response(JSON.stringify(results), {
       headers: {
         "Content-Type": "application/json",
-        "Set-Cookie": setCookie,
       },
     });
   } catch (error) {

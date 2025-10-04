@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import type { SearchResult } from "../types";
+import { toggleSaveToLibrary } from "../utils/localStorage";
 
 interface SearchResultCardProps {
   result: SearchResult;
@@ -23,58 +24,50 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
     const newSavedState = !isSaved;
 
     try {
-      const formData = new FormData();
-      formData.append("action", newSavedState ? "save" : "remove");
-      formData.append("id", result.id);
-      formData.append("title", result.title);
-      formData.append("source", result.source);
-      formData.append("publisher", result.publisher);
-      formData.append("publicationDate", result.publicationDate);
-      formData.append("abstract", result.abstract);
-      formData.append("citationCount", result.citationCount.toString());
-      formData.append("url", result.url);
-      formData.append("category", result.category);
-      // formData.append("type", result.type);
+      // Save/remove using localStorage
+      toggleSaveToLibrary(result);
 
-      if (result.category) {
+      // Update local UI state immediately
+      setIsSaved(newSavedState);
+
+      // Show toast notification
+      showToast(
+        newSavedState
+          ? "Article saved to library!"
+          : "Article removed from library",
+        "success"
+      );
+
+      // Optional: Still call the API stub for future database integration
+      // This doesn't affect the UI but prepares for when we add a database
+      try {
+        const formData = new FormData();
+        formData.append("action", newSavedState ? "save" : "remove");
+        formData.append("id", result.id);
+        formData.append("title", result.title);
+        formData.append("source", result.source);
+        formData.append("publisher", result.publisher);
+        formData.append("publicationDate", result.publicationDate);
+        formData.append("abstract", result.abstract);
+        formData.append("citationCount", result.citationCount.toString());
+        formData.append("url", result.url);
         formData.append("category", result.category);
-      }
-      if (returnTo) {
-        formData.append("returnTo", returnTo);
-      }
 
-      const response = await fetch("/api/library/toggle", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-        },
-        body: formData,
-      });
-
-      if (response.ok) {
-        setIsSaved(newSavedState);
-        // Show toast notification
-        showToast(
-          newSavedState
-            ? "Article saved to library!"
-            : "Article removed from library",
-          "success"
-        );
-
-        // If we're on the library page and removing an article, refresh the page
-        // if (!newSavedState && window.location.pathname === "/library") {
-        //   setTimeout(() => {
-        //     window.location.reload();
-        //   }, 1000);
-        // }
-      } else {
-        showToast("Failed to save article. Please try again.", "error");
+        await fetch("/api/library/toggle", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+          },
+          credentials: "same-origin",
+          body: formData,
+        });
+        // We don't wait for or check the response since localStorage is the source of truth
+      } catch (apiError) {
+        console.log("API stub call failed (expected):", apiError);
       }
     } catch (error) {
-      showToast(
-        "Network error. Please check your connection and try again.",
-        "error"
-      );
+      // Revert the state if localStorage failed
+      showToast("Failed to save article. Please try again.", "error");
       console.error("Error toggling save status:", error);
     } finally {
       setIsLoading(false);
@@ -91,7 +84,7 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
 
     // Create new toast
     const toast = document.createElement("div");
-    toast.className = `toast-notification fixed top-4 right-4 z-50 px-4 py-2 rounded-md shadow-lg text-white text-sm font-medium ${
+    toast.className = `toast-notification fixed bottom-4 right-4 z-50 px-4 py-2 rounded-md shadow-lg text-white text-sm font-medium ${
       type === "success" ? "bg-green-500" : "bg-red-500"
     }`;
     toast.textContent = message;
@@ -114,7 +107,7 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
       case "guideline":
         return "badge-accent";
       default:
-        return "badge-neutral";
+        return "badge-primary";
     }
   };
 
