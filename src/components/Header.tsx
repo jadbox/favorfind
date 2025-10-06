@@ -20,7 +20,7 @@ const Header: React.FC = () => {
             href="/library"
             className="btn btn-ghost btn-sm flex items-center space-x-2"
           >
-            <Library className="h-4 w-4 text-medical-600" />
+            <Library className="h-8 w-8 text-medical-600" />
             <span>Library</span>
           </a>
 

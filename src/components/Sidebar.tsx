@@ -118,7 +118,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 p-4 min-h-screen">
+    <aside className="w-44 md:w-64 bg-white border-r border-gray-200 p-4 min-h-screen">
       <div className="text-center mb-6">
         <a
           href="/"
