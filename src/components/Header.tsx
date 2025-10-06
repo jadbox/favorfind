@@ -8,7 +8,7 @@ const Header: React.FC = () => {
         {/* Logo */}
         <a href="/" className="flex items-center">
           <img
-            src="/assets/images/Logo-2-scaled.png"
+            src="/images/Logo-2-scaled.png"
             alt="Medeligo logo"
             className="h-10 w-auto"
           />
