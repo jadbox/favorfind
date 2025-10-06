@@ -2,10 +2,26 @@ import React, { useState, useEffect } from "react";
 import type { SearchHistory } from "../types";
 import { getStoredUserData } from "../utils/localStorage";
 
-const Sidebar = () => {
-  const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
+interface SidebarProps {
+  searchHistory?: SearchHistory[];
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ searchHistory: externalHistory }) => {
+  const [searchHistory, setSearchHistory] = useState<SearchHistory[]>(
+    externalHistory ?? []
+  );
 
   useEffect(() => {
+    if (externalHistory) {
+      setSearchHistory(externalHistory);
+    }
+  }, [externalHistory]);
+
+  useEffect(() => {
+    if (externalHistory) {
+      return;
+    }
+
     // Function to load search history from localStorage
     const loadHistory = () => {
       const userData = getStoredUserData();
@@ -24,9 +40,12 @@ const Sidebar = () => {
     window.addEventListener("search-history-updated", handleHistoryUpdate);
 
     return () => {
-      window.removeEventListener("search-history-updated", handleHistoryUpdate);
+      window.removeEventListener(
+        "search-history-updated",
+        handleHistoryUpdate
+      );
     };
-  }, []);
+  }, [externalHistory]);
 
   const today = new Date().toDateString();
   const todayHistory = searchHistory.filter(

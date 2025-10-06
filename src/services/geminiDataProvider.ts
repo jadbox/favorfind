@@ -104,24 +104,61 @@ export class GeminiDataProvider implements DataProvider {
       });
 
       const text = response.text || "";
-      const papers: SemanticScholarPaper[] = JSON.parse(text.trim());
+      const parsed = JSON.parse(text.trim());
+
+      if (!Array.isArray(parsed)) {
+        console.warn("Gemini response was not an array", parsed);
+        return [];
+      }
 
       // Validate and clean the data
-      return papers.map((paper, index) => ({
-        paperId: paper.paperId || `gemini-${Date.now()}-${index}`,
-        source: "Gemini",
-        title: paper.title || "Untitled",
-        category: paper.category || "article",
-        // authors: [], // Array.isArray(paper.authors) ? paper.authors : [],
-        year:
-          typeof paper.year === "number"
-            ? paper.year
-            : new Date().getFullYear(),
-        url: paper.url || "",
-        abstract: paper.abstract || "No abstract available",
-        citationCount:
-          typeof paper.citationCount === "number" ? paper.citationCount : 0,
-      }));
+      return parsed.map((paper: Record<string, unknown>, index) => {
+        const rawCategory = typeof paper.category === "string" ? paper.category : "";
+        const category: SemanticScholarPaper["category"] = [
+          "article",
+          "trial",
+          "guideline",
+        ].includes(rawCategory as SemanticScholarPaper["category"])
+          ? (rawCategory as SemanticScholarPaper["category"])
+          : "article";
+
+        const rawYear = paper.year;
+        const normalizedYear = (() => {
+          if (typeof rawYear === "string" && rawYear.trim().length > 0) {
+            return rawYear;
+          }
+          if (typeof rawYear === "number" && Number.isFinite(rawYear)) {
+            return String(rawYear);
+          }
+          return String(new Date().getFullYear());
+        })();
+
+        return {
+          paperId:
+            typeof paper.paperId === "string" && paper.paperId
+              ? paper.paperId
+              : `gemini-${Date.now()}-${index}`,
+          source: "Gemini",
+          title:
+            typeof paper.title === "string" && paper.title.trim().length > 0
+              ? paper.title
+              : "Untitled",
+          category,
+          year: normalizedYear,
+          url:
+            typeof paper.url === "string" && paper.url.trim().length > 0
+              ? paper.url
+              : "",
+          abstract:
+            typeof paper.abstract === "string" && paper.abstract.trim().length > 0
+              ? paper.abstract
+              : "No abstract available",
+          citationCount:
+            typeof paper.citationCount === "number" && Number.isFinite(paper.citationCount)
+              ? paper.citationCount
+              : 0,
+        } satisfies SemanticScholarPaper;
+      });
     } catch (error) {
       console.error("Gemini API error:", error);
       throw new Error(
