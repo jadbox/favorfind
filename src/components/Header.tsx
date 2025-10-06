@@ -1,14 +1,17 @@
 import React from "react";
-import { Heart, Library } from "lucide-react";
+import { Library } from "lucide-react";
 
 const Header: React.FC = () => {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between max-w-7xl mx-auto">
+      <div className="flex items-center justify-between mx-auto">
         {/* Logo */}
-        <a href="/" className="flex items-center space-x-2">
-          <Heart className="h-8 w-8 text-medical-600" />
-          <span className="text-2xl font-bold text-gray-900">Medeligo</span>
+        <a href="/" className="flex items-center">
+          <img
+            src="/assets/images/Logo-2-scaled.png"
+            alt="Medeligo logo"
+            className="h-10 w-auto"
+          />
         </a>
 
         {/* Right Navigation */}

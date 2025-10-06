@@ -96,9 +96,9 @@ export const handleSearch = async (request: Request): Promise<Response> => {
 
   try {
     const results = await _fetchSearchResults(query, limit, page, filter_type);
-    
+
     // Note: Search history is now saved client-side via localStorage
-    
+
     return new Response(JSON.stringify(results), {
       headers: {
         "Content-Type": "application/json",

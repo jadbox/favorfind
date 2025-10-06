@@ -15,7 +15,11 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    console.log("[Check API Stub] Checking saved status for", ids.length, "items");
+    console.log(
+      "[Check API Stub] Checking saved status for",
+      ids.length,
+      "items"
+    );
 
     // TODO: When implementing database:
     // 1. Read user session/auth
