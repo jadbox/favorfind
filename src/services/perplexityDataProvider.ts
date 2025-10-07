@@ -156,7 +156,11 @@ function getMostCommonCategory(
 
   for (const { category, patterns } of categoryPatterns) {
     for (const pattern of patterns) {
-      const regex = new RegExp(`\\b${pattern}\\b`, "i");
+      // Allow a simple plural form by matching an optional trailing 's' when the pattern
+      // itself does not already end with 's'.
+      const needsPlural = !/[sS]$/.test(pattern);
+      const patternWithPlural = needsPlural ? `${pattern}(s)?` : pattern;
+      const regex = new RegExp(`\\b${patternWithPlural}\\b`, "i");
       const match = textLower.match(regex);
 
       if (match && match.index !== undefined) {
