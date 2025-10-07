@@ -6,7 +6,9 @@ interface SidebarProps {
   searchHistory?: SearchHistory[];
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ searchHistory: externalHistory }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  searchHistory: externalHistory,
+}) => {
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>(
     externalHistory ?? []
   );
@@ -40,10 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ searchHistory: externalHistory }) => 
     window.addEventListener("search-history-updated", handleHistoryUpdate);
 
     return () => {
-      window.removeEventListener(
-        "search-history-updated",
-        handleHistoryUpdate
-      );
+      window.removeEventListener("search-history-updated", handleHistoryUpdate);
     };
   }, [externalHistory]);
 

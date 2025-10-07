@@ -113,7 +113,8 @@ export class GeminiDataProvider implements DataProvider {
 
       // Validate and clean the data
       return parsed.map((paper: Record<string, unknown>, index) => {
-        const rawCategory = typeof paper.category === "string" ? paper.category : "";
+        const rawCategory =
+          typeof paper.category === "string" ? paper.category : "";
         const category: SemanticScholarPaper["category"] = [
           "article",
           "trial",
@@ -150,11 +151,13 @@ export class GeminiDataProvider implements DataProvider {
               ? paper.url
               : "",
           abstract:
-            typeof paper.abstract === "string" && paper.abstract.trim().length > 0
+            typeof paper.abstract === "string" &&
+            paper.abstract.trim().length > 0
               ? paper.abstract
               : "No abstract available",
           citationCount:
-            typeof paper.citationCount === "number" && Number.isFinite(paper.citationCount)
+            typeof paper.citationCount === "number" &&
+            Number.isFinite(paper.citationCount)
               ? paper.citationCount
               : 0,
         } satisfies SemanticScholarPaper;

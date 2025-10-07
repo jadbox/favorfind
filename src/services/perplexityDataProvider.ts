@@ -72,9 +72,7 @@ export class PerplexityDataProvider implements DataProvider {
           // }
 
           // search for most common word in title and snippet that matches "article", "trial", "guideline"
-          const category = getMostCommonCategory(
-            result.title + ": " + result.snippet
-          );
+          const category = getMostCommonCategory(result.title, result.snippet);
 
           // result.snippet = result.snippet.split("^")[0] as string; // Remove any trailing "^ " and beyond
 
@@ -110,8 +108,10 @@ export class PerplexityDataProvider implements DataProvider {
 }
 
 function getMostCommonCategory(
-  text: string
+  title: string,
+  text_body: string
 ): "article" | "trial" | "guideline" {
+  const text = title + ": " + text_body;
   const textLower = text.toLowerCase();
 
   // Define category patterns with alternates
@@ -121,12 +121,31 @@ function getMostCommonCategory(
   }> = [
     {
       category: "article",
-      patterns: ["article", "paper", "research", "analysis", "review"],
+      patterns: ["research", "analysis", "Trends", "wikipedia", "article"],
     },
-    { category: "trial", patterns: ["trial", "study"] },
+    { category: "trial", patterns: ["trial", "study", "case report"] },
     {
       category: "guideline",
-      patterns: ["guideline", "guidance", "recommendation", "overview"],
+      patterns: [
+        "insights",
+        "basics",
+        "causes",
+        "Risk Factors",
+        "Diagnosis",
+        "Epidemiology",
+        "Meta-Analysis",
+        "Systematic Review",
+        "review",
+        "of the Literature",
+        "recommendations",
+        "guidance",
+        "consensus",
+        "guideline",
+        "review",
+        "guidance",
+        "recommendation",
+        "overview",
+      ],
     },
   ];
 
