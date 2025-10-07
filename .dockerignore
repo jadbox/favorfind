@@ -1,0 +1,53 @@
+# Dependency directories
+node_modules
+
+# Build output
+/dist
+/.astro
+
+# Git & VCS
+.git
+.gitignore
+
+# Logs & diagnostics
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.pid
+*.seed
+*.log
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+*.swp
+
+# Local databases / cache
+*.sqlite
+*.db
+cache/
+
+# Tests / coverage (if added later)
+coverage
+
+# Misc
+mocks/
+assets/images/*.png~
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# Exclude everything not needed for build that could bloat context
+**/*.md
+!README.md
+!.github
+!.github/**

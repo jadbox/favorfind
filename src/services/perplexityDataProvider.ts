@@ -130,7 +130,7 @@ function getMostCommonCategory(
         "insights",
         "basics",
         "causes",
-        "Risk Factors",
+        "Risk Factor",
         "Diagnosis",
         "Epidemiology",
         "Meta-Analysis",
