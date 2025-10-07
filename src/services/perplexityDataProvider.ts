@@ -121,7 +121,7 @@ function getMostCommonCategory(
   }> = [
     {
       category: "article",
-      patterns: ["research", "analysis", "Trends", "wikipedia", "article"],
+      patterns: ["research", "Trends", "wikipedia", "article"],
     },
     { category: "trial", patterns: ["trial", "study", "case report"] },
     {
@@ -142,7 +142,6 @@ function getMostCommonCategory(
         "consensus",
         "guideline",
         "review",
-        "guidance",
         "recommendation",
         "overview",
       ],
