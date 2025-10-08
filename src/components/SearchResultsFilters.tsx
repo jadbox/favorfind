@@ -178,16 +178,16 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
       </div>
 
       {/* Main filter content */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="bg-white border border-gray-200 rounded-lg p-2 md:p-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 md:gap-6">
           {/* Filter options - left side */}
           <div className="lg:col-span-2">
             {activeTab === "general" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {generalFilters.map((filter) => (
                   <label
                     key={filter}
-                    className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer"
+                    className="flex items-center space-x-3 p-0 md:p-2 rounded hover:bg-gray-50 cursor-pointer"
                   >
                     <input
                       type="radio"
@@ -225,8 +225,8 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
           </div>
 
           {/* Dropdown filters - right side */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+          <div className="lg:col-span-2">
+            <div className="grid grid-cols-2 gap-2 md:gap-6">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   Primary Tumor Site:

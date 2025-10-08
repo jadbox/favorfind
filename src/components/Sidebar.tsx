@@ -4,10 +4,12 @@ import { getStoredUserData } from "../utils/localStorage";
 
 interface SidebarProps {
   searchHistory?: SearchHistory[];
+  className?: string;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
   searchHistory: externalHistory,
+  className,
 }) => {
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>(
     externalHistory ?? []
@@ -136,11 +138,15 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="w-44 md:w-64 bg-white border-r border-gray-200 p-4 min-h-screen">
+    <aside
+      className={`w-full md:w-64 bg-white border-t md:border-t-0 md:border-r border-gray-200 p-4 md:min-h-screen md:flex-shrink-0 ${
+        className ?? ""
+      }`}
+    >
       <div className="text-center mb-6">
         <a
           href="/"
-          className="btn btn-primary btn-outline btn-sm px-4 py-2 hover:text-medical-600 hover:bg-gray-50"
+          className="btn btn-primary font-semibold btn-outline btn-sm px-4 py-2 hover:text-medical-600 hover:bg-gray-50 whitespace-nowrap"
         >
           New Search
         </a>

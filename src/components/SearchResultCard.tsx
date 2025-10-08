@@ -129,9 +129,6 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
   return (
     <div className="card max-w-6xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="card-body p-4">
-        {/* Header with badges */}
-        {/* <div className="flex items-start justify-between mb-3"></div> */}
-
         {/* Title */}
         <h3 className="card-title text-lg font-semibold text-gray-900 mb-2 leading-tight">
           <a href={result.url} target="_blank" rel="noopener noreferrer">
