@@ -72,7 +72,7 @@ export class PerplexityDataProvider implements DataProvider {
           // }
 
           // search for most common word in title and snippet that matches "article", "trial", "guideline"
-          const category = getMostCommonCategory(result.title, result.snippet);
+          const category = "article";
 
           // result.snippet = result.snippet.split("^")[0] as string; // Remove any trailing "^ " and beyond
 
@@ -105,73 +105,6 @@ export class PerplexityDataProvider implements DataProvider {
       );
     }
   }
-}
-
-function getMostCommonCategory(
-  title: string,
-  text_body: string
-): "article" | "trial" | "guideline" {
-  const text = title + ": " + text_body;
-  const textLower = text.toLowerCase();
-
-  // Define category patterns with alternates
-  const categoryPatterns: Array<{
-    category: "article" | "trial" | "guideline";
-    patterns: string[];
-  }> = [
-    {
-      category: "article",
-      patterns: ["research", "Trends", "wikipedia", "article"],
-    },
-    { category: "trial", patterns: ["trial", "study", "case report"] },
-    {
-      category: "guideline",
-      patterns: [
-        "insights",
-        "basics",
-        "causes",
-        "Risk Factor",
-        "Diagnosis",
-        "Epidemiology",
-        "Meta-Analysis",
-        "Systematic Review",
-        "review",
-        "of the Literature",
-        "recommendations",
-        "guidance",
-        "consensus",
-        "guideline",
-        "review",
-        "recommendation",
-        "overview",
-      ],
-    },
-  ];
-
-  // Find the first occurrence of any category word
-  let firstMatch: {
-    position: number;
-    category: "article" | "trial" | "guideline";
-  } | null = null;
-
-  for (const { category, patterns } of categoryPatterns) {
-    for (const pattern of patterns) {
-      // Allow a simple plural form by matching an optional trailing 's' when the pattern
-      // itself does not already end with 's'.
-      const needsPlural = !/[sS]$/.test(pattern);
-      const patternWithPlural = needsPlural ? `${pattern}(s)?` : pattern;
-      const regex = new RegExp(`\\b${patternWithPlural}\\b`, "i");
-      const match = textLower.match(regex);
-
-      if (match && match.index !== undefined) {
-        if (!firstMatch || match.index < firstMatch.position) {
-          firstMatch = { position: match.index, category };
-        }
-      }
-    }
-  }
-
-  return firstMatch ? firstMatch.category : "article";
 }
 
 export function extractSummary(snippet: string): string {

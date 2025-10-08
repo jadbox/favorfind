@@ -98,18 +98,6 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
       }
     }, 3000);
   };
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "article":
-        return "badge-primary";
-      case "trial":
-        return "badge-secondary";
-      case "guideline":
-        return "badge-accent";
-      default:
-        return "badge-primary";
-    }
-  };
 
   const formatDate = (dateString: string) => {
     // return new Date(dateString).toLocaleDateString("en-US", {
@@ -139,21 +127,10 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
   };
 
   return (
-    <div className="card bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="card-body p-6">
+    <div className="card max-w-6xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div className="card-body p-4">
         {/* Header with badges */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            <span className={`badge badge-sm ${getTypeColor(result.category)}`}>
-              {result.category.charAt(0).toUpperCase() +
-                result.category.slice(1)}
-            </span>
-          </div>
-          {/* <div className="flex items-center space-x-1 text-sm text-gray-500">
-            <Citation className="h-4 w-4" />
-            <span>{result.citationCount}</span>
-          </div> */}
-        </div>
+        {/* <div className="flex items-start justify-between mb-3"></div> */}
 
         {/* Title */}
         <h3 className="card-title text-lg font-semibold text-gray-900 mb-2 leading-tight">
