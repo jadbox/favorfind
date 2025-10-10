@@ -10,6 +10,11 @@ export interface Props {
 }
 
 const { title = "Medeligo Cancer Research" } = Astro.props;
+
+// Pages that should have a minimal layout (no header, sidebar, etc.)
+const minimalLayoutPages = ["/terms", "/privacy"];
+const currentPath = Astro.url.pathname.replace(/\/$/, "") || "/"; // Normalize path
+const isMinimalLayout = minimalLayoutPages.includes(currentPath);
 ---
 
 <!doctype html>
@@ -24,17 +29,22 @@ const { title = "Medeligo Cancer Research" } = Astro.props;
   </head>
   <body>
     <div class="min-h-screen bg-gray-50 flex flex-col">
-      <Header client:load />
+      {!isMinimalLayout && <Header client:load />}
 
-      <div class="flex flex-1 flex-col-reverse md:flex-row">
-        <Sidebar client:load />
+      <div
+        class:list={[
+          "flex flex-1",
+          { "flex-col-reverse md:flex-row": !isMinimalLayout },
+        ]}
+      >
+        {!isMinimalLayout && <Sidebar client:load />}
 
         <main class="flex-1 flex flex-col">
           <slot />
         </main>
       </div>
 
-      <Disclaimer client:load />
+      {!isMinimalLayout && <Disclaimer client:load />}
       <LoadingOverlay />
     </div>
 

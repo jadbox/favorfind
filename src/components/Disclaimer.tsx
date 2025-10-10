@@ -9,11 +9,11 @@ const Disclaimer: React.FC = () => {
           medical advice.
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 justify-center">
-          <a className="hover:text-gray-600" href="/terms">
+          <a className="hover:text-gray-600" href="/terms" target="_blank">
             Terms of Service
           </a>
           <span aria-hidden="true">•</span>
-          <a className="hover:text-gray-600" href="/privacy">
+          <a className="hover:text-gray-600" href="/privacy" target="_blank">
             Privacy Policy
           </a>
           {/* <span className="hidden md:inline" aria-hidden="true">
