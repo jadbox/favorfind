@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const DISCLAIMER_STORAGE_KEY = "medeligo-disclaimer-accepted";
+const DISCLAIMER_STORAGE_KEY = "favorfind-disclaimer-accepted";
 
 const DisclaimerModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(() => {
@@ -27,13 +27,13 @@ const DisclaimerModal: React.FC = () => {
         <h2 className="text-2xl font-semibold text-gray-900">Disclaimer</h2>
         <div className="mt-4 space-y-3 text-sm text-gray-600">
           <p>
-            Medeligo provides research tools and article summaries for
+            FavorFind provides research tools and article summaries for
             informational purposes only. We do not offer medical advice, and all
             content on this platform should be independently verified with a
             licensed healthcare professional.
           </p>
           <p>
-            By continuing, you agree that Medeligo and its partners are not
+            By continuing, you agree that FavorFind and its partners are not
             liable for any decisions or actions taken based on information
             obtained through this site. Never disregard professional medical
             guidance or delay seeking care because of materials you find here.

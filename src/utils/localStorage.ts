@@ -1,6 +1,6 @@
 import type { UserData, SearchHistory, SearchResult } from "../types";
 
-const STORAGE_KEY = "medeligo-user-data";
+const STORAGE_KEY = "favorfind-user-data";
 
 const defaultUserData: UserData = {
   searchHistory: [],

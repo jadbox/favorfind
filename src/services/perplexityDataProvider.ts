@@ -25,19 +25,15 @@ export class PerplexityDataProvider implements DataProvider {
 
     try {
       // Build the search query with domain filtering
-      let searchQuery = `${q} PubMed article for cancer clinicians.`; //  -site:cancer.gov
+      let searchQuery = `Where to buy ${q}`; //  -site:cancer.gov
 
       // Add filter type if provided
       if (filter_type) {
         searchQuery += ` ${filter_type}`;
       }
 
-      searchQuery += ` (site:pubmed.ncbi.nlm.nih.gov OR site:nih.gov)`;
+      //      searchQuery += ` (site:pubmed.ncbi.nlm.nih.gov OR site:nih.gov)`;
 
-      // Add domain filtering to restrict to PubMed and NIH sites
-      searchQuery += ` (site:pubmed.ncbi.nlm.nih.gov OR site:nih.gov)`;
-
-      console.log("::Perplexity Search Query::");
       console.log(searchQuery);
 
       // Use the Search API for direct web search results

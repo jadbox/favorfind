@@ -1,5 +1,5 @@
 // Centralized loading state management
-const LOADING_SESSION_KEY = "medeligo-loading-active";
+const LOADING_SESSION_KEY = "favorfind-loading-active";
 
 const hasSessionStorage =
   typeof window !== "undefined" && typeof window.sessionStorage !== "undefined";

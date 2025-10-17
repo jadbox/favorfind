@@ -35,8 +35,8 @@ ENV NODE_ENV=production \
 	PORT=4321 \
 	HOST=0.0.0.0
 
-LABEL org.opencontainers.image.source="https://github.com/jadbox/medeligo-cancer-net" \
-	  org.opencontainers.image.description="Medeligo Cancer Net (Astro SSR on Bun)"
+LABEL org.opencontainers.image.source="https://github.com/jadbox/favorfind" \
+	  org.opencontainers.image.description="FavorFind Cancer Net (Astro SSR on Bun)"
 
 # Copy dependencies + build output
 COPY --from=deps /app/node_modules ./node_modules

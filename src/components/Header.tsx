@@ -1,5 +1,5 @@
 import React from "react";
-import { Library } from "lucide-react";
+import { Library, Search } from "lucide-react";
 
 const Header: React.FC = () => {
   return (
@@ -7,11 +7,8 @@ const Header: React.FC = () => {
       <div className="flex items-center justify-between mx-auto">
         {/* Logo */}
         <a href="/" className="flex items-center">
-          <img
-            src="/images/Logo-2-trans-600x176.png"
-            alt="Medeligo logo"
-            className="h-10 w-auto"
-          />
+          <Search className="h-8 w-8 text-medical-600" />
+          <span className="text-xl font-bold text-medical-600">FavorFind</span>
         </a>
 
         {/* Right Navigation */}

@@ -13,7 +13,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ query }) => {
           type="text"
           name="q"
           defaultValue={query}
-          placeholder="Ask Medeligo a question"
+          placeholder="Ask FavorFind a question"
           className="input input-bordered w-full pr-24 pl-6 text-lg h-16 bg-white border-2 border-gray-300 focus:border-medical-600 focus:outline-none rounded-xl"
         />
         <div className="absolute right-3 flex items-center">

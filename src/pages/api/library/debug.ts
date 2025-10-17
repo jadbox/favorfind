@@ -10,7 +10,7 @@ export const GET: APIRoute = async () => {
         {
           message: "User data migrated to localStorage",
           storage: "client-side",
-          note: "Check browser DevTools > Application > Local Storage for 'medeligo-user-data'",
+          note: "Check browser DevTools > Application > Local Storage for 'favorfind-user-data'",
           apiStatus: "Endpoints are stubs for future database integration",
         },
         null,

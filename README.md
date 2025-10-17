@@ -1,4 +1,4 @@
-# Medeligo Cancer Research Platform
+# FavorFind Cancer Research Platform
 
 An advanced knowledge discovery platform designed for oncology professionals to search, discover, and organize the latest cancer research, clinical trials, and treatment guidelines.
 
