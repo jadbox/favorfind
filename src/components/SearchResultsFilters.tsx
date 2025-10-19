@@ -148,17 +148,17 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
       {/* Header with tabs */}
       <div className="flex flex-wrap items-center gap-4 mb-4">
         <div className="flex items-center space-x-2">
-          <Filter className="h-4 w-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">
+          <Filter className="h-4 w-4 text-text-secondary" />
+          <span className="text-sm font-medium text-text-primary">
             Source Type Filters:
           </span>
         </div>
-        <div className="flex bg-gray-100 rounded-md p-1">
+        <div className="flex bg-base-250 rounded-md p-1">
           <button
             className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
               activeTab === "general"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-primary text-white shadow-sm"
+                : "text-text-secondary hover:text-text-primary"
             }`}
             onClick={() => setActiveTab("general")}
           >
@@ -167,8 +167,8 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
           <button
             className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
               activeTab === "therapy"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-primary text-white shadow-sm"
+                : "text-text-secondary hover:text-text-primary"
             }`}
             onClick={() => setActiveTab("therapy")}
           >
@@ -178,7 +178,7 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
       </div>
 
       {/* Main filter content */}
-      <div className="bg-white border border-gray-200 rounded-lg p-2 md:p-4">
+      <div className="filter-panel border rounded-lg p-2 md:p-4">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 md:gap-6">
           {/* Filter options - left side */}
           <div className="lg:col-span-2">
@@ -187,17 +187,17 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
                 {generalFilters.map((filter) => (
                   <label
                     key={filter}
-                    className="flex items-center space-x-3 p-0 md:p-2 rounded hover:bg-gray-50 cursor-pointer"
+                    className="flex items-center space-x-3 p-0 md:p-2 rounded hover:bg-hover-overlay cursor-pointer transition-colors"
                   >
                     <input
                       type="radio"
                       name="filter-type"
-                      className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
+                      className="w-4 h-4"
                       value={filter}
                       checked={selectedType === filter}
                       onChange={() => setSelectedType(filter)}
                     />
-                    <span className="text-sm text-gray-700">{filter}</span>
+                    <span className="text-sm text-text-primary">{filter}</span>
                   </label>
                 ))}
               </div>
@@ -207,17 +207,17 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
                 {therapyFilters.map((filter) => (
                   <label
                     key={filter}
-                    className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50 cursor-pointer"
+                    className="flex items-center space-x-3 p-2 rounded hover:bg-hover-overlay cursor-pointer transition-colors"
                   >
                     <input
                       type="radio"
                       name="filter-type"
-                      className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
+                      className="w-4 h-4"
                       value={filter}
                       checked={selectedType === filter}
                       onChange={() => setSelectedType(filter)}
                     />
-                    <span className="text-sm text-gray-700">{filter}</span>
+                    <span className="text-sm text-text-primary">{filter}</span>
                   </label>
                 ))}
               </div>
@@ -228,13 +228,13 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
           <div className="lg:col-span-2">
             <div className="grid grid-cols-2 gap-2 md:gap-6">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-text-primary mb-1">
                   Primary Tumor Site:
                 </label>
                 <select
                   value={primaryTumorSite}
                   onChange={(e) => setPrimaryTumorSite(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   {primaryTumorSites.map((site) => (
                     <option key={site} value={site}>
@@ -245,13 +245,13 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-text-primary mb-1">
                   Age Group:
                 </label>
                 <select
                   value={ageGroup}
                   onChange={(e) => setAgeGroup(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   {ageGroups.map((age) => (
                     <option key={age} value={age}>
@@ -262,13 +262,13 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-text-primary mb-1">
                   Gender:
                 </label>
                 <select
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   {genders.map((g) => (
                     <option key={g} value={g}>
@@ -279,13 +279,13 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-text-primary mb-1">
                   Sort by:
                 </label>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
                 >
                   <option value="relevance">Relevance</option>
                   <option value={`${new Date().getFullYear()}`}>
@@ -304,7 +304,7 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
         <div className="flex justify-end mt-4">
           <button
             onClick={handleUpdateFilters}
-            className="px-6 py-2 bg-medical-600 hover:bg-medical-700 text-white text-sm font-medium rounded-md shadow-sm transition-colors"
+            className="px-6 py-2 bg-primary hover:bg-opacity-90 text-white text-sm font-medium rounded-md shadow-sm transition-all hover:shadow-lg"
           >
             Update Filters
           </button>

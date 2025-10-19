@@ -127,17 +127,17 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
   };
 
   return (
-    <div className="card max-w-6xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="card-body p-4">
+    <div className="card max-w-6xl border shadow-sm">
+      <div className="card-body p-6">
         {/* Title */}
-        <h3 className="card-title text-lg font-semibold text-gray-900 mb-2 leading-tight">
-          <a href={result.url} target="_blank" rel="noopener noreferrer">
+        <h3 className="card-title text-lg font-semibold mb-2 leading-tight">
+          <a href={result.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
             {result.title}
           </a>
         </h3>
 
         {/* Source and Date */}
-        <div className="flex items-center space-x-4 mb-3 text-sm text-gray-600">
+        <div className="flex items-center space-x-4 mb-3 text-sm text-text-secondary">
           <span className="font-medium">
             {extractDomain(result.url)}
             <span className="grayscale text-gray-400 ml-1">
@@ -149,7 +149,7 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
         </div>
 
         {/* Abstract */}
-        <p className="text-gray-700 text-sm leading-relaxed mb-4 line-clamp-3">
+        <p className="text-text-secondary text-sm leading-relaxed mb-4 line-clamp-3">
           {result.abstract}
         </p>
 
@@ -159,17 +159,17 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
             href={result.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-medium text-gray-600 hover:text-gray-900"
+            className="text-sm font-medium text-text-secondary hover:text-primary transition-colors"
           >
             Open in New Window
           </a>
           <button
             onClick={handleSaveToggle}
             disabled={isLoading}
-            className={`btn btn-sm rounded-md ${
+            className={`btn btn-sm rounded-md transition-all ${
               isSaved
-                ? "border border-teal-600 bg-white text-teal-600 hover:bg-teal-50"
-                : "bg-teal-100 text-teal-800 hover:bg-teal-200"
+                ? "bg-primary bg-opacity-20 border border-primary text-primary hover:bg-opacity-30"
+                : "bg-base-300 text-text-primary border border-border-subtle hover:bg-base-250"
             } ${isLoading ? "cursor-not-allowed opacity-50" : ""}`}
             aria-label={isSaved ? "Remove from Library" : "Save to Library"}
           >
