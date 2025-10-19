@@ -40,7 +40,7 @@ export const POST: APIRoute = async ({ request }) => {
       Each item in the array should be an object with "label", "value", and "icon" properties.
       - "label" should be a user-friendly name for the sub-category.
       - "value" should be a URL-friendly slug for the sub-category.
-      - "icon" should be the name of a relevant icon from the lucide-react library. Choose from this list: ${availableIcons.join(
+      - "icon" should be the name of a relevant and *mostly unique* icon from the lucide-react library that *properly describes* the sub-category. Choose from this list: ${availableIcons.join(
         ", "
       )}.
       ${
