@@ -10,27 +10,19 @@ if (!GEMINI_API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-// A helper to get a Lucide icon by name, or a default
-const getIcon = (name: string) => {
-  const icon = lucideIcons[name as keyof typeof lucideIcons];
-  return icon || lucideIcons.Search;
-};
-
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
-    const { selections } = body;
+    const { selections, exclude = [] } = body;
 
-    if (!Array.isArray(selections) || selections.length !== 2) {
+    if (!Array.isArray(selections) || selections.length === 0) {
       return new Response(
         JSON.stringify({ error: "Invalid selections provided." }),
         { status: 400 }
       );
     }
 
-    const [first, second] = selections;
-
-    const cacheKey = `dialer:${first}:${second}`;
+    const cacheKey = `dialer:${selections.join(":")}:${exclude.join(",")}`;
     const cachedMenu = getCachedData(cacheKey);
 
     if (cachedMenu) {
@@ -40,12 +32,22 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
+    const availableIcons = Object.keys(lucideIcons);
     const prompt = `
-      Given the user's interest in "${first}" and "${second}", generate a concise JSON array of up to 9 related sub-categories.
+      Given the user's interest in "${selections.join(
+        ", "
+      )}", generate a concise JSON array of up to 9 related sub-categories.
       Each item in the array should be an object with "label", "value", and "icon" properties.
       - "label" should be a user-friendly name for the sub-category.
       - "value" should be a URL-friendly slug for the sub-category.
-      - "icon" should be the name of a relevant icon from the lucide-react library.
+      - "icon" should be the name of a relevant icon from the lucide-react library. Choose from this list: ${availableIcons.join(
+        ", "
+      )}.
+      ${
+        exclude.length > 0
+          ? `Do not include any of the following items: ${exclude.join(", ")}.`
+          : ""
+      }
       Do not include any preamble or explanation in your response.
     `;
 
@@ -72,18 +74,9 @@ export const POST: APIRoute = async ({ request }) => {
     const text = response.text || "[]";
     const parsed = JSON.parse(text.trim());
 
-    // We need to send back something the client can render. Since we can't
-    // serialize the icon components themselves, we'll just send the names
-    // and let the client handle it. The client-side code will need to be
-    // updated to map these names to the actual components.
-    const menuItems = parsed.map((item: any) => ({
-      ...item,
-      // The client will need to map this icon name to the actual icon component
-    }));
+    setCachedData(cacheKey, parsed);
 
-    setCachedData(cacheKey, menuItems);
-
-    return new Response(JSON.stringify(menuItems), {
+    return new Response(JSON.stringify(parsed), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

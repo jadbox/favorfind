@@ -184,6 +184,25 @@
   }
 }
 
+.progress-indicator {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.progress-step {
+  width: 2.5rem;
+  height: 0.5rem;
+  background-color: var(--color-base-250);
+  border-radius: 0.25rem;
+  margin: 0 0.25rem;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.progress-step.active {
+  background-color: var(--color-primary);
+}
+
 button:hover,
 [type="button"]:hover,
 [type="submit"]:hover,
@@ -192,4 +211,18 @@ button:hover,
 .a11y-button:hover,
 .btn:hover {
   cursor: pointer;
+}
+
+@keyframes bubble-in {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

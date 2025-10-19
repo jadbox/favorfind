@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { dialerConfig, type MenuItem } from "../config/dialerConfig";
-import { LoaderCircle, Search } from "lucide-react";
+import { LoaderCircle, Search, PlusCircle, RotateCcw } from "lucide-react";
 import * as lucideIcons from "lucide-react";
 
 const getIcon = (name: string) => {
@@ -11,75 +11,130 @@ const getIcon = (name: string) => {
 const Dialer: React.FC = () => {
   const [step, setStep] = useState(1);
   const [selections, setSelections] = useState<string[]>([]);
-  const [thirdLevelMenu, setThirdLevelMenu] = useState<MenuItem[]>([]);
+  const [menuHistory, setMenuHistory] = useState<MenuItem[][]>([
+    dialerConfig.topLevel,
+  ]);
+  const [excludedItems, setExcludedItems] = useState<Record<number, string[]>>(
+    {}
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [animateIn, setAnimateIn] = useState(true);
 
+  // Trigger animation when menu changes
   useEffect(() => {
-    if (step === 3 && selections.length === 2) {
-      const fetchThirdLevelMenu = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const response = await fetch("/api/dialer/generateMenu", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ selections }),
-          });
-          if (!response.ok) {
-            throw new Error("Failed to fetch the third menu.");
-          }
-          const data = await response.json();
-          const menuItemsWithIcons = data.map((item: any) => ({
-            ...item,
-            icon: getIcon(item.icon),
-          }));
-          setThirdLevelMenu(menuItemsWithIcons);
-        } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "An unknown error occurred."
-          );
-        } finally {
-          setLoading(false);
+    setAnimateIn(false);
+    setSelectedItem(null);
+    const timer = setTimeout(() => setAnimateIn(true), 50);
+    return () => clearTimeout(timer);
+  }, [menuHistory, step]);
+
+  const fetchDynamicMenu = async (
+    currentSelections: string[],
+    currentStep: number,
+    exclude: string[] = []
+  ) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch("/api/dialer/generateMenu", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ selections: currentSelections, exclude }),
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch menu for step ${currentStep}.`);
         }
-      };
-      fetchThirdLevelMenu();
-    }
-  }, [step, selections]);
+        const data = await response.json();
+        const menuItemsWithIcons = data.map((item: any) => ({
+          ...item,
+          icon: getIcon(item.icon),
+        }));
+
+        setMenuHistory((prev) => {
+          const newHistory = [...prev];
+          newHistory[currentStep - 1] = menuItemsWithIcons;
+          return newHistory;
+        });
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const handleSelect = (item: MenuItem) => {
-    const newSelections = [...selections, item.value];
-    setSelections(newSelections);
+    // Set selected item to trigger fade-out animation
+    setSelectedItem(item.value);
+    
+    // Wait for fade-out animation before proceeding
+    setTimeout(() => {
+      const newSelections = [...selections, item.value];
+      setSelections(newSelections);
 
-    if (step < 3) {
-      setStep(step + 1);
-    } else {
-      const query = newSelections.join("+");
-      window.location.href = `/search?q=${encodeURIComponent(query)}`;
-    }
+      if (step < 4) {
+        const nextStep = step + 1;
+        let nextMenuItems: MenuItem[] = [];
+
+        if (nextStep === 2) {
+          const firstSelection = newSelections[0];
+          if (firstSelection && dialerConfig.secondLevel[firstSelection]) {
+            nextMenuItems = dialerConfig.secondLevel[firstSelection];
+          }
+        }
+
+        setMenuHistory((prev) => [...prev.slice(0, nextStep - 1), nextMenuItems]);
+        setStep(nextStep);
+
+        if (nextStep > 2) {
+          fetchDynamicMenu(newSelections, nextStep);
+        }
+      } else {
+        const query = newSelections.join("+");
+        window.location.href = `/search?q=${encodeURIComponent(query)}`;
+      }
+    }, 250);
+  };
+
+  const handleMore = () => {
+    const currentMenuItems = menuHistory[step - 1] || [];
+    const newExclusions = [
+      ...(excludedItems[step] || []),
+      ...currentMenuItems.map((i) => i.value),
+    ];
+
+    setExcludedItems((prev) => ({ ...prev, [step]: newExclusions }));
+
+    fetchDynamicMenu(selections, step, newExclusions);
+  };
+
+  const handleRestart = () => {
+    setStep(1);
+    setSelections([]);
+    setMenuHistory([dialerConfig.topLevel]);
+    setExcludedItems({});
+    setError(null);
   };
 
   const renderMenu = () => {
-    let menuItems: MenuItem[] = [];
+    const currentMenuItems = menuHistory[step - 1] || [];
     let title = "";
 
     switch (step) {
       case 1:
-        menuItems = dialerConfig.topLevel;
         title = "What do you want to do?";
         break;
       case 2:
-        const firstSelection = selections[0];
-        if (firstSelection && dialerConfig.secondLevel[firstSelection]) {
-          menuItems = dialerConfig.secondLevel[firstSelection];
-          title = `What kind of "${firstSelection}"?`;
-        }
+        title = `What kind of "${selections[0]}"?`;
         break;
       case 3:
-        menuItems = thirdLevelMenu;
         title = `What about "${selections[1]}"?`;
+        break;
+      case 4:
+        title = `More specifically, regarding "${selections[2]}"?`;
         break;
       default:
         return null;
@@ -87,6 +142,14 @@ const Dialer: React.FC = () => {
 
     return (
       <div>
+        <div className="progress-indicator">
+          {[1, 2, 3, 4].map((s) => (
+            <div
+              key={s}
+              className={`progress-step ${step >= s ? "active" : ""}`}
+            />
+          ))}
+        </div>
         <h2 className="text-2xl text-center font-bold mb-6">{title}</h2>
         {loading && (
           <div className="flex justify-center items-center">
@@ -96,11 +159,22 @@ const Dialer: React.FC = () => {
         {error && <p className="text-red-500 text-center">{error}</p>}
         {!loading && !error && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {menuItems.map((item) => (
+            {currentMenuItems.map((item, index) => (
               <button
                 key={item.value}
                 onClick={() => handleSelect(item)}
-                className="flex flex-col items-center justify-center p-4 border rounded-lg hover:bg-gray-700 transition-colors"
+                className={`flex flex-col items-center justify-center p-4 border rounded-lg hover:bg-gray-700 transition-all duration-250 ${
+                  animateIn 
+                    ? 'animate-[bubble-in_0.25s_ease-out_forwards]' 
+                    : 'opacity-0 scale-0'
+                } ${
+                  selectedItem && selectedItem !== item.value
+                    ? 'opacity-0 scale-90'
+                    : selectedItem === item.value
+                    ? 'scale-110'
+                    : ''
+                }`}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <item.icon className="h-10 w-10 mb-2" />
                 <span className="text-center">{item.label}</span>
@@ -108,6 +182,24 @@ const Dialer: React.FC = () => {
             ))}
           </div>
         )}
+        <div className="flex justify-center items-center gap-4 mt-8">
+          <button
+            onClick={handleRestart}
+            className="flex items-center justify-center px-6 py-3 border-2 border-gray-600 rounded-lg hover:bg-purple-600/20 hover:border-purple-500 transition-all duration-200 text-lg font-semibold"
+          >
+            <RotateCcw className="h-6 w-6 mr-2" />
+            <span>Restart</span>
+          </button>
+          {step > 1 && (
+            <button
+              onClick={handleMore}
+              className="flex items-center justify-center px-6 py-3 border-2 border-purple-500 bg-purple-600/10 rounded-lg hover:bg-purple-600/30 hover:border-purple-400 transition-all duration-200 text-lg font-semibold"
+            >
+              <PlusCircle className="h-6 w-6 mr-2" />
+              <span>More</span>
+            </button>
+          )}
+        </div>
       </div>
     );
   };
