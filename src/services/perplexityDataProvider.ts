@@ -45,7 +45,7 @@ export class PerplexityDataProvider implements DataProvider {
         max_tokens_per_page: 1024, // Balanced extraction for abstracts 1024
       });
 
-      console.log("Perplexity search response:", searchResponse);
+      // console.log("Perplexity search response:", searchResponse);
 
       //filter results at a root domain without a page path
       searchResponse.results = (searchResponse.results || []).filter(
