@@ -139,7 +139,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside
-      className={`w-full md:w-64 bg-white border-t md:border-t-0 md:border-r border-gray-200 p-4 md:min-h-screen md:flex-shrink-0 ${
+      className={`w-full md:w-64 border-t md:border-t-0 md:border-r border-gray-200 p-4 md:min-h-screen md:flex-shrink-0 ${
         className ?? ""
       }`}
     >

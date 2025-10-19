@@ -28,7 +28,7 @@ const isMinimalLayout = minimalLayoutPages.includes(currentPath);
     <title>{title}</title>
   </head>
   <body>
-    <div class="min-h-screen bg-gray-50 flex flex-col">
+    <div class="min-h-screen flex flex-col">
       {!isMinimalLayout && <Header client:load />}
 
       <div

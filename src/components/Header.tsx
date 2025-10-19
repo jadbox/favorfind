@@ -3,7 +3,7 @@ import { Library, Search } from "lucide-react";
 
 const Header: React.FC = () => {
   return (
-    <header className="bg-white border-b border-gray-200 px-2 md:px-6 py-2 min-w-full">
+    <header className="border-b border-gray-200 px-2 md:px-6 py-2 min-w-full">
       <div className="flex items-center justify-between mx-auto">
         {/* Logo */}
         <a href="/" className="flex items-center">

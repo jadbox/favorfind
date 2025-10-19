@@ -8,7 +8,7 @@ interface SearchBarProps {
 const SearchBar: React.FC<SearchBarProps> = ({ query }) => {
   return (
     <form action="/search" method="get" className="mb-12">
-      <div className="relative flex items-center">
+      <div id="search" className="relative flex items-center">
         <input
           type="text"
           name="q"

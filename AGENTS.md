@@ -1,3 +1,5 @@
+The Bun dev server is always running. Ask for logs if needed.
+
 # Development Tips & Lessons Learned
 
 This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Scholar API to provide a research paper search interface. Below are patterns, best practices, and lessons learned during development. Most pages are server-side rendered for SEO and performance. Deployed to fly.io cloud with CLI and Docker. We are NOT using page transitions- only SSR SPA.

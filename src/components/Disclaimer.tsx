@@ -6,7 +6,7 @@ const Disclaimer: React.FC = () => {
       <div className="max-w-7xl mx-auto text-sm text-gray-500 w-full text-center">
         <p>
           For informational purposes only — not a substitute for professional
-          medical advice.
+          medical, financial, or legal advice.
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 justify-center">
           <a className="hover:text-gray-600" href="/terms" target="_blank">
