@@ -20,6 +20,14 @@ const Dialer: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [userSettings, setUserSettings] = useState<{ location: { cityName: string; stateName: string; countryName: string; }; preferences: string; } | null>(null);
+
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('userSettings');
+    if (savedSettings) {
+      setUserSettings(JSON.parse(savedSettings));
+    }
+  }, []);
 
   const fetchDynamicMenu = async (
     currentSelections: string[],
@@ -85,7 +93,17 @@ const Dialer: React.FC = () => {
           fetchDynamicMenu(newSelections, nextStep);
         }
       } else {
-        const query = newSelections.join("+");
+        let query = newSelections.join("+");
+        if (userSettings) {
+          const { location, preferences } = userSettings;
+          const locationString = [location.cityName, location.stateName, location.countryName].filter(Boolean).join(", ");
+          if (locationString) {
+            query = `${locationString} ${query}`;
+          }
+          if (preferences) {
+            query = `${query} ${preferences}`;
+          }
+        }
         window.location.href = `/search?q=${encodeURIComponent(query)}`;
       }
     }, 250);

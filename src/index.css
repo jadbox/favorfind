@@ -257,3 +257,8 @@ button:hover,
   transition: all 0.25s ease-out;
   pointer-events: none;
 }
+
+/* Custom styling for react-country-state-city components */
+input[type="text"] {
+  cursor: pointer;
+}

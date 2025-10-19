@@ -1,5 +1,5 @@
 import React from "react";
-import { Library, Search } from "lucide-react";
+import { Library, Search, Settings } from "lucide-react";
 
 const Header: React.FC = () => {
   return (
@@ -19,6 +19,14 @@ const Header: React.FC = () => {
           >
             <Library className="h-8 w-8 text-medical-600" />
             <span>Saved Results</span>
+          </a>
+
+          <a
+            href="/settings"
+            className="btn btn-ghost btn-sm flex items-center space-x-2"
+          >
+            <Settings className="h-8 w-8 text-medical-600" />
+            <span>Settings</span>
           </a>
 
           {/* User Profile */}

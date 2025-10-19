@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SettingsComponent from '../components/Settings.tsx';
+---
+
+<BaseLayout title="Settings - FavorFind">
+  <main class="container mx-auto px-4">
+    <SettingsComponent client:load />
+  </main>
+</BaseLayout>
