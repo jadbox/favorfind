@@ -24,11 +24,10 @@ const searchData = await performSearch(searchParams);
       <div class="mb-4">
         <SearchResultsFilters
           client:load
-          selectedType={searchParams.selectedType}
-          primaryTumorSite={searchParams.primaryTumorSite}
-          ageGroup={searchParams.ageGroup}
-          gender={searchParams.gender}
-          sortBy={searchParams.sortBy as "relevance" | "date" | "citations"}
+          contentType={searchParams.selectedType}
+          sourceType={"All"}
+          datePublished={"any"}
+          sortBy={searchParams.sortBy as "relevance" | "date" | "popular"}
         />
       </div>
 

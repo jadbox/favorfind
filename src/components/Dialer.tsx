@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { dialerConfig, type MenuItem } from "../config/dialerConfig";
 import { LoaderCircle, Search, PlusCircle, RotateCcw } from "lucide-react";
 import * as lucideIcons from "lucide-react";
+import { LoadingUtils } from "../utils/loadingUtils";
 
 const getIcon = (name: string) => {
   const icon = lucideIcons[name as keyof typeof lucideIcons];
@@ -104,6 +105,7 @@ const Dialer: React.FC = () => {
             query = `${query}. General Preferences [${preferences}]`;
           }
         }
+        LoadingUtils.show();
         window.location.href = `/search?q=${encodeURIComponent(query)}`;
       }
     }, 250);

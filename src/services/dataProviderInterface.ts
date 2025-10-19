@@ -1,9 +1,9 @@
-import type { SemanticScholarPaper } from "./semanticScholarMapper";
+import type { SearchResult } from "@/types";
 
 export interface DataProvider {
   fetchPapers(
     query: string,
     limit: number,
     filter_type?: string
-  ): Promise<SemanticScholarPaper[]>;
+  ): Promise<SearchResult[]>;
 }

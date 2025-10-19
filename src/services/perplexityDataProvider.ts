@@ -1,6 +1,6 @@
 import Perplexity from "@perplexity-ai/perplexity_ai";
 import type { DataProvider } from "./dataProviderInterface";
-import type { SemanticScholarPaper } from "./semanticScholarMapper";
+import type { SearchResult } from "../types"; // Import SearchResult
 
 // The Perplexity SDK reads the API key from the PERPLEXITY_API_KEY environment variable.
 // No need to check for it manually if the SDK handles it.
@@ -16,7 +16,7 @@ export class PerplexityDataProvider implements DataProvider {
     query: string,
     limit: number,
     filter_type: string = ""
-  ): Promise<SemanticScholarPaper[]> {
+  ): Promise<SearchResult[]> {
     const q = query.trim();
 
     if (!q) {
@@ -25,16 +25,19 @@ export class PerplexityDataProvider implements DataProvider {
 
     try {
       // Build the search query with domain filtering
-      let searchQuery = `Top rated sources for ${q}`; //  -site:cancer.gov
+      let searchQuery = `Top rated sources for ${q}`;
 
       // Add filter type if provided
       if (filter_type) {
         searchQuery += ` ${filter_type}`;
       }
 
-      //      searchQuery += ` (site:pubmed.ncbi.nlm.nih.gov OR site:nih.gov)`;
-
-      console.log(searchQuery);
+      console.log(
+        "Using PerplexityDataProvider with query:",
+        q,
+        "filter:",
+        filter_type
+      );
 
       // Use the Search API for direct web search results
       const effectiveLimit = Math.min(limit, 20); // Search API max is 20
@@ -45,8 +48,6 @@ export class PerplexityDataProvider implements DataProvider {
         max_tokens_per_page: 1024, // Balanced extraction for abstracts 1024
       });
 
-      // console.log("Perplexity search response:", searchResponse);
-
       //filter results at a root domain without a page path
       searchResponse.results = (searchResponse.results || []).filter(
         (result) => {
@@ -55,43 +56,30 @@ export class PerplexityDataProvider implements DataProvider {
         }
       );
 
-      // Map search results to SemanticScholarPaper format
-      const papers: SemanticScholarPaper[] = (searchResponse.results || []).map(
+      // Map search results to SearchResult format
+      const searchResults: SearchResult[] = (searchResponse.results || []).map(
         (result, index) => {
           // Extract year from date if available
-          let year: string = (result.date as string) || "";
-          // if (result.date) {
-          //   const yearMatch = result.date.match(/\d{4}/);
-          //   if (yearMatch) {
-          //     year = parseInt(yearMatch[0], 10);
-          //   }
-          // }
+          let publicationDate: string = (result.date as string) || String(new Date().getFullYear());
 
-          // search for most common word in title and snippet that matches "article", "trial", "guideline"
-          const category = "article";
-
-          // result.snippet = result.snippet.split("^")[0] as string; // Remove any trailing "^ " and beyond
-
-          // if (result.snippet.includes("# ")) {
-          //   result.snippet = result.snippet.split("# ")[1] as string; // Remove any leading "# " if present
-          //   // cut anything after \n line break
-          //   result.snippet = result.snippet.split("\n")[0] as string;
-          // }
+          // Determine category (Perplexity doesn't provide this directly, default to "article")
+          const category: SearchResult["category"] = "article";
 
           return {
-            paperId: `perplexity-${Date.now()}-${index}`,
+            id: `perplexity-${Date.now()}-${index}`, // Map to id
             source: "Perplexity",
             title: result.title?.replace("www.", " ") || "Untitled",
-            category, // Default category since search API doesn't provide this
-            year: year, // Default to current year if not available
-            url: result.url || "",
+            publisher: new URL(result.url || "http://example.com").hostname || "Perplexity AI", // Use hostname as publisher
+            publicationDate,
             abstract: extractSummary(result.snippet) || "No abstract available",
             citationCount: 0, // Search API doesn't provide citation counts
+            url: result.url || "",
+            category,
           };
         }
       );
 
-      return papers;
+      return searchResults;
     } catch (error) {
       console.error("Perplexity API error:", error);
       throw new Error(

@@ -37,10 +37,11 @@ export const generateCacheKey = (
   query: string,
   limit: number,
   page: number = 1,
-  filter_type: string = ""
+  filter_type: string = "",
+  grounding_status: string = "ungrounded" // New parameter for grounding status
 ): string => {
   const filterPart = filter_type ? `:${filter_type}` : "";
-  return `${provider}:${query.toLowerCase()}:${limit}:${page}${filterPart}`;
+  return `${provider}:${query.toLowerCase()}:${limit}:${page}${filterPart}:${grounding_status}`;
 };
 
 export const getCachedData = <T>(cacheKey: string): T | null => {

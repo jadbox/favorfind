@@ -1,13 +1,14 @@
 export interface SearchResult {
   id: string;
   title: string;
+  description?: string; // Added description property
   source: string;
   publisher: string;
   publicationDate: string;
   abstract: string;
   citationCount: number;
   url: string;
-  category: "article" | "trial" | "guideline";
+  category: "article" | "trial" | "guideline" | "product";
 }
 
 export interface SearchHistory {

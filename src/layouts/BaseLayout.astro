@@ -62,9 +62,20 @@ const isMinimalLayout = minimalLayoutPages.includes(currentPath);
     <script>
       import { LoadingUtils } from "../utils/loadingUtils";
 
-      document.addEventListener("DOMContentLoaded", () => {
-        LoadingUtils.initializeForPage();
-      });
+      let cleanup: () => void;
+
+      function initialize() {
+        if (cleanup) {
+          cleanup();
+        }
+        cleanup = LoadingUtils.initializeForPage();
+      }
+
+      // Initialize on initial page load
+      initialize();
+
+      // Re-initialize after every Astro navigation
+      document.addEventListener("astro:page-load", initialize);
     </script>
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WP3XFJBXJS"

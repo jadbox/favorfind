@@ -16,9 +16,6 @@ export interface SearchData {
 export function buildFilterParams(params: SearchParams): string {
   return [
     params.selectedType !== "All" && params.selectedType,
-    params.primaryTumorSite !== "All" && params.primaryTumorSite,
-    params.ageGroup !== "All" && params.ageGroup,
-    params.gender !== "All" && params.gender,
     params.sortBy !== "relevance" && `${params.sortBy}`,
   ]
     .filter(Boolean)
