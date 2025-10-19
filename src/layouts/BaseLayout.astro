@@ -9,7 +9,7 @@ export interface Props {
   title?: string;
 }
 
-const { title = "FavorFind Cancer Research" } = Astro.props;
+const { title = "FavorFind" } = Astro.props;
 
 // Pages that should have a minimal layout (no header, sidebar, etc.)
 const minimalLayoutPages = ["/terms", "/privacy"];
@@ -22,9 +22,20 @@ const isMinimalLayout = minimalLayoutPages.includes(currentPath);
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" type="image/x-icon" href="/images/Mark-2.ico" />
-    <link rel="shortcut icon" href="/images/Mark-2.ico" />
-    <link rel="apple-touch-icon" href="/assets/images/Logo-2-scaled.png" />
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+    <link rel="shortcut icon" href="/images/favicon.ico" />
+    <link rel="apple-touch-icon" href="/images/ff-logo-nowords.png" />
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content="Find the very best with AI-powered search" />
+    <meta property="og:image" content="/images/favorfind-logo.png" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content="Find the very best with AI-powered search" />
+    <meta name="twitter:image" content="/images/favorfind-logo.png" />
+    
     <title>{title}</title>
   </head>
   <body>

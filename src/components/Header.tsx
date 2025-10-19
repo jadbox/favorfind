@@ -18,7 +18,7 @@ const Header: React.FC = () => {
             className="btn btn-ghost btn-sm flex items-center space-x-2"
           >
             <Library className="h-8 w-8 text-medical-600" />
-            <span>Library</span>
+            <span>Saved Results</span>
           </a>
 
           {/* User Profile */}

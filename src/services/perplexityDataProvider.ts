@@ -25,7 +25,7 @@ export class PerplexityDataProvider implements DataProvider {
 
     try {
       // Build the search query with domain filtering
-      let searchQuery = `Where to buy ${q}`; //  -site:cancer.gov
+      let searchQuery = `Top rated sources for ${q}`; //  -site:cancer.gov
 
       // Add filter type if provided
       if (filter_type) {
