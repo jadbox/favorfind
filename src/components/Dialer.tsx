@@ -101,7 +101,7 @@ const Dialer: React.FC = () => {
             query = `${locationString} ${query}`;
           }
           if (preferences) {
-            query = `${query} ${preferences}`;
+            query = `${query}. General Preferences [${preferences}]`;
           }
         }
         window.location.href = `/search?q=${encodeURIComponent(query)}`;

@@ -2,18 +2,18 @@ import React from "react";
 
 const Disclaimer: React.FC = () => {
   return (
-    <footer className="bg-white border-t border-gray-200 px-6 py-4 mt-8 w-full">
-      <div className="max-w-7xl mx-auto text-sm text-gray-500 w-full text-center">
+    <footer className="bg-base-200 border-t border-gray-700 px-6 py-4 mt-8 w-full">
+      <div className="max-w-7xl mx-auto text-sm text-gray-300 w-full text-center">
         <p>
           For informational purposes only — not a substitute for professional
           medical, financial, or legal advice.
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 justify-center">
-          <a className="hover:text-gray-600" href="/terms" target="_blank">
+          <a className="hover:text-primary transition-colors" href="/terms" target="_blank">
             Terms of Service
           </a>
           <span aria-hidden="true">•</span>
-          <a className="hover:text-gray-600" href="/privacy" target="_blank">
+          <a className="hover:text-primary transition-colors" href="/privacy" target="_blank">
             Privacy Policy
           </a>
           {/* <span className="hidden md:inline" aria-hidden="true">
