@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SearchBar from "../components/SearchBar";
+import Dialer from "../components/Dialer";
 import DisclaimerModal from "../components/DisclaimerModal";
 ---
 
@@ -12,11 +12,8 @@ import DisclaimerModal from "../components/DisclaimerModal";
         <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">
           Welcome to <span class="text-primary">FavorFind</span>
         </h1>
-        <h2 class="text-xl md:text-2xl text-text-secondary font-normal">
-          What do you want to search today?
-        </h2>
       </div>
-      <SearchBar />
+      <Dialer client:load />
     </div>
   </div>
 </BaseLayout>

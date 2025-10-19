@@ -1,107 +1,35 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Filter } from "lucide-react";
 import { LoadingUtils } from "../utils/loadingUtils";
+import { filterConfig } from "../config/filterConfig";
 
 interface SearchResultsFiltersProps {
-  selectedType: string;
-  primaryTumorSite: string;
-  ageGroup: string;
-  gender: string;
-  sortBy: "relevance" | "date" | "citations";
+  contentType: string;
+  sourceType: string;
+  datePublished: string;
+  sortBy: "relevance" | "popular" | "date";
 }
 
-const generalFilters = [
-  "All",
-  "Genetic Mutations",
-  "Histology / Pathology",
-  "Imaging",
-  "Overview",
-  "Prognostic Factors",
-  "Risk Factors",
-  "Staging",
-  // "Wikipedia",
-];
-
-const therapyFilters = [
-  "Adjuvant Therapy",
-  "Clinical Trials",
-  "Hormone Therapy",
-  "Immunotherapy",
-  "Local Recurrence",
-  "Management of Primary",
-  "Metastatic Disease",
-  "Neoadjuvant Therapy",
-  "Reconstruction",
-  "Regional Metastasis",
-  "Role of Chemotherapy",
-  "Role of Radiation",
-  "Role of Surgery",
-  "Targeted Therapy",
-  // "Surgical Video", // video not supported yet
-  // "Reconstructive Video",
-];
-
-const primaryTumorSites = [
-  "All",
-  "Breast",
-  "Colorectal",
-  "Kidney",
-  "Leukemia",
-  "Liver",
-  "Lung",
-  "Ovarian",
-  "Pancreatic",
-  "Prostate",
-  "Skin",
-  "Thyroid",
-];
-const ageGroups = [
-  "All",
-  "ages 0-12",
-  "ages 13-21",
-  "ages 22-44",
-  "ages 45-64",
-  "ages 65+",
-];
-const genders = ["All", "male", "female"];
-
 const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
-  // Store initial values for comparison
   const initialFilters = {
-    selectedType: props.selectedType,
-    primaryTumorSite: props.primaryTumorSite,
-    ageGroup: props.ageGroup,
-    gender: props.gender,
+    contentType: props.contentType,
+    sourceType: props.sourceType,
+    datePublished: props.datePublished,
     sortBy: props.sortBy,
   };
 
-  const [selectedType, setSelectedType] = useState(props.selectedType);
-  const [primaryTumorSite, setPrimaryTumorSite] = useState(
-    props.primaryTumorSite
-  );
-  const [ageGroup, setAgeGroup] = useState(props.ageGroup);
-  const [gender, setGender] = useState(props.gender);
+  const [contentType, setContentType] = useState(props.contentType);
+  const [sourceType, setSourceType] = useState(props.sourceType);
+  const [datePublished, setDatePublished] = useState(props.datePublished);
   const [sortBy, setSortBy] = useState<string>(props.sortBy);
-  const [activeTab, setActiveTab] = useState("general");
 
-  // Check if filters have changed from initial values
   const hasChanges =
-    selectedType !== initialFilters.selectedType ||
-    primaryTumorSite !== initialFilters.primaryTumorSite ||
-    ageGroup !== initialFilters.ageGroup ||
-    gender !== initialFilters.gender ||
+    contentType !== initialFilters.contentType ||
+    sourceType !== initialFilters.sourceType ||
+    datePublished !== initialFilters.datePublished ||
     sortBy !== initialFilters.sortBy;
 
-  useEffect(() => {
-    if (therapyFilters.includes(props.selectedType)) {
-      setActiveTab("therapy");
-    } else {
-      setActiveTab("general");
-    }
-  }, [props.selectedType]);
-
   const handleUpdateFilters = () => {
-    // Show loading overlay using the centralized utility
     LoadingUtils.show();
 
     const createHiddenInput = (name: string, value: string) => {
@@ -124,10 +52,9 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
     }
 
     const filters = {
-      filter_type: { value: selectedType, default: "All" },
-      primaryTumorSite: { value: primaryTumorSite, default: "All" },
-      ageGroup: { value: ageGroup, default: "All" },
-      gender: { value: gender, default: "All" },
+      contentType: { value: contentType, default: "All" },
+      sourceType: { value: sourceType, default: "All" },
+      datePublished: { value: datePublished, default: "any" },
       sortBy: { value: sortBy, default: "relevance" },
     };
 
@@ -145,161 +72,83 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
 
   return (
     <div className="mb-6">
-      {/* Header with tabs */}
-      <div className="flex flex-wrap items-center gap-4 mb-4">
-        <div className="flex items-center space-x-2">
-          <Filter className="h-4 w-4 text-text-secondary" />
-          <span className="text-sm font-medium text-text-primary">
-            Source Type Filters:
-          </span>
-        </div>
-        <div className="flex bg-base-250 rounded-md p-1">
-          <button
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-              activeTab === "general"
-                ? "bg-primary text-white shadow-sm"
-                : "text-text-secondary hover:text-text-primary"
-            }`}
-            onClick={() => setActiveTab("general")}
-          >
-            General
-          </button>
-          <button
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-              activeTab === "therapy"
-                ? "bg-primary text-white shadow-sm"
-                : "text-text-secondary hover:text-text-primary"
-            }`}
-            onClick={() => setActiveTab("therapy")}
-          >
-            Therapy
-          </button>
-        </div>
+      <div className="flex items-center gap-4 mb-4">
+        <Filter className="h-4 w-4 text-text-secondary" />
+        <span className="text-sm font-medium text-text-primary">Filters:</span>
       </div>
 
-      {/* Main filter content */}
-      <div className="filter-panel border rounded-lg p-2 md:p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 md:gap-6">
-          {/* Filter options - left side */}
-          <div className="lg:col-span-2">
-            {activeTab === "general" && (
-              <div className="grid grid-cols-2 gap-2">
-                {generalFilters.map((filter) => (
-                  <label
-                    key={filter}
-                    className="flex items-center space-x-3 p-0 md:p-2 rounded hover:bg-hover-overlay cursor-pointer transition-colors"
-                  >
-                    <input
-                      type="radio"
-                      name="filter-type"
-                      className="w-4 h-4"
-                      value={filter}
-                      checked={selectedType === filter}
-                      onChange={() => setSelectedType(filter)}
-                    />
-                    <span className="text-sm text-text-primary">{filter}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-            {activeTab === "therapy" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {therapyFilters.map((filter) => (
-                  <label
-                    key={filter}
-                    className="flex items-center space-x-3 p-2 rounded hover:bg-hover-overlay cursor-pointer transition-colors"
-                  >
-                    <input
-                      type="radio"
-                      name="filter-type"
-                      className="w-4 h-4"
-                      value={filter}
-                      checked={selectedType === filter}
-                      onChange={() => setSelectedType(filter)}
-                    />
-                    <span className="text-sm text-text-primary">{filter}</span>
-                  </label>
-                ))}
-              </div>
-            )}
+      <div className="filter-panel border rounded-lg p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-text-primary mb-1">
+              Content Type:
+            </label>
+            <select
+              value={contentType}
+              onChange={(e) => setContentType(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              {filterConfig.contentType.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Dropdown filters - right side */}
-          <div className="lg:col-span-2">
-            <div className="grid grid-cols-2 gap-2 md:gap-6">
-              <div>
-                <label className="block text-xs font-medium text-text-primary mb-1">
-                  Primary Tumor Site:
-                </label>
-                <select
-                  value={primaryTumorSite}
-                  onChange={(e) => setPrimaryTumorSite(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
-                >
-                  {primaryTumorSites.map((site) => (
-                    <option key={site} value={site}>
-                      {site}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div>
+            <label className="block text-xs font-medium text-text-primary mb-1">
+              Source Type:
+            </label>
+            <select
+              value={sourceType}
+              onChange={(e) => setSourceType(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              {filterConfig.sourceType.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              <div>
-                <label className="block text-xs font-medium text-text-primary mb-1">
-                  Age Group:
-                </label>
-                <select
-                  value={ageGroup}
-                  onChange={(e) => setAgeGroup(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
-                >
-                  {ageGroups.map((age) => (
-                    <option key={age} value={age}>
-                      {age}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div>
+            <label className="block text-xs font-medium text-text-primary mb-1">
+              Date Published:
+            </label>
+            <select
+              value={datePublished}
+              onChange={(e) => setDatePublished(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              {filterConfig.datePublished.map((date) => (
+                <option key={date.value} value={date.value}>
+                  {date.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              <div>
-                <label className="block text-xs font-medium text-text-primary mb-1">
-                  Gender:
-                </label>
-                <select
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
-                >
-                  {genders.map((g) => (
-                    <option key={g} value={g}>
-                      {g}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-text-primary mb-1">
-                  Sort by:
-                </label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
-                >
-                  <option value="relevance">Relevance</option>
-                  <option value={`${new Date().getFullYear()}`}>
-                    Recent Publication Date
-                  </option>
-                  <option value="popular">Popular Articles</option>
-                </select>
-              </div>
-            </div>
+          <div>
+            <label className="block text-xs font-medium text-text-primary mb-1">
+              Sort by:
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-border-subtle rounded-md bg-base-300 text-text-primary focus:ring-2 focus:ring-primary focus:border-primary"
+            >
+              {filterConfig.sortBy.map((sort) => (
+                <option key={sort.value} value={sort.value}>
+                  {sort.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Update Filters Button */}
       {hasChanges && (
         <div className="flex justify-end mt-4">
           <button

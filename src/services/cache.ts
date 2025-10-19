@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite";
 import type { SearchResult } from "../types";
 
 const DB_PATH = "db.sqlite";
-const CACHE_TTL_MS = 2000; // 1 * 60 * 60 * 1000; // 12 hours in milliseconds
+const CACHE_TTL_MS = 3 * 60 * 1000; // 1 * 60 * 60 * 1000; // 12 hours in milliseconds
 
 const db = new Database(DB_PATH);
 
@@ -43,9 +43,7 @@ export const generateCacheKey = (
   return `${provider}:${query.toLowerCase()}:${limit}:${page}${filterPart}`;
 };
 
-export const getCachedSearchResults = (
-  cacheKey: string
-): SearchResult[] | null => {
+export const getCachedData = <T>(cacheKey: string): T | null => {
   const result = db
     .query("SELECT results, timestamp FROM search_cache WHERE cache_key = ?")
     .get(cacheKey) as { results: string; timestamp: number } | undefined;
@@ -54,7 +52,7 @@ export const getCachedSearchResults = (
     const { results, timestamp } = result;
     if (Date.now() - timestamp < CACHE_TTL_MS) {
       console.log("Cache hit for key:", cacheKey);
-      return JSON.parse(results) as SearchResult[];
+      return JSON.parse(results) as T;
     } else {
       // Entry expired, delete it
       db.run("DELETE FROM search_cache WHERE cache_key = ?", [cacheKey]);
@@ -64,17 +62,27 @@ export const getCachedSearchResults = (
   return null;
 };
 
-export const setCachedSearchResults = (
-  cacheKey: string,
-  searchResults: SearchResult[]
-): void => {
-  const results = JSON.stringify(searchResults);
+export const setCachedData = (cacheKey: string, data: any): void => {
+  const results = JSON.stringify(data);
   const timestamp = Date.now();
   db.run(
     "INSERT OR REPLACE INTO search_cache (cache_key, results, timestamp) VALUES (?, ?, ?)",
     [cacheKey, results, timestamp]
   );
   console.log("Saved cached results for key:", cacheKey);
+};
+
+export const getCachedSearchResults = (
+  cacheKey: string
+): SearchResult[] | null => {
+  return getCachedData<SearchResult[]>(cacheKey);
+};
+
+export const setCachedSearchResults = (
+  cacheKey: string,
+  searchResults: SearchResult[]
+): void => {
+  setCachedData(cacheKey, searchResults);
 };
 
 // Get cache statistics

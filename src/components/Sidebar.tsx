@@ -121,7 +121,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
       <a
         href={buildSearchUrl(item)}
-        className="block text-sm text-gray-700 hover:text-medical-600 hover:bg-gray-50 p-2 rounded"
+        className="block text-sm p-2 rounded history-item"
       >
         <div className="truncate">{item.query}</div>
         {activeFilters.length > 0 && (
@@ -146,7 +146,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div className="text-center mb-6">
         <a
           href="/"
-          className="btn btn-primary font-semibold btn-outline btn-sm px-4 py-2 hover:text-medical-600 hover:bg-gray-50 whitespace-nowrap"
+          className="inline-flex items-center gap-2 text-white text-sm font-medium px-4 py-2 rounded-lg shadow h-12 new-search-btn whitespace-nowrap"
         >
           New Search
         </a>
