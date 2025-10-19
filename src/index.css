@@ -226,3 +226,34 @@ button:hover,
     transform: scale(1);
   }
 }
+
+/* Menu grid animations */
+.menu-grid {
+  /* Prevent layout shift during animations */
+  min-height: 200px;
+}
+
+.menu-item {
+  /* Apply bubble-in animation to all items */
+  animation: bubble-in 0.25s ease-out forwards;
+  opacity: 0;
+}
+
+/* Staggered animation delays using nth-child */
+.menu-item:nth-child(1) { animation-delay: 0ms; }
+.menu-item:nth-child(2) { animation-delay: 50ms; }
+.menu-item:nth-child(3) { animation-delay: 100ms; }
+.menu-item:nth-child(4) { animation-delay: 150ms; }
+.menu-item:nth-child(5) { animation-delay: 200ms; }
+.menu-item:nth-child(6) { animation-delay: 250ms; }
+.menu-item:nth-child(7) { animation-delay: 300ms; }
+.menu-item:nth-child(8) { animation-delay: 350ms; }
+.menu-item:nth-child(9) { animation-delay: 400ms; }
+
+/* Fade-out transition when item is selected */
+.menu-grid.transitioning .menu-item {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.25s ease-out;
+  pointer-events: none;
+}

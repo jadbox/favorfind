@@ -19,16 +19,7 @@ const Dialer: React.FC = () => {
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const [animateIn, setAnimateIn] = useState(true);
-
-  // Trigger animation when menu changes
-  useEffect(() => {
-    setAnimateIn(false);
-    setSelectedItem(null);
-    const timer = setTimeout(() => setAnimateIn(true), 50);
-    return () => clearTimeout(timer);
-  }, [menuHistory, step]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const fetchDynamicMenu = async (
     currentSelections: string[],
@@ -67,8 +58,8 @@ const Dialer: React.FC = () => {
     };
 
   const handleSelect = (item: MenuItem) => {
-    // Set selected item to trigger fade-out animation
-    setSelectedItem(item.value);
+    // Set transitioning state to disable interactions and trigger fade-out via CSS
+    setIsTransitioning(true);
     
     // Wait for fade-out animation before proceeding
     setTimeout(() => {
@@ -88,6 +79,7 @@ const Dialer: React.FC = () => {
 
         setMenuHistory((prev) => [...prev.slice(0, nextStep - 1), nextMenuItems]);
         setStep(nextStep);
+        setIsTransitioning(false);
 
         if (nextStep > 2) {
           fetchDynamicMenu(newSelections, nextStep);
@@ -158,23 +150,16 @@ const Dialer: React.FC = () => {
         )}
         {error && <p className="text-red-500 text-center">{error}</p>}
         {!loading && !error && (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {currentMenuItems.map((item, index) => (
+          <div 
+            key={step} 
+            className={`grid grid-cols-2 md:grid-cols-3 gap-4 menu-grid ${isTransitioning ? 'transitioning' : ''}`}
+          >
+            {currentMenuItems.map((item) => (
               <button
                 key={item.value}
                 onClick={() => handleSelect(item)}
-                className={`flex flex-col items-center justify-center p-4 border rounded-lg hover:bg-gray-700 transition-all duration-250 ${
-                  animateIn 
-                    ? 'animate-[bubble-in_0.25s_ease-out_forwards]' 
-                    : 'opacity-0 scale-0'
-                } ${
-                  selectedItem && selectedItem !== item.value
-                    ? 'opacity-0 scale-90'
-                    : selectedItem === item.value
-                    ? 'scale-110'
-                    : ''
-                }`}
-                style={{ animationDelay: `${index * 50}ms` }}
+                disabled={isTransitioning}
+                className="menu-item flex flex-col items-center justify-center p-4 border rounded-lg hover:bg-gray-700 transition-all"
               >
                 <item.icon className="h-10 w-10 mb-2" />
                 <span className="text-center">{item.label}</span>
