@@ -23,154 +23,68 @@ export class PerplexityDataProvider implements DataProvider {
       return [];
     }
 
-    try {
-      // Build the search query with domain filtering
-      let searchQuery = `Top rated sources for ${q}`;
+    // Build the search query with domain filtering
+    let searchQuery = `Top rated sources for ${q}`;
 
-      // Add filter type if provided
-      if (filter_type) {
-        searchQuery += ` ${filter_type}`;
-      }
-
-      console.log(
-        "Using PerplexityDataProvider with query:",
-        q,
-        "filter:",
-        filter_type
-      );
-
-      // Use the Search API for direct web search results
-      const effectiveLimit = Math.min(limit, 20); // Search API max is 20
-
-      const searchResponse = await this.client.search.create({
-        query: searchQuery,
-        max_results: effectiveLimit,
-        max_tokens_per_page: 1024, // Balanced extraction for abstracts 1024
-      });
-
-      //filter results at a root domain without a page path
-      searchResponse.results = (searchResponse.results || []).filter(
-        (result) => {
-          const url = new URL(result.url || "");
-          return url.pathname.split("/").filter(Boolean).length > 0; // Ensure there's a path after the domain
-        }
-      );
-
-      // Map search results to SearchResult format
-      const searchResults: SearchResult[] = (searchResponse.results || []).map(
-        (result, index) => {
-          // Extract year from date if available
-          let publicationDate: string = (result.date as string) || String(new Date().getFullYear());
-
-          // Determine category (Perplexity doesn't provide this directly, default to "article")
-          const category: SearchResult["category"] = "article";
-
-          return {
-            id: `perplexity-${Date.now()}-${index}`, // Map to id
-            source: "Perplexity",
-            title: result.title?.replace("www.", " ") || "Untitled",
-            publisher: new URL(result.url || "http://example.com").hostname || "Perplexity AI", // Use hostname as publisher
-            publicationDate,
-            abstract: extractSummary(result.snippet) || "No abstract available",
-            citationCount: 0, // Search API doesn't provide citation counts
-            url: result.url || "",
-            category,
-          };
-        }
-      );
-
-      return searchResults;
-    } catch (error) {
-      console.error("Perplexity API error:", error);
-      throw new Error(
-        `Failed to fetch papers from Perplexity: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
+    // Add filter type if provided
+    if (filter_type) {
+      searchQuery += ` ${filter_type}`;
     }
+
+    console.log(
+      "Using PerplexityDataProvider with query:",
+      q,
+      "filter:",
+      filter_type
+    );
+
+    // Use the Search API for direct web search results
+    limit = 6; // Search API max is 20
+
+    const isProductQuery = searchQuery.toLowerCase().includes("buy") || 
+      searchQuery.toLowerCase().includes("shopping");
+    const isNews = searchQuery.toLowerCase().includes("news");
+    const isLatest = searchQuery.toLowerCase().includes("latest") || isNews;
+
+    console.log("isProductQuery:", isProductQuery);
+
+      const prompt = isProductQuery
+        ? `What is the top ${limit} recommended specific products and where to buy it for this user search: "${q}". Each item should have a "title" (product name), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). No preamble.`
+        : `Provide direct answers for the user request for searching: "${q}".`;
+
+    const searchResponse = await this.client.chat.completions.create({
+      model: "sonar-pro", // sonar-pro
+      messages: [
+            { role: "system", content: 
+              "You are a helpful assistant that provides concise results in JSON format { results: [ {title, description, url} ] }." },
+            { role: "user", content: prompt }],
+      return_images: true,
+      search_mode: "web",
+      search_recency_filter: isLatest ? "week" : "year",
+    });
+
+    // Map search results to SearchResult format
+    const content = searchResponse?.choices[0]?.message.content as string;
+
+    console.log("Perplexity API response content:", content);
+
+    let parsed = content;
+    parsed = parsed.slice(parsed.indexOf('{'), parsed.lastIndexOf('}') + 1); // Ensure we only have the JSON object
+
+    const entries: SearchResult[] = JSON.parse(parsed).results.map(
+      (result: { title: string; description: string; url: string }, index: number) => ({
+        id: `perplexity-${Date.now()}-${index + 1}`, // Map to id
+        source: "Perplexity",
+        title: result.title,
+        publisher: "Perplexity AI", // Use hostname as publisher
+        publicationDate: "Unknown",
+        abstract: result.description || "No abstract available",
+        url: result.url,
+        category: "article",
+      })
+    );
+
+    return entries;
   }
 }
 
-export function extractSummary(snippet: string): string {
-  if (!snippet) {
-    return "";
-  }
-
-  // 1. Prioritized Keyword Search
-  const summaryMarkers = [
-    "This article ",
-    "**Conclusions:**",
-    "# Editorial: ",
-    "# Abstract",
-    "## Abstract",
-    "**Summary**",
-    "**Background:**",
-    "# Summary",
-    "# ",
-  ];
-
-  for (const marker of summaryMarkers) {
-    const markerIndex = snippet.indexOf(marker);
-    if (markerIndex !== -1) {
-      if (marker === "# " && markerIndex > 0) continue; // only accept # at start of snippet
-      let summaryText = snippet.substring(markerIndex + marker.length).trim();
-      if (marker === "This article ")
-        summaryText = "This article " + summaryText;
-
-      // if summaryTexts starts with a number, skip
-      if (/^\d/.test(summaryText)) continue;
-
-      const nextSectionIndex = summaryText.indexOf("\n# ");
-      if (nextSectionIndex !== -1) {
-        summaryText = summaryText.substring(0, nextSectionIndex).trim();
-      }
-      return cleanText(summaryText);
-    }
-  }
-
-  // 2. First Meaningful Paragraph Fallback
-  const paragraphs = snippet.split("\n\n");
-  for (const paragraph of paragraphs) {
-    if (/^\d/.test(paragraph)) continue;
-
-    const cleaned = cleanText(paragraph);
-    if (cleaned.length > 200) {
-      // Heuristic for a "meaningful" paragraph
-      return cleaned;
-    }
-  }
-
-  return cleanText(snippet); // Fallback to cleaning the whole snippet
-}
-
-function cleanText(text: string): string {
-  let cleanedText = text;
-
-  // Remove markdown, tables, and other noise
-  cleanedText = cleanedText
-    .replace(/(\*\*|##|###)/g, "") // Bold and headers
-    .replace(/\^(\d+|\^|,|✉|\*)\^/g, "") // Caret-enclosed characters
-    .replace(/\[\d+\]/g, "") // Numbered citations
-    .replace(/https?:\/\/[^\s]+/g, "") // URLs
-    .replace(/\|--*\|/g, "") // Table lines
-    .replace(/\|/g, " ") // Table pipes
-    .replace(/\b(p-value|<0.0001)\b/g, ""); // Specific noise
-
-  // Normalize whitespace
-  cleanedText = cleanedText.replace(/\s+/g, " ").trim();
-
-  // Remove first sentance if it's lower case
-  if (cleanedText.startsWith(cleanedText.charAt(0).toLowerCase())) {
-    const firstPeriod = cleanedText.indexOf(". ");
-    if (firstPeriod !== -1) {
-      cleanedText = cleanedText.substring(firstPeriod + 2).trim();
-    }
-  }
-
-  // Truncate if it's too long
-  if (cleanedText.length > 800) {
-    cleanedText = cleanedText.substring(0, 800) + "...";
-  }
-
-  return cleanedText;
-}

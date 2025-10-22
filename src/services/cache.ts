@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite";
 import type { SearchResult } from "../types";
 
 const DB_PATH = "db.sqlite";
-const CACHE_TTL_MS = 3 * 60 * 1000; // 1 * 60 * 60 * 1000; // 12 hours in milliseconds
+const CACHE_TTL_MS = 1 * 1000; // 1 * 60 * 60 * 1000; // 12 hours in milliseconds
 
 const db = new Database(DB_PATH);
 
@@ -38,10 +38,9 @@ export const generateCacheKey = (
   limit: number,
   page: number = 1,
   filter_type: string = "",
-  grounding_status: string = "ungrounded" // New parameter for grounding status
 ): string => {
   const filterPart = filter_type ? `:${filter_type}` : "";
-  return `${provider}:${query.toLowerCase()}:${limit}:${page}${filterPart}:${grounding_status}`;
+  return `${provider}:${query.toLowerCase()}:${limit}:${page}${filterPart}`;
 };
 
 export const getCachedData = <T>(cacheKey: string): T | null => {

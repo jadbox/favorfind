@@ -1,31 +1,33 @@
 import {
   ShoppingCart,
   BookOpen,
-  Map,
   Users,
   Newspaper,
-  Search,
+  Wrench, // For Tools & Utilities
+  Gamepad2, // For Entertainment
+  Monitor,
+  Pill,
+  Handshake,
+  Book,
+  GraduationCap,
+  Video,
+  FlaskConical,
+  MessageSquare,
+  Group,
+  Calendar,
+  Lightbulb,
+  UserCog,
+  Megaphone,
+  Scale,
+  Hospital,
+  LineChart,
+  HeartPulse,
+  Apple,
+  Dumbbell,
+  Stethoscope,
+  CloudSun, // For Weather
+  Map, // For Maps
   type LucideIcon,
-  Monitor, // For Devices, Software
-  Pill, // For Supplements
-  Handshake, // For Services
-  Book, // For Books, Articles
-  GraduationCap, // For Courses, Tutors
-  Video, // For Videos
-  FlaskConical, // For Studies, Clinical Trials
-  MessageSquare, // For Forums
-  Group, // For Groups
-  Calendar, // For Events
-  Lightbulb, // For Experts, Breakthroughs
-  UserCog, // For Mentors
-  Megaphone, // For Latest, News
-  Scale, // For Policy
-  Stethoscope, // For Symptoms, Specialists, Diagnosis
-  Hospital, // For Centers
-  LineChart, // For Prognosis, Trends
-  HeartPulse, // For Treatment, Prevention
-  Apple, // For Nutrition
-  Dumbbell, // For Fitness
 } from "lucide-react";
 
 export interface MenuItem {
@@ -41,55 +43,62 @@ export interface DialerConfig {
 export const dialerConfig: { topLevel: MenuItem[]; secondLevel: DialerConfig } =
   {
     topLevel: [
-      { label: "Buy", icon: ShoppingCart, value: "buy" },
-      { label: "Learn", icon: BookOpen, value: "learn" },
-      { label: "Guide", icon: Map, value: "guide" },
-      { label: "Social", icon: Users, value: "social" },
-      { label: "News", icon: Newspaper, value: "news" },
-      { label: "Lookup & Forecast", icon: Search, value: "lookup" },
+      { label: "Shopping", icon: ShoppingCart, value: "shopping" },
+      { label: "Information", icon: BookOpen, value: "information" },
+      { label: "Local & Travel", icon: Map, value: "local" },
+      { label: "Technology", icon: Monitor, value: "technology" },
+      { label: "Entertainment", icon: Gamepad2, value: "entertainment" }
     ],
     secondLevel: {
-      buy: [
-        { label: "Devices", icon: Monitor, value: "devices" },
-        { label: "Supplements", icon: Pill, value: "supplements" },
-        { label: "Services", icon: Handshake, value: "services" },
-        { label: "Books", icon: Book, value: "books" },
-        { label: "Software", icon: Monitor, value: "software" },
+      shopping: [
+        { label: "Electronics", icon: Monitor, value: "electronics" },
+        { label: "Software & Apps", icon: Wrench, value: "software" },
+        { label: "Health Products", icon: HeartPulse, value: "health-products" },
+        { label: "Home & Garden", icon: Users, value: "home-garden" },
+        { label: "Fashion", icon: ShoppingCart, value: "fashion" },
+        { label: "Food & Grocery", icon: Apple, value: "food-grocery" },
+        { label: "Sports & Fitness", icon: Dumbbell, value: "sports-fitness" },
+        { label: "Books & Media", icon: Book, value: "books-media" },
       ],
-      learn: [
-        { label: "Courses", icon: GraduationCap, value: "courses" },
-        { label: "Articles", icon: Book, value: "articles" },
-        { label: "Videos", icon: Video, value: "videos" },
-        { label: "Tutors", icon: GraduationCap, value: "tutors" },
-        { label: "Studies", icon: FlaskConical, value: "studies" },
+      information: [
+        { label: "Tutorials & Guides", icon: BookOpen, value: "tutorials" },
+        { label: "Research & Studies", icon: FlaskConical, value: "research" },
+        { label: "Health Info", icon: Stethoscope, value: "health-info" },
+        { label: "Online Courses", icon: GraduationCap, value: "courses" },
+        { label: "Reviews", icon: MessageSquare, value: "reviews" },
+        { label: "How-To Articles", icon: Lightbulb, value: "how-to" },
+        { label: "Weather", icon: CloudSun, value: "weather-maps" },
+        { label: "Finance & Money", icon: LineChart, value: "finance" },
       ],
-      guide: [
-        { label: "Treatment", icon: HeartPulse, value: "treatment" },
-        { label: "Prevention", icon: HeartPulse, value: "prevention" },
-        { label: "Diagnosis", icon: Stethoscope, value: "diagnosis" },
-        { label: "Nutrition", icon: Apple, value: "nutrition" },
-        { label: "Fitness", icon: Dumbbell, value: "fitness" },
+      local: [
+        { label: "Restaurants", icon: Apple, value: "restaurants" },
+        { label: "Services", icon: Handshake, value: "local-services" },
+        { label: "Medical Care", icon: Hospital, value: "medical-care" },
+        { label: "Hotels & Lodging", icon: Calendar, value: "hotels" },
+        { label: "Attractions", icon: Map, value: "attractions" },
+        { label: "Professionals", icon: UserCog, value: "professionals" },
+        { label: "Events", icon: Calendar, value: "local-events" },
+        { label: "Transportation", icon: Map, value: "transportation" },
       ],
-      social: [
-        { label: "Forums", icon: MessageSquare, value: "forums" },
-        { label: "Groups", icon: Group, value: "groups" },
-        { label: "Events", icon: Calendar, value: "events" },
-        { label: "Experts", icon: Lightbulb, value: "experts" },
-        { label: "Mentors", icon: UserCog, value: "mentors" },
+      technology: [
+        { label: "Tech News", icon: Newspaper, value: "tech-news" },
+        { label: "Product Reviews", icon: Monitor, value: "tech-reviews" },
+        { label: "Software Tools", icon: Wrench, value: "software-tools" },
+        { label: "Development", icon: BookOpen, value: "development" },
+        { label: "AI & Innovation", icon: Lightbulb, value: "ai-innovation" },
+        { label: "Gadgets", icon: Monitor, value: "gadgets" },
+        { label: "Cybersecurity", icon: Scale, value: "cybersecurity" },
+        { label: "Gaming Tech", icon: Gamepad2, value: "gaming-tech" },
       ],
-      news: [
-        { label: "Latest", icon: Megaphone, value: "latest" },
-        { label: "Breakthroughs", icon: Lightbulb, value: "breakthroughs" },
-        { label: "Clinical Trials", icon: FlaskConical, value: "clinical-trials" },
-        { label: "Policy", icon: Scale, value: "policy" },
-        { label: "Opinion", icon: MessageSquare, value: "opinion" },
-      ],
-      lookup: [
-        { label: "Symptoms", icon: Stethoscope, value: "symptoms" },
-        { label: "Specialists", icon: Stethoscope, value: "specialists" },
-        { label: "Centers", icon: Hospital, value: "centers" },
-        { label: "Prognosis", icon: LineChart, value: "prognosis" },
-        { label: "Trends", icon: LineChart, value: "trends" },
+      entertainment: [
+        { label: "Movies & TV", icon: Video, value: "movies-tv" },
+        { label: "Video Games", icon: Gamepad2, value: "video-games" },
+        { label: "Music", icon: MessageSquare, value: "music" },
+        { label: "Books & Reading", icon: Book, value: "books-reading" },
+        { label: "Sports", icon: Dumbbell, value: "sports" },
+        { label: "Forums & Social", icon: MessageSquare, value: "forums" },
+        { label: "Streaming", icon: Video, value: "streaming" },
+        { label: "Events & Shows", icon: Calendar, value: "events-shows" },
       ],
     },
   };

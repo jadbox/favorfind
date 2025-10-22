@@ -16,27 +16,23 @@ const DEFAULT_SEARCH_LIMIT = 12;
 const MAX_SEARCH_LIMIT = 20;
 
 // Choose data provider based on environment variable
-const getDataProvider = (useGrounding: boolean): DataProvider => {
-  const provider = process.env.SEARCH_PROVIDER || "gemini"; // Default to gemini
+const getDataProvider = (): DataProvider => {
+  const provider: string = "perplexity"; // Default to perplexity
+  // old logic used process.env.SEARCH_PROVIDER || 
 
   switch (provider) {
     case "gemini":
-      return useGrounding
-        ? new GroundedGeminiDataProvider()
-        : new UngroundedGeminiDataProvider();
+      return new GroundedGeminiDataProvider();
     case "perplexity":
       return new PerplexityDataProvider();
-    case "semantic-scholar":
     default:
-      return useGrounding
-        ? new GroundedGeminiDataProvider()
-        : new UngroundedGeminiDataProvider();
+     throw new Error(`Unsupported search provider: ${provider}`);
   }
 };
 
 // Get provider name for cache key
 const getProviderName = (useGrounding: boolean): string => {
-  const provider = process.env.SEARCH_PROVIDER || "gemini";
+  const provider = process.env.SEARCH_PROVIDER || "gemini";getDataProvider
   if (provider === "gemini") {
     return useGrounding ? "gemini-grounded" : "gemini-ungrounded";
   }
@@ -78,7 +74,7 @@ export const _fetchSearchResults = async (
   }
 
   try {
-    const dataProvider = getDataProvider(useGrounding);
+    const dataProvider = getDataProvider();
     const results = await dataProvider.fetchPapers(
       q,
       clampedLimit,
@@ -122,4 +118,4 @@ export const handleSearch = async (request: Request): Promise<Response> => {
   } catch (error) {
     return new Response(JSON.stringify([]), { status: 500 });
   }
-};
+}

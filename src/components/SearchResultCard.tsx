@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import type { SearchResult } from "../types";
 import { toggleSaveToLibrary } from "../utils/localStorage";
+import Markdown from 'react-markdown'
 
 interface SearchResultCardProps {
   result: SearchResult;
@@ -49,7 +50,6 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
         formData.append("publisher", result.publisher);
         formData.append("publicationDate", result.publicationDate);
         formData.append("abstract", result.abstract);
-        formData.append("citationCount", result.citationCount.toString());
         formData.append("url", result.url);
         formData.append("category", result.category);
 
@@ -129,7 +129,6 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
   return (
     <div className="card max-w-6xl border shadow-sm">
       <div className="card-body p-6">
-        {/* Title */}
         <h3 className="card-title text-lg font-semibold mb-2 leading-tight">
           <a href={result.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
             {result.title}
@@ -137,7 +136,7 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
         </h3>
 
         {/* Source and Date */}
-        <div className="flex items-center space-x-4 mb-3 text-sm text-text-secondary">
+        {/*<div className="flex items-center space-x-4 mb-3 text-sm text-text-secondary">
           <span className="font-medium">
             {extractDomain(result.url)}
             <span className="grayscale text-gray-400 ml-1">
@@ -146,11 +145,11 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
           </span>
           <span>•</span>
           <span>{formatDate(result.publicationDate)}</span>
-        </div>
+        </div>*/}
 
         {/* Abstract */}
-        <p className="text-text-secondary text-sm leading-relaxed mb-4 line-clamp-3">
-          {result.abstract}
+        <p className="text-text-secondary text-sm leading-relaxed mb-4">
+          <Markdown>{result.abstract}</Markdown>
         </p>
 
         {/* Actions */}

@@ -34,9 +34,9 @@ export const POST: APIRoute = async ({ request }) => {
 
     const availableIcons = Object.keys(lucideIcons);
     const prompt = `
-      Given the user's interest in "${selections.join(
+      User has asked for specific sub-categories related to "${selections.join(
         ", "
-      )}", generate a concise JSON array of up to 9 related sub-categories.
+      )}", generate a concise JSON array of up to 9 related sub-categories. All suggestions must be strictly a sub-category.
       Each item in the array should be an object with "label", "value", and "icon" properties.
       - "label" should be a user-friendly name for the sub-category.
       - "value" should be a URL-friendly slug for the sub-category.

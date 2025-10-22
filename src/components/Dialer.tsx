@@ -97,7 +97,7 @@ const Dialer: React.FC = () => {
         let query = newSelections.join("+");
         if (userSettings) {
           const { location, preferences } = userSettings;
-          const locationString = [location.cityName, location.stateName].filter(Boolean).join(", "); // remove country , location.countryName
+          const locationString = ""; // disable feature: [location.cityName, location.stateName].filter(Boolean).join(", "); // remove country , location.countryName
           if (locationString) {
             query = `${locationString} ${query}`;
           }

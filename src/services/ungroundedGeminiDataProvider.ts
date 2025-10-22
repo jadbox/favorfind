@@ -115,7 +115,6 @@ export class UngroundedGeminiDataProvider implements DataProvider {
           publisher: "Google Gemini",
           publicationDate: String(new Date().getFullYear()),
           abstract: description,
-          citationCount: 0,
           url,
           category: isProductQuery ? "product" : "article",
         } satisfies SearchResult;
