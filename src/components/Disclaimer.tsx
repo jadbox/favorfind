@@ -16,6 +16,10 @@ const Disclaimer: React.FC = () => {
           <a className="hover:text-primary transition-colors" href="/privacy" target="_blank">
             Privacy Policy
           </a>
+          <span aria-hidden="true">•</span>
+          <a className="hover:text-primary transition-colors" href="https://www.linkedin.com/in/jonathandunlap/" target="_blank" rel="noopener noreferrer">
+            About Us
+          </a>
           {/* <span className="hidden md:inline" aria-hidden="true">
             •
           </span>
