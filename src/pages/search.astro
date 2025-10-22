@@ -21,7 +21,7 @@ const searchData = await performSearch(searchParams);
     <main class="flex-1 flex flex-col p-4 overflow-hidden">
       <SearchBar client:load query={searchParams.query} />
 
-      <!-- <div class="mb-4">
+      <div class="mb-4">
         <SearchResultsFilters
           client:load
           contentType={searchParams.selectedType}
@@ -29,7 +29,7 @@ const searchData = await performSearch(searchParams);
           datePublished={"any"}
           sortBy={searchParams.sortBy as "relevance" | "date" | "popular"}
         />
-      </div> -->
+      </div>
 
       <div class="flex-1 overflow-auto">
         {

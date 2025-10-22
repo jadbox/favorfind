@@ -60,8 +60,8 @@ export const addSearchToHistory = (
     filters,
   };
 
-  // Add to beginning of array and limit to 20 items
-  userData.searchHistory = [newSearch, ...userData.searchHistory.slice(0, 19)];
+  // Add to beginning of array and limit to 5 items
+  userData.searchHistory = [newSearch, ...userData.searchHistory.slice(0, 4)];
   saveUserData(userData);
 };
 

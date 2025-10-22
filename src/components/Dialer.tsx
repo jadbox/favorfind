@@ -3,6 +3,7 @@ import { dialerConfig, type MenuItem } from "../config/dialerConfig";
 import { LoaderCircle, Search, PlusCircle, RotateCcw } from "lucide-react";
 import * as lucideIcons from "lucide-react";
 import { LoadingUtils } from "../utils/loadingUtils";
+import StepSettings from "./StepSettings";
 
 const getIcon = (name: string) => {
   const icon = lucideIcons[name as keyof typeof lucideIcons];
@@ -95,16 +96,27 @@ const Dialer: React.FC = () => {
         }
       } else {
         let query = newSelections.join("+");
-        if (userSettings) {
-          const { location, preferences } = userSettings;
-          const locationString = ""; // disable feature: [location.cityName, location.stateName].filter(Boolean).join(", "); // remove country , location.countryName
-          if (locationString) {
-            query = `${locationString} ${query}`;
-          }
-          if (preferences) {
-            query = `${query}. General Preferences [${preferences}]`;
+        
+        // Append location if available
+        const savedSettings = localStorage.getItem('userSettings');
+        if (savedSettings) {
+          const { location } = JSON.parse(savedSettings);
+          if (location && location.cityName && location.stateName) {
+            const locationString = [location.cityName, location.stateName].filter(Boolean).join(", ");
+            if (locationString) {
+              query = `${locationString} ${query}`;
+            }
           }
         }
+
+        // Append top-level category preferences
+        const topLevelCategory = newSelections[0];
+        const localStorageKey = topLevelCategory ? `${topLevelCategory}-preferences` : '';
+        const categoryPreferences = localStorageKey ? localStorage.getItem(localStorageKey) : null;
+        if (categoryPreferences) {
+          query = `${query}. Preferences [${categoryPreferences}]`;
+        }
+
         LoadingUtils.show();
         window.location.href = `/search?q=${encodeURIComponent(query)}`;
       }
@@ -187,6 +199,7 @@ const Dialer: React.FC = () => {
             ))}
           </div>
         )}
+        <StepSettings selections={selections} />
         <div className="flex justify-center items-center gap-4 mt-8">
           <button
             onClick={handleRestart}

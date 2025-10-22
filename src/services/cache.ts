@@ -2,8 +2,10 @@ import { Database } from "bun:sqlite";
 import type { SearchResult } from "../types";
 
 const DB_PATH = "db.sqlite";
-const CACHE_TTL_MS = 1 * 1000; // 1 * 60 * 60 * 1000; // 12 hours in milliseconds
+const CACHE_TTL_MS =
+  process.env.NODE_ENV === "production" ? 10 * 60 * 1000 : 10 * 1000; // 10 min in milliseconds
 
+console.log(`Cache TTL is set to ${CACHE_TTL_MS / 1000} seconds`);
 const db = new Database(DB_PATH);
 
 // Initialize the cache table if it doesn't exist
@@ -37,7 +39,7 @@ export const generateCacheKey = (
   query: string,
   limit: number,
   page: number = 1,
-  filter_type: string = "",
+  filter_type: string = ""
 ): string => {
   const filterPart = filter_type ? `:${filter_type}` : "";
   return `${provider}:${query.toLowerCase()}:${limit}:${page}${filterPart}`;

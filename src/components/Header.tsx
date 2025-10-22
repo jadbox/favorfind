@@ -21,14 +21,6 @@ const Header: React.FC = () => {
             <span>Saved Results</span>
           </a>
 
-          <a
-            href="/settings"
-            className="btn btn-ghost btn-sm flex items-center space-x-2"
-          >
-            <Settings className="h-8 w-8 text-medical-600" />
-            <span>Settings</span>
-          </a>
-
           {/* User Profile */}
           {/* <div className="avatar">
             <div className="w-10 rounded-full ring ring-medical-600 ring-offset-2">

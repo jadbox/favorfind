@@ -38,6 +38,10 @@ export class GroundedGeminiDataProvider implements DataProvider {
 
       let searchQuery = `${q}`;
 
+      // Extract location from query if present (e.g., "(in Detroit Michigan)")
+      const locationMatch = q.match(/\(in ([^)]+)\)/);
+      const location = locationMatch ? locationMatch[1] : "";
+
       // Add filter type if provided
       if (filter_type) {
         searchQuery += `. preferences:${filter_type}`;
@@ -53,7 +57,7 @@ export class GroundedGeminiDataProvider implements DataProvider {
       // const isNews = searchQuery.toLowerCase().includes("news");
       // const isLatest = searchQuery.toLowerCase().includes("latest") || isNews;
 
-      const prompt = `What is the top ${limit} recommended specific products and where to buy it for this user search: "${q}". Each item should have a "title" (product name - [DECISION CATEGORY] top pick), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). No preamble.`;
+      const prompt = `What is the top ${limit} recommended specific products and where to buy it for this user search: "${q}". Each item should have a "title" (product name [DECISION CATEGORY top pick]), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). No preamble.`;
 
       console.log("Generated prompt:", prompt);
 
@@ -64,7 +68,7 @@ export class GroundedGeminiDataProvider implements DataProvider {
 
       const result = await this.ai.models.generateContent({
         // Use this.ai
-        model: "gemini-flash-lite-latest", // Using latest for potential grounding improvements
+        model: "gemini-flash-latest", // Using latest for potential grounding improvements
         contents:
           "You are a helpful assistant that provides concise results in JSON format { results: [ {title, description, url} ] }. " +
           prompt,
@@ -137,15 +141,19 @@ export class GroundedGeminiDataProvider implements DataProvider {
             : "No description available";
 
         console.log("Item title:", groundingMetadata, item);
-        let url: string = (groundingMetadata?.groundingChunks?.[0]?.web?.uri ||
-          item.url ||
-          "") as string;
+        // let url: string = (groundingMetadata?.groundingChunks?.[0]?.web?.uri ||
+        //   item.url ||
+        //   "") as string;
 
-        if (isProductQuery && title !== "Untitled") {
-          url = `https://www.google.com/search?udm=28&q=${encodeURIComponent(
-            title
-          )}&sjc=1`;
-        }
+        // Build Google search URL with title and location if available
+        let searchTerm = location ? `${title} ${location}` : title;
+
+        // remove bracketed text from search term
+        searchTerm = searchTerm.replace(/\[.*?\]/g, "").trim();
+
+        let url = `https://www.google.com/search?udm=28&q=${encodeURIComponent(
+          searchTerm
+        )}&sjc=1`;
 
         return {
           id: `gemini-${Date.now()}-${index}`,

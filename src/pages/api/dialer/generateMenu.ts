@@ -34,21 +34,35 @@ export const POST: APIRoute = async ({ request }) => {
 
     const availableIcons = Object.keys(lucideIcons);
     const prompt = `
-      User has asked for specific sub-categories related to "${selections.join(
+      Generate a JSON array of up to 9 STRICT sub-categories for "${selections.join(
         ", "
-      )}", generate a concise JSON array of up to 9 related sub-categories. All suggestions must be strictly a sub-category.
-      Each item in the array should be an object with "label", "value", and "icon" properties.
-      - "label" should be a user-friendly name for the sub-category.
-      - "value" should be a URL-friendly slug for the sub-category.
-      - "icon" should be the name of a relevant and *mostly unique* icon from the lucide-react library that *properly describes* the sub-category. Choose from this list: ${availableIcons.join(
+      )}".
+      
+      CRITICAL: Each suggestion MUST be a direct subcategory that falls UNDER the given category in a hierarchical relationship.
+      
+      Examples of correct subcategories:
+      - For "tablet": iPad, Android Tablets, Windows Tablets, Gaming Tablets, Drawing Tablets (NOT Smartphones, NOT Laptops)
+      - For "electronics": Computers, Smartphones, Tablets, Cameras (NOT Furniture, NOT Clothing)
+      - For "clothing": Shirts, Pants, Dresses, Shoes (NOT Accessories unless it's "clothing accessories")
+      
+      FORBIDDEN: Do NOT include sibling categories, parent categories, or merely related items.
+      - If the category is "tablet", do NOT suggest "Smartphones" (sibling category)
+      - If the category is "clothing", do NOT suggest "Fashion" (parent category)
+      - If the category is "laptop", do NOT suggest "Desktop" (sibling category)
+      
+      Each item must be an object with "label", "value", and "icon" properties:
+      - "label": A user-friendly name for the subcategory (capitalize appropriately)
+      - "value": A URL-friendly slug (lowercase, hyphenated)
+      - "icon": A relevant icon from lucide-react that describes the subcategory. Choose from: ${availableIcons.join(
         ", "
-      )}.
+      )}
       ${
         exclude.length > 0
-          ? `Do not include any of the following items: ${exclude.join(", ")}.`
+          ? `\nDo not include any of these items: ${exclude.join(", ")}`
           : ""
       }
-      Do not include any preamble or explanation in your response.
+      
+      Return ONLY the JSON array with no preamble or explanation.
     `;
 
     const response = await ai.models.generateContent({

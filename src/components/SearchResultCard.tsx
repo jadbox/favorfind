@@ -18,6 +18,11 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Update local state when prop changes
+  React.useEffect(() => {
+    setIsSaved(initialIsSaved);
+  }, [initialIsSaved]);
+
   const handleSaveToggle = async () => {
     if (isLoading) return;
 
@@ -30,6 +35,9 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
 
       // Update local UI state immediately
       setIsSaved(newSavedState);
+
+      // Dispatch event to notify other components
+      window.dispatchEvent(new CustomEvent("library-updated"));
 
       // Show toast notification
       showToast(
@@ -167,7 +175,7 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
             disabled={isLoading}
             className={`btn btn-sm rounded-md transition-all ${
               isSaved
-                ? "bg-primary bg-opacity-20 border border-primary text-primary hover:bg-opacity-30"
+                ? "bg-primary border border-primary text-white hover:bg-primary hover:bg-opacity-90"
                 : "bg-base-300 text-text-primary border border-border-subtle hover:bg-base-250"
             } ${isLoading ? "cursor-not-allowed opacity-50" : ""}`}
             aria-label={isSaved ? "Remove from Library" : "Save to Library"}

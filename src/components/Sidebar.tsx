@@ -153,7 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
       <div>
         <h3 className="font-semibold text-gray-900 mb-3">
-          Your Search History
+          Recent searches:
         </h3>
 
         {todayHistory.length > 0 && (
@@ -171,7 +171,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <div>
             <h4 className="text-sm font-medium text-gray-500 mb-2">Earlier</h4>
             <div className="space-y-2">
-              {olderHistory.slice(0, 10).map((item) => (
+              {olderHistory.map((item) => (
                 <HistoryItem key={item.id} item={item} showDate />
               ))}
             </div>
