@@ -17,7 +17,7 @@ const MAX_SEARCH_LIMIT = 20;
 
 // Choose data provider based on environment variable
 const getDataProvider = (): DataProvider => {
-  const provider: string = "perplexity"; // Default to perplexity
+  const provider: string = "gemini"; // Default to perplexity
   // old logic used process.env.SEARCH_PROVIDER || 
 
   switch (provider) {

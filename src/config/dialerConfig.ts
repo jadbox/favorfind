@@ -1,10 +1,11 @@
+// This file defines the configuration for the Dialer component to help the user make common searches for life decisions.
 import {
   ShoppingCart,
   BookOpen,
   Users,
   Newspaper,
-  Wrench, // For Tools & Utilities
-  Gamepad2, // For Entertainment
+  Wrench,
+  Gamepad2,
   Monitor,
   Pill,
   Handshake,
@@ -25,9 +26,38 @@ import {
   Apple,
   Dumbbell,
   Stethoscope,
-  CloudSun, // For Weather
-  Map, // For Maps
+  CloudSun,
+  Map,
+  Home,
+  Smartphone,
+  Tv,
+  Laptop,
+  Computer,
+  Tablet,
+  Headphones,
+  CookingPot,
+  Sofa,
+  Bed,
+  Warehouse,
+  Sprout,
+  Shirt,
+  Film,
+  Music as MusicIcon,
   type LucideIcon,
+  Bath,
+  ClipboardCheck,
+  Paintbrush,
+  Code,
+  TerminalSquare,
+  Watch,
+  Sparkles,
+  Footprints,
+  Backpack,
+  Car,
+  Plane,
+  Hotel,
+  Utensils,
+  Ticket,
 } from "lucide-react";
 
 export interface MenuItem {
@@ -40,65 +70,88 @@ export interface DialerConfig {
   [key: string]: MenuItem[];
 }
 
-export const dialerConfig: { topLevel: MenuItem[]; secondLevel: DialerConfig } =
-  {
-    topLevel: [
-      { label: "Shopping", icon: ShoppingCart, value: "shopping" },
-      { label: "Information", icon: BookOpen, value: "information" },
-      { label: "Local & Travel", icon: Map, value: "local" },
-      { label: "Technology", icon: Monitor, value: "technology" },
-      { label: "Entertainment", icon: Gamepad2, value: "entertainment" }
+export const dialerConfig: {
+  topLevel: MenuItem[];
+  secondLevel: DialerConfig;
+} = {
+  topLevel: [
+    { label: "Electronics", icon: Monitor, value: "electronics" },
+    { label: "Home", icon: Home, value: "home" },
+    { label: "Fashion", icon: Shirt, value: "fashion" },
+    { label: "Travel", icon: Plane, value: "travel" },
+    { label: "Software", icon: Wrench, value: "software" },
+    { label: "Health", icon: HeartPulse, value: "health" },
+    { label: "Food & Grocery", icon: Apple, value: "food-grocery" },
+    { label: "Sports & Fitness", icon: Dumbbell, value: "sports-fitness" },
+    { label: "Books", icon: Book, value: "books" },
+    { label: "Entertainment", icon: Film, value: "entertainment" },
+    { label: "Music", icon: MusicIcon, value: "music" },
+    { label: "Socialize", icon: Users, value: "socialize" },
+  ],
+  secondLevel: {
+    electronics: [
+      { label: "Smartphones", icon: Smartphone, value: "smartphones" },
+      { label: "TVs", icon: Tv, value: "tvs" },
+      { label: "Laptops", icon: Laptop, value: "laptops" },
+      { label: "Desktops", icon: Computer, value: "desktops" },
+      { label: "Tablets", icon: Tablet, value: "tablets" },
+      { label: "Accessories", icon: Headphones, value: "device-accessories" },
     ],
-    secondLevel: {
-      shopping: [
-        { label: "Electronics", icon: Monitor, value: "electronics" },
-        { label: "Software & Apps", icon: Wrench, value: "software" },
-        { label: "Health Products", icon: HeartPulse, value: "health-products" },
-        { label: "Home & Garden", icon: Users, value: "home-garden" },
-        { label: "Fashion", icon: ShoppingCart, value: "fashion" },
-        { label: "Food & Grocery", icon: Apple, value: "food-grocery" },
-        { label: "Sports & Fitness", icon: Dumbbell, value: "sports-fitness" },
-        { label: "Books & Media", icon: Book, value: "books-media" },
-      ],
-      information: [
-        { label: "Tutorials & Guides", icon: BookOpen, value: "tutorials" },
-        { label: "Research & Studies", icon: FlaskConical, value: "research" },
-        { label: "Health Info", icon: Stethoscope, value: "health-info" },
-        { label: "Online Courses", icon: GraduationCap, value: "courses" },
-        { label: "Reviews", icon: MessageSquare, value: "reviews" },
-        { label: "How-To Articles", icon: Lightbulb, value: "how-to" },
-        { label: "Weather", icon: CloudSun, value: "weather-maps" },
-        { label: "Finance & Money", icon: LineChart, value: "finance" },
-      ],
-      local: [
-        { label: "Restaurants", icon: Apple, value: "restaurants" },
-        { label: "Services", icon: Handshake, value: "local-services" },
-        { label: "Medical Care", icon: Hospital, value: "medical-care" },
-        { label: "Hotels & Lodging", icon: Calendar, value: "hotels" },
-        { label: "Attractions", icon: Map, value: "attractions" },
-        { label: "Professionals", icon: UserCog, value: "professionals" },
-        { label: "Events", icon: Calendar, value: "local-events" },
-        { label: "Transportation", icon: Map, value: "transportation" },
-      ],
-      technology: [
-        { label: "Tech News", icon: Newspaper, value: "tech-news" },
-        { label: "Product Reviews", icon: Monitor, value: "tech-reviews" },
-        { label: "Software Tools", icon: Wrench, value: "software-tools" },
-        { label: "Development", icon: BookOpen, value: "development" },
-        { label: "AI & Innovation", icon: Lightbulb, value: "ai-innovation" },
-        { label: "Gadgets", icon: Monitor, value: "gadgets" },
-        { label: "Cybersecurity", icon: Scale, value: "cybersecurity" },
-        { label: "Gaming Tech", icon: Gamepad2, value: "gaming-tech" },
-      ],
-      entertainment: [
-        { label: "Movies & TV", icon: Video, value: "movies-tv" },
-        { label: "Video Games", icon: Gamepad2, value: "video-games" },
-        { label: "Music", icon: MessageSquare, value: "music" },
-        { label: "Books & Reading", icon: Book, value: "books-reading" },
-        { label: "Sports", icon: Dumbbell, value: "sports" },
-        { label: "Forums & Social", icon: MessageSquare, value: "forums" },
-        { label: "Streaming", icon: Video, value: "streaming" },
-        { label: "Events & Shows", icon: Calendar, value: "events-shows" },
-      ],
-    },
-  };
+    home: [
+      { label: "Kitchen", icon: CookingPot, value: "kitchen" },
+      { label: "Living Room", icon: Sofa, value: "living-room" },
+      { label: "Bedroom", icon: Bed, value: "bedroom" },
+      { label: "Bathroom", icon: Bath, value: "bathroom" },
+      { label: "Garage", icon: Warehouse, value: "garage" },
+      { label: "Lawn & Garden", icon: Sprout, value: "lawn-garden" },
+    ],
+    fashion: [
+      { label: "Tops", icon: Shirt, value: "tops" },
+      { label: "Bottoms", icon: Footprints, value: "bottoms" },
+      { label: "Shoes", icon: Footprints, value: "shoes" },
+      { label: "Accessories", icon: Backpack, value: "accessories" },
+    ],
+    travel: [
+      { label: "Flights", icon: Plane, value: "flights" },
+      { label: "Hotels", icon: Hotel, value: "hotels" },
+      { label: "Car Rentals", icon: Car, value: "car-rentals" },
+      { label: "Restaurants", icon: Utensils, value: "restaurants" },
+      { label: "Activities", icon: Ticket, value: "activities" },
+    ],
+    software: [
+      { label: "Productivity", icon: ClipboardCheck, value: "productivity" },
+      { label: "Creative", icon: Paintbrush, value: "creative" },
+      { label: "Development", icon: Code, value: "development" },
+      { label: "Utilities", icon: Wrench, value: "utilities" },
+      { label: "OS", icon: TerminalSquare, value: "operating-systems" },
+    ],
+    health: [
+      { label: "Vitamins", icon: Pill, value: "vitamins" },
+      { label: "Fitness Trackers", icon: Watch, value: "fitness-trackers" },
+      { label: "Personal Care", icon: Sparkles, value: "personal-care" },
+      {
+        label: "Medical Supplies",
+        icon: Stethoscope,
+        value: "medical-supplies",
+      },
+    ],
+    "food-grocery": [],
+    "sports-fitness": [],
+    books: [],
+    entertainment: [
+      { label: "Movies", icon: Film, value: "movies" },
+      { label: "TV Shows", icon: Tv, value: "tv-shows" },
+      { label: "Games", icon: Gamepad2, value: "games" },
+    ],
+    music: [
+      { label: "Artists", icon: UserCog, value: "artists" },
+      { label: "Albums", icon: MusicIcon, value: "albums" },
+      { label: "Songs", icon: MusicIcon, value: "songs" },
+    ],
+    socialize: [
+      { label: "Events", icon: Calendar, value: "events" },
+      { label: "Groups", icon: Group, value: "groups" },
+      { label: "Forums", icon: MessageSquare, value: "forums" },
+    ],
+  },
+};

@@ -24,11 +24,11 @@ export class PerplexityDataProvider implements DataProvider {
     }
 
     // Build the search query with domain filtering
-    let searchQuery = `Top rated sources for ${q}`;
+    let searchQuery = `${q}`;
 
     // Add filter type if provided
     if (filter_type) {
-      searchQuery += ` ${filter_type}`;
+      searchQuery += `. preferences:${filter_type}`;
     }
 
     console.log(

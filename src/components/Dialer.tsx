@@ -137,7 +137,7 @@ const Dialer: React.FC = () => {
 
     switch (step) {
       case 1:
-        title = "What do you want to do?";
+        title = "Need help deciding?";
         break;
       case 2:
         title = `What kind of "${selections[0]}"?`;

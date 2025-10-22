@@ -22,17 +22,13 @@ export class GroundedGeminiDataProvider implements DataProvider {
   ): Promise<SearchResult[]> {
     const q = query.trim();
 
-    limit = 3;
+    limit = 5;
 
     if (!q) {
       return [];
     }
 
     try {
-      const groundingTool = {
-        googleSearch: {},
-      };
-
       console.log(
         "Using GroundedGeminiDataProvider with query:",
         q,
@@ -40,31 +36,59 @@ export class GroundedGeminiDataProvider implements DataProvider {
         filter_type
       );
 
-      const isProductQuery = filter_type.toLowerCase().includes("product");
+      let searchQuery = `${q}`;
 
-      const prompt = isProductQuery
-        ? `What is the top ${limit} recommended products to buy for "${q}". Each item should have a "title" (product name), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). No preamble.`
-        : `Provide a concise bullet of up to ${limit} most helpful article titles for "${q}". Each item should have a "title" (article title), a "description" (brief explanation of why it's helpful), and a "url" (link to the article). No preamble.`;
+      // Add filter type if provided
+      if (filter_type) {
+        searchQuery += `. preferences:${filter_type}`;
+      }
+
+      // const prompt = isProductQuery
+      //   ? `What is the top ${limit} recommended products to buy for "${q}". Each item should have a "title" (product name), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). No preamble.`
+      //   : `Provide a concise bullet of up to ${limit} most helpful article titles for "${q}". Each item should have a "title" (article title), a "description" (brief explanation of why it's helpful), and a "url" (link to the article). No preamble.`;
+
+      const isProductQuery =
+        searchQuery.toLowerCase().includes("buy") ||
+        searchQuery.toLowerCase().includes("shopping");
+      // const isNews = searchQuery.toLowerCase().includes("news");
+      // const isLatest = searchQuery.toLowerCase().includes("latest") || isNews;
+
+      const prompt = `What is the top ${limit} recommended specific products and where to buy it for this user search: "${q}". Each item should have a "title" (product name - [DECISION CATEGORY] top pick), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). No preamble.`;
 
       console.log("Generated prompt:", prompt);
 
       const generationConfig: Record<string, any> = {
-        tools: [groundingTool],
+        tools: [{ googleSearch: {} }],
         // responseMimeType: "text/plain", // Grounding might override JSON output
       };
 
-      const result = await this.ai.models.generateContent({ // Use this.ai
-        model: "gemini-flash-latest", // Using latest for potential grounding improvements
-        contents: prompt,
-        ...generationConfig, // Spread generationConfig properties
+      const result = await this.ai.models.generateContent({
+        // Use this.ai
+        model: "gemini-flash-lite-latest", // Using latest for potential grounding improvements
+        contents:
+          "You are a helpful assistant that provides concise results in JSON format { results: [ {title, description, url} ] }. " +
+          prompt,
+        config: {
+          // candidateCount: 3,
+          tools: generationConfig.tools,
+        },
       });
 
       const response = result;
       console.log("Gemini API response received");
       console.log(JSON.stringify(response, null, 2));
-      throw new Error("Debug stop");
+      // throw new Error("Debug stop");
 
       const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
+      const content = response.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+      let text = content;
+      text = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
+      text = text.replace(/\n/g, "");
+      // unescape quotes
+      text = text.replace(/\\"/g, '"');
+
+      console.log("Extracted text for parsing:", text);
 
       // if (groundingMetadata?.groundingChunks) {
       //   console.log("Grounding chunks found:", groundingMetadata.groundingChunks);
@@ -86,13 +110,10 @@ export class GroundedGeminiDataProvider implements DataProvider {
       // }
 
       // Fallback to parsing text if grounding chunks are not available
-      let text = response.candidates?.[0]?.content?.parts?.[0]?.text || "";
       let parsed: any[] = [];
 
-    text = text.replace(/^\s*```json/, "").replace(/```\s*$/, "");
-
       try {
-        parsed = JSON.parse(text.trim());
+        parsed = JSON.parse(text.trim()).results;
       } catch (jsonError) {
         console.error("Failed to parse Gemini response as JSON:", jsonError);
         console.error("Raw Gemini response:", text);
@@ -105,8 +126,7 @@ export class GroundedGeminiDataProvider implements DataProvider {
       }
 
       return parsed.map((item: Record<string, unknown>, index) => {
-
-        const title:string =
+        const title: string =
           typeof item.title === "string" && item.title.trim().length > 0
             ? item.title
             : "Untitled";
@@ -117,7 +137,9 @@ export class GroundedGeminiDataProvider implements DataProvider {
             : "No description available";
 
         console.log("Item title:", groundingMetadata, item);
-        let url:string = (groundingMetadata?.groundingChunks?.[0]?.web?.uri || item.url || "") as string;
+        let url: string = (groundingMetadata?.groundingChunks?.[0]?.web?.uri ||
+          item.url ||
+          "") as string;
 
         if (isProductQuery && title !== "Untitled") {
           url = `https://www.google.com/search?udm=28&q=${encodeURIComponent(
