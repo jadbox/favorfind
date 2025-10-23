@@ -57,7 +57,7 @@ export class GroundedGeminiDataProvider implements DataProvider {
       // const isNews = searchQuery.toLowerCase().includes("news");
       // const isLatest = searchQuery.toLowerCase().includes("latest") || isNews;
 
-      const prompt = `What is the top ${limit} recommended specific products and where to buy it for this user search: "${q}". Each item should have a "title" (product name [DECISION CATEGORY top pick]), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). No preamble.`;
+      const prompt = `What is the top ${limit} top recommended specific products for this search: "${q}". Each item should have a "title" (product name [DECISION CATEGORY top pick]), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). No preamble.`;
 
       console.log("Generated prompt:", prompt);
 
