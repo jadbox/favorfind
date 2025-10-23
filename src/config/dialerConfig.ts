@@ -58,6 +58,7 @@ import {
   Hotel,
   Utensils,
   Ticket,
+  Bike,
 } from "lucide-react";
 
 export interface MenuItem {
@@ -81,12 +82,12 @@ export const dialerConfig: {
     { label: "Travel", icon: Plane, value: "travel" },
     { label: "Software", icon: Wrench, value: "software" },
     { label: "Health", icon: HeartPulse, value: "health" },
-    { label: "Food & Grocery", icon: Apple, value: "food-grocery" },
-    { label: "Sports & Fitness", icon: Dumbbell, value: "sports-fitness" },
-    { label: "Books", icon: Book, value: "books" },
+    // { label: "Food & Grocery", icon: Apple, value: "food-grocery" },
+    // { label: "Sports & Fitness", icon: Dumbbell, value: "sports-fitness" },
+    // { label: "Books", icon: Book, value: "books" },
     { label: "Entertainment", icon: Film, value: "entertainment" },
-    { label: "Music", icon: MusicIcon, value: "music" },
-    { label: "Socialize", icon: Users, value: "socialize" },
+    // { label: "Music", icon: MusicIcon, value: "music" },
+    // { label: "Socialize", icon: Users, value: "socialize" },
   ],
   secondLevel: {
     electronics: [
@@ -115,6 +116,9 @@ export const dialerConfig: {
       { label: "Flights", icon: Plane, value: "flights" },
       { label: "Hotels", icon: Hotel, value: "hotels" },
       { label: "Car Rentals", icon: Car, value: "car-rentals" },
+      { label: "Buy a Car", icon: Car, value: "car-vehicle" },
+      { label: "Buy a Truck", icon: Car, value: "truck-vehicle" },
+      { label: "Motorcycles", icon: Bike, value: "motorcycles" },
       { label: "Restaurants", icon: Utensils, value: "restaurants" },
       { label: "Activities", icon: Ticket, value: "activities" },
     ],
@@ -127,6 +131,11 @@ export const dialerConfig: {
     ],
     health: [
       { label: "Vitamins", icon: Pill, value: "vitamins" },
+      {
+        label: "Gym Supplements",
+        icon: FlaskConical,
+        value: "gym-supplements",
+      },
       { label: "Fitness Trackers", icon: Watch, value: "fitness-trackers" },
       { label: "Personal Care", icon: Sparkles, value: "personal-care" },
       {
@@ -135,23 +144,24 @@ export const dialerConfig: {
         value: "medical-supplies",
       },
     ],
-    "food-grocery": [],
-    "sports-fitness": [],
-    books: [],
+    // "food-grocery": [],
+    // "sports-fitness": [],
     entertainment: [
       { label: "Movies", icon: Film, value: "movies" },
       { label: "TV Shows", icon: Tv, value: "tv-shows" },
-      { label: "Games", icon: Gamepad2, value: "games" },
+      { label: "Console Games", icon: Gamepad2, value: "console-games" },
+      { label: "PC Games", icon: Gamepad2, value: "pc-games" },
+      { label: "Boardgames", icon: Gamepad2, value: "boardgames" },
     ],
-    music: [
-      { label: "Artists", icon: UserCog, value: "artists" },
-      { label: "Albums", icon: MusicIcon, value: "albums" },
-      { label: "Songs", icon: MusicIcon, value: "songs" },
-    ],
-    socialize: [
-      { label: "Events", icon: Calendar, value: "events" },
-      { label: "Groups", icon: Group, value: "groups" },
-      { label: "Forums", icon: MessageSquare, value: "forums" },
-    ],
+    // music: [
+    //   { label: "Artists", icon: UserCog, value: "artists" },
+    //   { label: "Albums", icon: MusicIcon, value: "albums" },
+    //   { label: "Songs", icon: MusicIcon, value: "songs" },
+    // ],
+    // socialize: [
+    //   { label: "Events", icon: Calendar, value: "events" },
+    //   { label: "Groups", icon: Group, value: "groups" },
+    //   { label: "Forums", icon: MessageSquare, value: "forums" },
+    // ],
   },
 };

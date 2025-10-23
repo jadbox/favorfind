@@ -37,7 +37,7 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
     const queryLower = query.toLowerCase();
     
     const existingPreferences: string[] = [];
-    const qualityTerms = ['budget', 'repairable', 'long lasting', 'popular'];
+    const qualityTerms = ['budget', 'repairable', 'durable with great warranty', 'popular', 'eco-friendly', '100% natural', 'good employer', 'locally made'];
     
     qualityTerms.forEach(term => {
       if (queryLower.includes(term.toLowerCase())) {
@@ -103,13 +103,9 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
     const currentUrl = new URL(window.location.href);
     let query = currentUrl.searchParams.get("q") || '';
 
-    // Remove preference keywords from query
-    const queryParts = query.split(' ').filter(part => !['budget', 'repairable', 'long', 'lasting', 'popular'].includes(part));
-    let baseQuery = queryParts.join(' ');
-
     // Remove old location pattern "(in [location])" if it exists
     const locationPattern = /\s*\(in [^)]+\)\s*$/;
-    baseQuery = baseQuery.replace(locationPattern, '').trim();
+    let baseQuery = query.replace(locationPattern, '').trim();
 
     // Build new query with updated location
     let finalQuery = baseQuery;
@@ -184,9 +180,10 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
       const currentUrl = new URL(window.location.href);
       let query = currentUrl.searchParams.get("q") || '';
       
-      // Remove all preference keywords from query
+      // Remove all quality preference keywords from query to avoid duplicates
+      const qualityTerms = ['budget', 'repairable', 'durable', 'with', 'great', 'warranty', 'popular', 'eco-friendly', '100%', 'natural', 'good', 'employer', 'locally', 'made'];
       const queryParts = query.split(' ').filter(part => 
-        !['budget', 'repairable', 'long', 'lasting', 'popular'].includes(part)
+        !qualityTerms.includes(part.toLowerCase())
       );
       let baseQuery = queryParts.join(' ');
       
@@ -228,8 +225,9 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
     const currentUrl = new URL(window.location.href);
     let query = currentUrl.searchParams.get("q") || '';
 
-    // Remove preference keywords from query
-    const queryParts = query.split(' ').filter(part => !['budget', 'repairable', 'long', 'lasting', 'popular'].includes(part));
+    // Remove all quality preference keywords from query to avoid duplicates
+    const qualityTerms = ['budget', 'repairable', 'durable', 'with', 'great', 'warranty', 'popular', 'eco-friendly', '100%', 'natural', 'good', 'employer', 'locally', 'made'];
+    const queryParts = query.split(' ').filter(part => !qualityTerms.includes(part.toLowerCase()));
     let baseQuery = queryParts.join(' ');
 
     // Remove old location pattern "(in [location])" if it exists
@@ -315,7 +313,7 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
             Qualities:
           </label>
           <div className="flex flex-wrap gap-4">
-            {['budget', 'repairable', 'long lasting', 'popular'].map(pref => (
+            {['budget', 'repairable', 'durable with great warranty', 'popular', 'eco-friendly', "100% natural", "good employer", "locally made"].map(pref => (
               <label 
                 key={pref} 
                 className="flex items-center gap-2.5 px-4 py-2 bg-gray-700/50 hover:bg-gray-700 rounded-lg cursor-pointer transition-all group"

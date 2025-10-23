@@ -1,7 +1,32 @@
 import type { APIRoute } from "astro";
 import { GoogleGenAI, Type } from "@google/genai";
-import * as lucideIcons from "lucide-react";
 import { getCachedData, setCachedData } from "../../../services/cache";
+
+const COMMON_ICONS = [
+  "Home",
+  "Search",
+  "Settings",
+  "User",
+  "Bell",
+  "Mail",
+  "Star",
+  "Heart",
+  "Check",
+  "Info",
+  "HelpCircle",
+  "Calendar",
+  "Camera",
+  "Image",
+  "Video",
+  "Book",
+  "Briefcase",
+  "MapPin",
+  "Globe",
+  "Monitor",
+  "Car",
+  "Plane",
+  "ShoppingCart",
+];
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 if (!GEMINI_API_KEY) {
@@ -22,6 +47,8 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
+    console.log("exclude:", exclude);
+
     const cacheKey = `dialer:${selections.join(":")}:${exclude.join(",")}`;
     const cachedMenu = getCachedData(cacheKey);
 
@@ -32,7 +59,6 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const availableIcons = Object.keys(lucideIcons);
     const prompt = `
       Generate a JSON array of up to 9 STRICT sub-categories for "${selections.join(
         ", "
@@ -53,17 +79,17 @@ export const POST: APIRoute = async ({ request }) => {
       Each item must be an object with "label", "value", and "icon" properties:
       - "label": A user-friendly name for the subcategory (capitalize appropriately)
       - "value": A URL-friendly slug (lowercase, hyphenated)
-      - "icon": A relevant icon from lucide-react that describes the subcategory. Choose from: ${availableIcons.join(
+      - "icon": A relevant icon from lucide-react that describes the subcategory. Choose from: ${COMMON_ICONS.join(
         ", "
       )}
-      ${
-        exclude.length > 0
-          ? `\nDo not include any of these items: ${exclude.join(", ")}`
-          : ""
-      }
+      ${`\nDo not include any of these higher categories: ${exclude.join(
+        ", "
+      )}, ${selections.join(", ")}`}
       
       Return ONLY the JSON array with no preamble or explanation.
     `;
+
+    console.log("Generated prompt for dialer menu:", prompt);
 
     const response = await ai.models.generateContent({
       model: "gemini-flash-lite-latest",
