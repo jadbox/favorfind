@@ -68,7 +68,7 @@ export class GroundedGeminiDataProvider implements DataProvider {
 
       const result = await this.ai.models.generateContent({
         // Use this.ai
-        model: "gemini-flash-lite-latest", // Using latest for potential grounding improvements
+        model: "gemini-flash-latest", // Using latest for potential grounding improvements
         contents:
           "You are a helpful assistant that provides concise results in JSON format { results: [ {title, description, url} ] }. " +
           prompt,

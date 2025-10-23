@@ -104,7 +104,7 @@ const Dialer: React.FC = () => {
           if (location && location.cityName && location.stateName) {
             const locationString = [location.cityName, location.stateName].filter(Boolean).join(", ");
             if (locationString) {
-              query = `${locationString} ${query}`;
+              query = `${query} (in ${locationString})`;
             }
           }
         }
