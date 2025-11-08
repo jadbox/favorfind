@@ -80,7 +80,12 @@ export class GroundedGeminiDataProvider implements DataProvider {
       console.log("Gemini API response received");
       console.log(JSON.stringify(response, null, 2));
 
-      const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
+      const groundingMetadata =
+        response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+      console.log(
+        "Grounding metadata:",
+        JSON.stringify(groundingMetadata, null, 2)
+      );
       const content = response.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
       let text = content;

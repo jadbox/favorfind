@@ -59,14 +59,20 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
+    console.log("selections:", selections);
+
+    const mainSelection = selections[selections.length - 1];
+    const otherSelections = selections.slice(0, -1);
+
     const prompt = `
-      Generate a JSON array of up to 9 STRICT sub-categories for "${selections.join(
-        ", "
-      )}".
+      Generate a JSON array of up to 9 STRICT sub-categories of strictly "${mainSelection}", which is under the broader category of ${otherSelections.join(
+      ", "
+    )}.
       
       CRITICAL: Each suggestion MUST be a direct subcategory that falls UNDER the given category in a hierarchical relationship.
       
       Examples of correct subcategories:
+      - For "projectors", suggest "Home Theater Projectors", "Business Projectors", "Portable Projectors" (NOT "Electronics", NOT "TVs", NOT "OLED")
       - For "tablet": iPad, Android Tablets, Windows Tablets, Gaming Tablets, Drawing Tablets (NOT Smartphones, NOT Laptops)
       - For "electronics": Computers, Smartphones, Tablets, Cameras (NOT Furniture, NOT Clothing)
       - For "clothing": Shirts, Pants, Dresses, Shoes (NOT Accessories unless it's "clothing accessories")
@@ -77,7 +83,7 @@ export const POST: APIRoute = async ({ request }) => {
       - If the category is "laptop", do NOT suggest "Desktop" (sibling category)
       
       Each item must be an object with "label", "value", and "icon" properties:
-      - "label": A user-friendly name for the subcategory (capitalize appropriately)
+      - "label": A user-friendly name for the subcategory (capitalize appropriately) and be concise in 1-2 words. Example, say Projector instead of Projector Screens.
       - "value": A URL-friendly slug (lowercase, hyphenated)
       - "icon": A relevant icon from lucide-react that describes the subcategory. Choose from: ${COMMON_ICONS.join(
         ", "

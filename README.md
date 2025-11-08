@@ -20,21 +20,25 @@ FavorFind is an intelligent knowledge discovery platform that helps you find the
 ## ✨ Key Features
 
 ### 🎨 Dynamic Dialpad Navigation
-- **3-Step Guided Search**: Navigate through Buy, Learn, Guide, Social, News, and Lookup categories
+
+- **4-Step Guided Search**: Navigate through Buy, Learn, Guide, Social, News, and Lookup categories
 - **Smart Categorization**: AI-powered third-level menu generation using Gemini
 - **Icon-Based Interface**: Beautiful Lucide React icons for intuitive navigation
 
 ### 🔍 Intelligent Search
+
 - **Multiple Search Providers**: Perplexity AI, Gemini, and Semantic Scholar integration
 - **Smart Caching**: SQLite-based caching for lightning-fast repeat searches
 - **Advanced Filters**: Content type, source type, date, and relevance sorting
 
 ### 📚 Personal Library
+
 - **Save & Organize**: Keep track of your favorite resources
 - **Persistent Storage**: Local storage for instant access across sessions
 - **Quick Access**: View your saved items anytime
 
 ### 🎨 Modern UI/UX
+
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
 - **Dark Theme**: Eye-friendly interface for extended browsing
 - **Smooth Animations**: Polished interactions with loading states
@@ -60,19 +64,22 @@ FavorFind is an intelligent knowledge discovery platform that helps you find the
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/jadbox/favorfind.git
    cd favorfind
    ```
 
 2. **Install dependencies**
+
    ```bash
    bun install
    ```
 
 3. **Set up environment variables**
-   
+
    Create a `.env` file in the root directory:
+
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
    PERPLEXITY_API_KEY=your_perplexity_api_key_here
@@ -80,25 +87,29 @@ FavorFind is an intelligent knowledge discovery platform that helps you find the
    ```
 
 4. **Start the development server**
+
    ```bash
    bun run dev
    ```
 
 5. **Open your browser**
-   
+
    Navigate to `http://localhost:4322`
 
 ## 🔑 API Keys
 
 ### Gemini API (Required)
+
 - **Purpose**: Dynamic menu generation for the dialpad's third level
 - **Get Your Key**: [Google AI Studio](https://makersuite.google.com/app/apikey)
 
 ### Perplexity AI (Required)
+
 - **Purpose**: Main search functionality
 - **Get Your Key**: [Perplexity API](https://www.perplexity.ai)
 
 ### Semantic Scholar (Optional)
+
 - **Purpose**: Academic paper search
 - **Get Your Key**: [Semantic Scholar API](https://api.semanticscholar.org/api-docs/)
 
