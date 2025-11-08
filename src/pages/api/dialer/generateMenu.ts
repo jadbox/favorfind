@@ -62,14 +62,14 @@ export const POST: APIRoute = async ({ request }) => {
     console.log("selections:", selections);
 
     const mainSelection = selections[selections.length - 1];
-    const otherSelections = selections.slice(0, -1);
+    const otherSelections = selections.slice(1, -1); // ignore top level selection;
 
     const prompt = `
       Generate a JSON array of up to 9 STRICT sub-categories of strictly "${mainSelection}", which is under the broader category of ${otherSelections.join(
       ", "
     )}.
       
-      CRITICAL: Each suggestion MUST be a direct subcategory that falls UNDER the given category in a hierarchical relationship.
+      CRITICAL: Each suggestion MUST be a direct subcategory of desirable purchase features UNDER the given category in a hierarchical relationship. A TV should include OLED, QLED, LED projectors. Answers should NOT include a non-feature words "refresh rate".
       
       Examples of correct subcategories:
       - For "projectors", suggest "Home Theater Projectors", "Business Projectors", "Portable Projectors" (NOT "Electronics", NOT "TVs", NOT "OLED")

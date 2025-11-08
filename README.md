@@ -15,7 +15,9 @@
 
 ## 🎯 Overview
 
-FavorFind is an intelligent knowledge discovery platform that helps you find the best resources on the internet through an innovative **dynamic dialpad interface**. Instead of traditional search, FavorFind guides you through a multi-step selection process to pinpoint exactly what you're looking for.
+FavorFind is an intelligent platform designed to assist with purchase decisions by streamlining the discovery of high-quality products through a dynamic dialpad interface. Users begin in the "Buy" category and navigate sub-menus to specify needs—for instance, selecting "Electronics" to explore options like Smartphones, TVs, Laptops, Desktops, Tablets, or Accessories. Personalization is achieved via preference tags such as repairable, open source, eco-friendly, or trendy, ensuring recommendations match individual criteria.
+
+This guided approach supports efficient buying choices, from 4K home theater projectors with extended lamp life to sustainable technology solutions.
 
 ## ✨ Key Features
 

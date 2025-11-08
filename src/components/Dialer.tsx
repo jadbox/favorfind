@@ -95,7 +95,8 @@ const Dialer: React.FC = () => {
           fetchDynamicMenu(newSelections, nextStep);
         }
       } else {
-        let query = newSelections.join("+");
+        let query = newSelections.splice(1).join("+");
+        // const removeTopLevel = newSelectionssplice(1).join(',').trim();
         
         // Append location if available
         const savedSettings = localStorage.getItem('userSettings');
@@ -114,13 +115,15 @@ const Dialer: React.FC = () => {
         const localStorageKey = topLevelCategory ? `${topLevelCategory}-preferences` : '';
         const categoryPreferences = localStorageKey ? localStorage.getItem(localStorageKey) : null;
         if (categoryPreferences) {
-          query = `${query}. Preferences [${categoryPreferences}]`;
+
+          
+          query = `${query}. Preferences include ${categoryPreferences}`;
         }
 
         LoadingUtils.show();
         window.location.href = `/search?q=${encodeURIComponent(query)}`;
       }
-    }, 250);
+    }, 210);
   };
 
   const handleMore = () => {
@@ -149,16 +152,16 @@ const Dialer: React.FC = () => {
 
     switch (step) {
       case 1:
-        title = "Need help deciding?";
+        title = "What do you need help deciding?";
         break;
       case 2:
-        title = `What kind of "${selections[0]}"?`;
+        title = `Buying what kind of ${selections[0]}?`;
         break;
       case 3:
-        title = `What about "${selections[1]}"?`;
+        title = `Buying what kind of ${selections[1]}?`;
         break;
       case 4:
-        title = `More specifically, regarding "${selections[2]}"?`;
+        title = `Lastly, buying what kind of ${selections[1]} ${selections[2]}?`;
         break;
       default:
         return null;
