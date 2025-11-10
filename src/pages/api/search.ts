@@ -1,70 +1,78 @@
 import type { APIRoute } from "astro";
 import { _fetchSearchResults as fetchSearchResults } from "../../api/search";
 
-export const GET: APIRoute = async ({ request }) => {
-  const url = new URL(request.url);
-  const query = url.searchParams.get("q")?.trim() || "";
-  const limit = Math.min(
-    parseInt(url.searchParams.get("limit") || "0"),
-    50 // Max limit
-  );
-  const page = Math.max(parseInt(url.searchParams.get("page") || "1"), 1);
-  let filter_type = url.searchParams.get("filter_type") || "";
-  const sortBy = url.searchParams.get("sortBy") || "";
-  filter_type += sortBy ? ` ${sortBy}` : "";
+// export const GET: APIRoute = async ({ request }) => {
+//   const url = new URL(request.url);
+//   let query = url.searchParams.get("q")?.trim() || "";
+//   query = decodeURIComponent(query);
+//   console.log("Received search query:", query);
+//   throw new Error("Debugging search API");
 
-  console.log(
-    "Search API called with query:",
-    query,
-    "limit:",
-    limit,
-    "page:",
-    page,
-    "filter_type:",
-    filter_type
-  );
-  console.log(
-    "Using search provider:",
-    process.env.SEARCH_PROVIDER || "gemini"
-  );
+//   const limit = Math.min(
+//     parseInt(url.searchParams.get("limit") || "0"),
+//     50 // Max limit
+//   );
+//   const page = Math.max(parseInt(url.searchParams.get("page") || "1"), 1);
+//   let filter_type = url.searchParams.get("filter_type") || "";
+//   const sortBy = url.searchParams.get("sortBy") || "";
+//   filter_type += sortBy ? ` ${sortBy}` : "";
 
-  if (!query) {
-    return new Response(JSON.stringify([]), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+//   console.log(
+//     "Search API called with query:",
+//     query,
+//     "limit:",
+//     limit,
+//     "page:",
+//     page,
+//     "filter_type:",
+//     filter_type
+//   );
+//   console.log(
+//     "Using search provider:",
+//     process.env.SEARCH_PROVIDER || "gemini"
+//   );
 
-  try {
-    const results = await fetchSearchResults(query, limit, page, filter_type);
-    console.log("Search results:", results.length);
+//   if (!query) {
+//     return new Response(JSON.stringify([]), {
+//       status: 400,
+//       headers: { "Content-Type": "application/json" },
+//     });
+//   }
 
-    // Note: Search history is now saved client-side via localStorage
-    // See search.astro <script> tag for client-side history saving
+//   try {
+//     const results = await fetchSearchResults(query, limit, page, filter_type);
+//     console.log("Search results:", results.length);
 
-    return new Response(JSON.stringify(results), {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  } catch (error) {
-    console.error("Search API error:", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    return new Response(
-      JSON.stringify({ error: "Search failed", details: errorMessage }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-  }
-};
+//     // Note: Search history is now saved client-side via localStorage
+//     // See search.astro <script> tag for client-side history saving
+
+//     return new Response(JSON.stringify(results), {
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Search API error:", error);
+//     const errorMessage =
+//       error instanceof Error ? error.message : "Unknown error";
+//     return new Response(
+//       JSON.stringify({ error: "Search failed", details: errorMessage }),
+//       {
+//         status: 500,
+//         headers: { "Content-Type": "application/json" },
+//       }
+//     );
+//   }
+// };
 
 export const POST: APIRoute = async ({ request }) => {
   try {
     const formData = await request.formData();
-    const query = formData.get("query") as string;
+    let query = formData.get("query") as string;
+    query = decodeURIComponent(query);
+    console.log("Received search query:", query);
+    throw new Error("Debugging search API");
+
     const limit = Math.min(
       parseInt((formData.get("limit") as string) || "20"),
       50 // Max limit

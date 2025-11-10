@@ -16,6 +16,7 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
   const [locationString, setLocationString] = useState('');
   const [initialLocationString, setInitialLocationString] = useState('');
   const [preferences, setPreferences] = useState<string[]>([]);
+  const [initialPreferences, setInitialPreferences] = useState<string[]>([]);
 
   useEffect(() => {
     // Check localStorage for location
@@ -36,17 +37,32 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
     const query = currentUrl.searchParams.get("q") || '';
     const queryLower = query.toLowerCase();
     
+    const qualityMap: { [key: string]: string[] } = {
+      'newest': ['newest', 'new', 'latest \\d{4}'],
+      'budget': ['budget'],
+      'repairable': ['repairable'],
+      'durable with great warranty': ['durable with great warranty', 'durable', 'warranty'],
+      'popular': ['popular'],
+      'eco-friendly': ['eco-friendly', 'ecofriendly'],
+      '100% natural': ['100% natural', 'natural'],
+      'good employer': ['good employer'],
+      'locally made': ['locally made']
+    };
+
     const existingPreferences: string[] = [];
-    const qualityTerms = ['budget', 'repairable', 'durable with great warranty', 'popular', 'eco-friendly', '100% natural', 'good employer', 'locally made'];
-    
-    qualityTerms.forEach(term => {
-      if (queryLower.includes(term.toLowerCase())) {
-        existingPreferences.push(term);
+    for (const pref in qualityMap) {
+      const terms = qualityMap[pref];
+      if (terms && terms.some(term => {
+        const regex = new RegExp(`\\b${term}\\b`, 'i');
+        return regex.test(queryLower);
+      })) {
+        existingPreferences.push(pref);
       }
-    });
+    }
     
     if (existingPreferences.length > 0) {
       setPreferences(existingPreferences);
+      setInitialPreferences(existingPreferences);
     }
   }, []);
 
@@ -167,44 +183,13 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
 
   const handlePreferenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value, checked } = e.target;
-    const newPreferences = checked 
-      ? [...preferences, value] 
-      : preferences.filter(p => p !== value);
-    
-    setPreferences(newPreferences);
-    
-    // If unchecking, immediately update the query
-    if (!checked) {
-      LoadingUtils.show();
-      
-      const currentUrl = new URL(window.location.href);
-      let query = currentUrl.searchParams.get("q") || '';
-      
-      // Remove all quality preference keywords from query to avoid duplicates
-      const qualityTerms = ['budget', 'repairable', 'durable', 'with', 'great', 'warranty', 'popular', 'eco-friendly', '100%', 'natural', 'good', 'employer', 'locally', 'made'];
-      const queryParts = query.split(' ').filter(part => 
-        !qualityTerms.includes(part.toLowerCase())
-      );
-      let baseQuery = queryParts.join(' ');
-      
-      // Remove old location pattern if exists
-      const locationPattern = /\s*\(in [^)]+\)\s*$/;
-      baseQuery = baseQuery.replace(locationPattern, '').trim();
-      
-      // Rebuild query with remaining preferences
-      let finalQuery = baseQuery;
-      if (locationEnabled && locationString) {
-        finalQuery = `${baseQuery} (in ${locationString})`;
-      }
-      if (newPreferences.length > 0) {
-        finalQuery = `${finalQuery} ${newPreferences.join(' ')}`;
-      }
-      
-      window.location.href = `/search?q=${encodeURIComponent(finalQuery.trim())}`;
-    }
+    setPreferences(prev => 
+      checked ? [...prev, value] : prev.filter(p => p !== value)
+    );
   };
 
-  const hasChanges = locationString !== initialLocationString || preferences.length > 0;
+  const preferencesChanged = JSON.stringify([...preferences].sort()) !== JSON.stringify([...initialPreferences].sort());
+  const hasChanges = locationString !== initialLocationString || preferencesChanged;
 
   const handleUpdateFilters = () => {
     LoadingUtils.show();
@@ -225,10 +210,21 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
     const currentUrl = new URL(window.location.href);
     let query = currentUrl.searchParams.get("q") || '';
 
+    let baseQuery = query;
+
+    // Remove "latest [YEAR]" pattern first to avoid partial matches later
+    const latestYearRegex = /\blatest\s+\d{4}\b/gi;
+    baseQuery = baseQuery.replace(latestYearRegex, '');
+
     // Remove all quality preference keywords from query to avoid duplicates
-    const qualityTerms = ['budget', 'repairable', 'durable', 'with', 'great', 'warranty', 'popular', 'eco-friendly', '100%', 'natural', 'good', 'employer', 'locally', 'made'];
-    const queryParts = query.split(' ').filter(part => !qualityTerms.includes(part.toLowerCase()));
-    let baseQuery = queryParts.join(' ');
+    const allQualityTerms = ['newest', 'new', 'latest', 'budget', 'repairable', 'durable with great warranty', 'durable', 'warranty', 'popular', 'eco-friendly', 'ecofriendly', '100% natural', 'natural', 'good employer', 'locally made'];
+    allQualityTerms.forEach(term => {
+      const regex = new RegExp(`\\b${term}\\b`, 'gi');
+      baseQuery = baseQuery.replace(regex, '');
+    });
+    
+    baseQuery = baseQuery.replace(/\s\s+/g, ' ').trim();
+
 
     // Remove old location pattern "(in [location])" if it exists
     const locationPattern = /\s*\(in [^)]+\)\s*$/;
@@ -239,7 +235,14 @@ const SearchResultsFilters: React.FC<SearchResultsFiltersProps> = (props) => {
         finalQuery = `${baseQuery} (in ${locationString})`;
     }
     if (preferences.length > 0) {
-        finalQuery = `${finalQuery} ${preferences.join(' ')}`;
+        const processedPreferences = preferences.map(p => {
+            if (p === 'newest') {
+                const currentYear = new Date().getFullYear();
+                return `latest ${currentYear}`;
+            }
+            return p;
+        });
+        finalQuery = `${finalQuery} ${processedPreferences.join(' ')}`;
     }
 
     form.appendChild(createHiddenInput("q", finalQuery.trim()));

@@ -51,14 +51,19 @@ export class GroundedGeminiDataProvider implements DataProvider {
 
       // Add filter type if provided
       if (filter_type) {
-        searchQuery += `. preferences:${filter_type}`;
+        if (filter_type === "newest") {
+          const currentYear = new Date().getFullYear();
+          searchQuery += ` latest ${currentYear}`;
+        } else {
+          searchQuery += `. preferences:${filter_type}`;
+        }
       }
 
       const isProductQuery =
         searchQuery.toLowerCase().includes("buy") ||
         searchQuery.toLowerCase().includes("shopping");
 
-      const prompt = `What is the top ${limit} top recommended specific products (without duplicates) for this search: "${q}". Each item should have a "title" (product name [DECISION CATEGORY top pick]), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). No preamble.`;
+      const prompt = `Find the top ${limit} recommended specific products (without duplicates) for the search query: "${searchQuery}". For each product, provide a "title" (product name [DECISION CATEGORY top pick]), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). Do not include any introductory text or preamble.`;
 
       console.log("Generated prompt:", prompt);
 
@@ -69,10 +74,12 @@ export class GroundedGeminiDataProvider implements DataProvider {
       const result = await this.ai.models.generateContent({
         model: "gemini-flash-lite-latest",
         contents:
-          "You are a helpful assistant that always responds in JSON format { results: [ {title, description, url} ] }. Start answer with:```json. <USE_SEARCH>" +
+          "You are a helpful assistant that always responds in JSON format { results: [ {title, description, url} ] }. JSON ANSWERS ONLY. <USE_SEARCH>" +
           prompt,
         config: {
           tools: generationConfig.tools,
+          maxOutputTokens: 8192,
+          temperature: 0.2,
         },
       });
 
@@ -86,12 +93,29 @@ export class GroundedGeminiDataProvider implements DataProvider {
         "Grounding metadata:",
         JSON.stringify(groundingMetadata, null, 2)
       );
-      const content = response.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      const content =
+        response.candidates?.[0]?.content?.parts
+          ?.map((part) => part.text)
+          .join("") || "";
 
-      let text = content;
-      text = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
-      text = text.replace(/\n/g, "");
-      text = text.replace(/\\"/g, '"');
+      let text = content.trim();
+      // Handle markdown code blocks
+      if (text.includes("```json")) {
+        text = text
+          .substring(text.indexOf("```json") + 7, text.lastIndexOf("```"))
+          .trim();
+      } else if (text.includes("```")) {
+        text = text
+          .substring(text.indexOf("```") + 3, text.lastIndexOf("```"))
+          .trim();
+      }
+
+      // Find the first '{' and the last '}' to extract the JSON object
+      const firstBrace = text.indexOf("{");
+      const lastBrace = text.lastIndexOf("}");
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        text = text.slice(firstBrace, lastBrace + 1);
+      }
 
       console.log("Extracted text for parsing:", text);
 

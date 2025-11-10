@@ -13,6 +13,11 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
   filteredResults = [],
 }) => {
   const [savedStatus, setSavedStatus] = useState<Record<string, boolean>>({});
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const updateSavedStatus = () => {
     if (filteredResults.length > 0) {
@@ -51,7 +56,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
 
   return (
     <div className="grid gap-6" data-results-count={filteredResults.length}>
-      {loading ? (
+      {loading && isMounted ? (
         <div className="text-center py-12">
           <div className="loading loading-spinner loading-lg text-medical-600"></div>
           <div className="text-gray-500 text-lg mt-4">

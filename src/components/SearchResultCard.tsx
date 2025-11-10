@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import type { SearchResult } from "../types";
 import { toggleSaveToLibrary } from "../utils/localStorage";
@@ -17,6 +17,11 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
 }) => {
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Update local state when prop changes
   React.useEffect(() => {
@@ -156,9 +161,10 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
         </div>*/}
 
         {/* Abstract */}
-        <p className="text-text-secondary text-sm leading-relaxed mb-4">
-          <Markdown>{result.abstract}</Markdown>
-        </p>
+        <div className="text-text-secondary text-sm leading-relaxed mb-4">
+          {/* {isMounted ? <Markdown>{result.abstract}</Markdown> : result.abstract} */}
+          {result.abstract}
+        </div>
 
         {/* Actions */}
         <div className="card-actions justify-end items-center space-x-4">
