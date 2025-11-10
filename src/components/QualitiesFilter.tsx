@@ -27,7 +27,7 @@ const QualitiesFilter: React.FC<QualitiesFilterProps> = ({ initialPreferences, o
         Qualities:
       </label>
       <div className="flex flex-wrap gap-4">
-        {['budget', 'newest', 'repairable', 'durable with great warranty', 'popular', 'eco-friendly', "100% natural", "good employer", "locally made"].map(pref => (
+        {['budget', 'newest', 'repairable', 'durable with great warranty', 'popular', 'eco-friendly', "all natural", "good employer", "locally made"].map(pref => (
           <label 
             key={pref} 
             className="flex items-center gap-2.5 px-4 py-2 bg-gray-700/50 hover:bg-gray-700 rounded-lg cursor-pointer transition-all group"

@@ -23,7 +23,7 @@ export const buildSearchQuery = (
     "popular",
     "eco-friendly",
     "ecofriendly",
-    "100% natural",
+    "all natural",
     "natural",
     "good employer",
     "locally made",

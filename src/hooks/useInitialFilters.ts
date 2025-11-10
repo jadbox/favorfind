@@ -34,7 +34,7 @@ export const useInitialFilters = () => {
       "durable with great warranty": ["durable with great warranty"],
       popular: ["popular"],
       "eco-friendly": ["eco-friendly", "ecofriendly"],
-      "100% natural": ["100% natural", "natural"],
+      "all natural": ["all natural", "natural"],
       "good employer": ["good employer"],
       "locally made": ["locally made"],
     };
