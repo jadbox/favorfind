@@ -31,14 +31,11 @@ export async function performSearch(params: SearchParams): Promise<SearchData> {
     return { results, error, savedStatus };
   }
 
+  const query = decodeURIComponent(params.query);
+
   try {
     const filterParams = buildFilterParams(params);
-    results = await fetchSearchResults(
-      params.query,
-      params.limit,
-      1,
-      filterParams
-    );
+    results = await fetchSearchResults(query, params.limit, 1, filterParams);
   } catch (err) {
     console.error("Search error:", err);
     error = err instanceof Error ? err.message : "Search failed";

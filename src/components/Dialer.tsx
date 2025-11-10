@@ -95,7 +95,7 @@ const Dialer: React.FC = () => {
           fetchDynamicMenu(newSelections, nextStep);
         }
       } else {
-        let query = newSelections.splice(1).join("+");
+        let query = newSelections.splice(1).join(" "); // use space to join selections
         // const removeTopLevel = newSelectionssplice(1).join(',').trim();
         
         // Append location if available

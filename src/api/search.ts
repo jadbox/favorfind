@@ -48,6 +48,8 @@ export const _fetchSearchResults = async (
 ): Promise<SearchResult[]> => {
   const q = query.trim();
 
+  console.log("q", q);
+
   // Validate and clamp limit
   const clampedLimit = !limit
     ? DEFAULT_SEARCH_LIMIT

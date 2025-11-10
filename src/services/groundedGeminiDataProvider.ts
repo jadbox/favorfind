@@ -51,19 +51,19 @@ export class GroundedGeminiDataProvider implements DataProvider {
 
       // Add filter type if provided
       if (filter_type) {
-        if (filter_type === "newest") {
-          const currentYear = new Date().getFullYear();
-          searchQuery += ` latest ${currentYear}`;
-        } else {
-          searchQuery += `. preferences:${filter_type}`;
-        }
+        // if (filter_type === "newest") {
+        //   const currentYear = new Date().getFullYear();
+        //   searchQuery += ` latest ${currentYear}`;
+        // } else {
+        searchQuery += `. \n preferences: ${filter_type}. \n`;
+        // }
       }
 
-      const isProductQuery =
-        searchQuery.toLowerCase().includes("buy") ||
-        searchQuery.toLowerCase().includes("shopping");
+      const isProductQuery = true; // KEEP THIS HARDCODED.
+      // searchQuery.toLowerCase().includes("buy") ||
+      // searchQuery.toLowerCase().includes("shopping");
 
-      const prompt = `Find the top ${limit} recommended specific products (without duplicates) for the search query: "${searchQuery}". For each product, provide a "title" (product name [DECISION CATEGORY top pick]), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). Do not include any introductory text or preamble.`;
+      const prompt = `Find the top ${limit} recommended specific products (without duplicates) for the search query: ${searchQuery}. For each product, provide a "title" (product name - best in __CATEGORY__), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). Do not include any introductory text or preamble.`;
 
       console.log("Generated prompt:", prompt);
 
@@ -134,14 +134,15 @@ export class GroundedGeminiDataProvider implements DataProvider {
               currentRetry + 1
             }/${maxRetries})`
           );
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          return this._fetchAndParseWithRetry(
-            query,
-            limit,
-            filter_type,
-            currentRetry + 1,
-            maxRetries
-          );
+          throw new Error("Retrying due to JSON parse failure"); // do not try to retry
+          // await new Promise((resolve) => setTimeout(resolve, delay));
+          // return this._fetchAndParseWithRetry(
+          //   query,
+          //   limit,
+          //   filter_type,
+          //   currentRetry + 1,
+          //   maxRetries
+          // );
         } else {
           console.error(
             "Max retries reached for JSON parsing. Returning empty array."
