@@ -33,7 +33,6 @@ export const POST: APIRoute = async ({ request }) => {
         publisher: String(form.get("publisher") || ""),
         publicationDate: String(form.get("publicationDate") || ""),
         abstract: String(form.get("abstract") || ""),
-        citationCount: Number(form.get("citationCount") || 0),
         url: String(form.get("url") || ""),
         category: category,
       };

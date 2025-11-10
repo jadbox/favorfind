@@ -1,5 +1,3 @@
-import type { SearchResult } from "@/types";
-
 export interface SemanticScholarPaper {
   paperId: string;
   source?: string;
