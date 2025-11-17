@@ -176,7 +176,7 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
           >
             Open in New Window
           </a>
-          <button
+          {/* <button
             onClick={handleSaveToggle}
             disabled={isLoading}
             className={`btn btn-sm rounded-md transition-all ${
@@ -202,7 +202,7 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
                 <Bookmark className="h-4 w-4" />
               )}
             </div>
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

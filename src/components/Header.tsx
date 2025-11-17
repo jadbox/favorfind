@@ -13,13 +13,13 @@ const Header: React.FC = () => {
 
         {/* Right Navigation */}
         <div className="flex items-center space-x-4">
-          <a
+          {/* <a
             href="/library"
             className="btn btn-ghost btn-sm flex items-center space-x-2"
           >
             <Library className="h-8 w-8 text-medical-600" />
             <span>Saved Results</span>
-          </a>
+          </a> */}
 
           {/* User Profile */}
           {/* <div className="avatar">
