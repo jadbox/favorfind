@@ -78,9 +78,9 @@ export const dialerConfig: {
   topLevel: [
     { label: "Electronics", icon: Monitor, value: "electronics" },
     { label: "Home", icon: Home, value: "home" },
-    { label: "Fashion", icon: Shirt, value: "fashion" },
+    { label: "Clothing", icon: Shirt, value: "clothing" },
     { label: "Travel", icon: Plane, value: "travel" },
-    { label: "Software", icon: Wrench, value: "software" },
+    // { label: "Software", icon: Wrench, value: "software" },
     { label: "Health", icon: HeartPulse, value: "health" },
     // { label: "Food & Grocery", icon: Apple, value: "food-grocery" },
     // { label: "Sports & Fitness", icon: Dumbbell, value: "sports-fitness" },
@@ -106,14 +106,16 @@ export const dialerConfig: {
       { label: "Garage", icon: Warehouse, value: "garage" },
       { label: "Lawn & Garden", icon: Sprout, value: "lawn-garden" },
     ],
-    fashion: [
-      { label: "Tops", icon: Shirt, value: "tops" },
-      { label: "Bottoms", icon: Footprints, value: "bottoms" },
-      { label: "Shoes", icon: Footprints, value: "shoes" },
-      { label: "Accessories", icon: Backpack, value: "accessories" },
+    clothing: [
+      { label: "Jackets", icon: Shirt, value: "jackets" },
+      // { label: "Tops", icon: Shirt, value: "tops" },
+      // { label: "Bottoms", icon: Footprints, value: "bottoms" },
+      { label: "Running Shoes", icon: Footprints, value: "running-shoes" },
+      { label: "Work Shoes", icon: Footprints, value: "work-shoes" },
+      // { label: "Accessories", icon: Backpack, value: "accessories" }, // disabled for now
     ],
     travel: [
-      { label: "Flights", icon: Plane, value: "flights" },
+      // { label: "Flights", icon: Plane, value: "flights" }, // disable flights for now
       { label: "Hotels", icon: Hotel, value: "hotels" },
       { label: "Car Rentals", icon: Car, value: "car-rentals" },
       { label: "Buy a Car", icon: Car, value: "car-vehicle" },
@@ -122,15 +124,15 @@ export const dialerConfig: {
       { label: "Restaurants", icon: Utensils, value: "restaurants" },
       { label: "Activities", icon: Ticket, value: "activities" },
     ],
-    software: [
-      { label: "Productivity", icon: ClipboardCheck, value: "productivity" },
-      { label: "Creative", icon: Paintbrush, value: "creative" },
-      { label: "Development", icon: Code, value: "development" },
-      { label: "Utilities", icon: Wrench, value: "utilities" },
-      { label: "OS", icon: TerminalSquare, value: "operating-systems" },
-    ],
+    // software: [
+    //   { label: "Productivity", icon: ClipboardCheck, value: "productivity" },
+    //   { label: "Video editor", icon: Video, value: "video-editor" },
+    //   { label: "Development", icon: Code, value: "development" },
+    //   { label: "Utilities", icon: Wrench, value: "utilities" },
+    //   { label: "OS", icon: TerminalSquare, value: "operating-systems" },
+    // ],
     health: [
-      { label: "Vitamins", icon: Pill, value: "vitamins" },
+      // { label: "Vitamins", icon: Pill, value: "vitamins" }, // disabled this for now
       {
         label: "Gym Supplements",
         icon: FlaskConical,

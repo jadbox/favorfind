@@ -5,6 +5,8 @@ import * as lucideIcons from "lucide-react";
 import { LoadingUtils } from "../utils/loadingUtils";
 import StepSettings from "./StepSettings";
 
+const TOTAL_STEPS = 3; // Define the total number of menu steps
+
 const getIcon = (name: string) => {
   const icon = lucideIcons[name as keyof typeof lucideIcons];
   return icon || Search;
@@ -76,7 +78,7 @@ const Dialer: React.FC = () => {
       const newSelections = [...selections, item.value];
       setSelections(newSelections);
 
-      if (step < 4) {
+      if (step < TOTAL_STEPS) {
         const nextStep = step + 1;
         let nextMenuItems: MenuItem[] = [];
 
@@ -170,7 +172,7 @@ const Dialer: React.FC = () => {
     return (
       <div>
         <div className="progress-indicator">
-          {[1, 2, 3, 4].map((s) => (
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
             <div
               key={s}
               className={`progress-step ${step >= s ? "active" : ""}`}
