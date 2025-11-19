@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck, ThumbsUp, ThumbsDown, Award } from "lucide-react";
 import type { SearchResult } from "../types";
 import { toggleSaveToLibrary } from "../utils/localStorage";
 import Markdown from 'react-markdown'
@@ -164,6 +164,57 @@ const SearchResultCard: React.FC<SearchResultCardProps> = ({
         <div className="text-text-secondary text-sm leading-relaxed mb-4">
           {/* {isMounted ? <Markdown>{result.abstract}</Markdown> : result.abstract} */}
           {result.abstract}
+        </div>
+
+        {/* Product Specific Details */}
+        <div className="mb-4 space-y-3">
+          {/* Badges and Price */}
+          <div className="flex flex-wrap gap-2 items-center">
+            {result.best_for && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                <Award className="w-3 h-3 mr-1" />
+                {result.best_for}
+              </span>
+            )}
+            
+          </div>
+
+          {/* Pros and Cons */}
+          {(result.pros && result.pros.length > 0) || (result.cons && result.cons.length > 0) ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+              {result.pros && result.pros.length > 0 && (
+                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                  <h4 className="text-xs font-semibold text-green-800 dark:text-green-300 mb-2 flex items-center">
+                    <ThumbsUp className="w-3 h-3 mr-1" /> Pros
+                  </h4>
+                  <ul className="text-xs space-y-1 text-green-700 dark:text-green-200">
+                    {result.pros.map((pro, idx) => (
+                      <li key={idx} className="flex items-start">
+                        <span className="mr-1.5">•</span>
+                        {pro}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {result.cons && result.cons.length > 0 && (
+                <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                  <h4 className="text-xs font-semibold text-red-800 dark:text-red-300 mb-2 flex items-center">
+                    <ThumbsDown className="w-3 h-3 mr-1" /> Cons
+                  </h4>
+                  <ul className="text-xs space-y-1 text-red-700 dark:text-red-200">
+                    {result.cons.map((con, idx) => (
+                      <li key={idx} className="flex items-start">
+                        <span className="mr-1.5">•</span>
+                        {con}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          ) : null}
         </div>
 
         {/* Actions */}

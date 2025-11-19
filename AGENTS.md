@@ -4,13 +4,8 @@ The Bun dev server is always running. Ask for logs if needed.
 
 This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Scholar API to provide a research paper search interface. Below are patterns, best practices, and lessons learned during development. Most pages are server-side rendered for SEO and performance. Deployed to fly.io cloud with CLI and Docker. We are NOT using page transitions- only SSR SPA.
 
-## Modular Architecture Patterns
-
-### Data Provider Interface Pattern
-- **Interface-based provider system** enables easy switching between search backends (Semantic Scholar, Gemini AI, etc.)
-- **Single `DataProvider` interface** with `fetchPapers(query: string, limit: number): Promise<SemanticScholarPaper[]>` method
-- **Provider selection via environment variables** (`SEARCH_PROVIDER=gemini|semantic-scholar`) with fallback defaults
-- **Benefit**: Add new search providers without changing core search logic
+## TIP for testing
+- To access search directly, start testing from the search result query url. Example: http://localhost:4321/search?q=tvs%2Boled-tv%2Boled-gaming
 
 ## AI Integration Best Practices
 
@@ -57,11 +52,6 @@ This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Schol
 
 ## Tool-Specific Insights
 
-### Google GenAI SDK
-- **Version 1.20.0** tested and working with structured output
-- **Model selection**: `gemini-2.5-flash` provides good balance of speed and accuracy
-- **Temperature control**: Default settings work well for factual search tasks
-
 ### Development Tools
 - **Bun runtime** provides excellent SQLite integration and fast development server
 - **Astro dev server** with hot reload supports server-side rendering debugging. Server does not need restart on code changes. Assume dev server is always running.
@@ -69,27 +59,15 @@ This is an Astro project using Bun runtime, Google Gemini AI, and Semantic Schol
 
 ## Production Considerations
 
-### Scalability
-- **Configurable article limits** prevent API abuse and control costs
-- **Caching reduces API calls** significantly for repeated queries
-- **Provider abstraction** allows A/B testing different search backends
-
-### Monitoring
-- **Cache hit/miss logging** helps optimize cache strategies
-- **Provider usage logging** tracks which search backends are most effective
-- **Error rate monitoring** for API reliability assessment
-
 ## Code Organization Tips
 
 Keep code modular and maintainable. Be critical to make code simple, concise, using modern standards, and avoid over-engineering. Split very large files into smaller focused modules.
 
 ### File Structure Benefits
-- **Separate provider modules** (`semanticScholarDataProvider.ts`, `geminiDataProvider.ts`) enable independent testing
+- **Separate provider modules** (`geminiDataProvider.ts`) enable independent testing
 - **Centralized configuration** in main search module with environment variable fallbacks
-- **Mapper functions** (`semanticScholarMapper.ts`) isolate data transformation logic
 
 ### Type Safety
-- **Shared interfaces** (`SemanticScholarPaper`) ensure consistency across providers
 - **Strict TypeScript** catches integration issues early
 - **Runtime validation** of AI responses prevents malformed data from breaking the UI
 

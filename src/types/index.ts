@@ -7,6 +7,10 @@ export interface SearchResult {
   abstract: string;
   url: string;
   category: "article" | "trial" | "guideline" | "product";
+  pros?: string[];
+  cons?: string[];
+  best_for?: string;
+  image_url?: string;
 }
 
 export interface SearchHistory {

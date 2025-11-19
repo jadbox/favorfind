@@ -63,7 +63,15 @@ export class GroundedGeminiDataProvider implements DataProvider {
       // searchQuery.toLowerCase().includes("buy") ||
       // searchQuery.toLowerCase().includes("shopping");
 
-      const prompt = `Find the top ${limit} recommended specific products (without duplicates) for the search query: ${searchQuery}. For each product, provide a "title" (product name - best in __CATEGORY__), a "description" (brief explanation of why it's recommended), and a "url" (Google Shopping link for the product). Do not include any introductory text or preamble.`;
+      const prompt = `Find the top ${limit} recommended specific products (without duplicates) for the search query: ${searchQuery}. For each product, provide:
+      - "title" (product name - best in __CATEGORY__)
+      - "description" (brief explanation of why it's recommended)
+      - "url" (Google Shopping link for the product)
+      - "pros" (array of 2-3 short pros)
+      - "cons" (array of 2-3 short cons)
+      - "best_for" (short phrase, e.g. "Best for Gaming", "Best Value")
+      
+      Do not include any introductory text or preamble.`;
 
       console.log("Generated prompt:", prompt);
 
@@ -74,7 +82,7 @@ export class GroundedGeminiDataProvider implements DataProvider {
       const result = await this.ai.models.generateContent({
         model: "gemini-flash-lite-latest",
         contents:
-          "You are a helpful assistant that always responds in JSON format { results: [ {title, description, url} ] }. JSON ANSWERS ONLY. <USE_SEARCH>" +
+          "You are a helpful assistant that always responds in JSON format { results: [ {title, description, url, price_range, rating, pros, cons, best_for} ] }. JSON ANSWERS ONLY. <USE_SEARCH>" +
           prompt,
         config: {
           tools: generationConfig.tools,
@@ -185,6 +193,11 @@ export class GroundedGeminiDataProvider implements DataProvider {
           abstract: description,
           url,
           category: isProductQuery ? "product" : "article",
+          // New fields
+          pros: Array.isArray(item.pros) ? item.pros : [],
+          cons: Array.isArray(item.cons) ? item.cons : [],
+          best_for:
+            typeof item.best_for === "string" ? item.best_for : undefined,
         } satisfies SearchResult;
       });
     } catch (error) {
