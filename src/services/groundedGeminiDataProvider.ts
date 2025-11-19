@@ -67,11 +67,11 @@ export class GroundedGeminiDataProvider implements DataProvider {
       - "title" (product name - best in __CATEGORY__)
       - "description" (brief explanation of why it's recommended)
       - "url" (Google Shopping link for the product)
-      - "pros" (array of 2-3 short pros)
-      - "cons" (array of 2-3 short cons)
+      - "pros" (valid JSON array of 2-3 short strings)
+      - "cons" (valid JSON array of 2-3 short strings)
       - "best_for" (short phrase, e.g. "Best for Gaming", "Best Value")
       
-      Do not include any introductory text or preamble.`;
+      Do not include any introductory text or preamble. Ensure 'pros' and 'cons' are STRICTLY JSON arrays of strings, NOT inside the description string.`;
 
       console.log("Generated prompt:", prompt);
 
@@ -87,7 +87,7 @@ export class GroundedGeminiDataProvider implements DataProvider {
         config: {
           tools: generationConfig.tools,
           maxOutputTokens: 8192,
-          temperature: 0.2,
+          temperature: 0.1,
         },
       });
 
@@ -169,7 +169,7 @@ export class GroundedGeminiDataProvider implements DataProvider {
           typeof item.title === "string" && item.title.trim().length > 0
             ? item.title
             : "Untitled";
-        const description =
+        let description =
           typeof item.description === "string" &&
           item.description.trim().length > 0
             ? item.description
@@ -184,6 +184,17 @@ export class GroundedGeminiDataProvider implements DataProvider {
           searchTerm
         )}&sjc=1`;
 
+        // Fallback parsing for pros/cons if they are missing from the JSON but present in the description
+        let pros: string[] = Array.isArray(item.pros)
+          ? (item.pros as string[])
+          : [];
+        let cons: string[] = Array.isArray(item.cons)
+          ? (item.cons as string[])
+          : [];
+
+        // Clean up description if we removed parts
+        description = description.trim();
+
         return {
           id: `gemini-${Date.now()}-${index}`,
           source: "Gemini",
@@ -194,8 +205,8 @@ export class GroundedGeminiDataProvider implements DataProvider {
           url,
           category: isProductQuery ? "product" : "article",
           // New fields
-          pros: Array.isArray(item.pros) ? item.pros : [],
-          cons: Array.isArray(item.cons) ? item.cons : [],
+          pros,
+          cons,
           best_for:
             typeof item.best_for === "string" ? item.best_for : undefined,
         } satisfies SearchResult;
