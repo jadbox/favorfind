@@ -12,7 +12,10 @@ import {
 const db = new Database("db.sqlite");
 
 // Get the actual rate limit from the module (default 12 or env override)
-const RATE_LIMIT = Number.parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "12", 10);
+const RATE_LIMIT = Number.parseInt(
+  process.env.RATE_LIMIT_MAX_REQUESTS || "12",
+  10
+);
 
 describe("rateLimiter", () => {
   beforeEach(() => {
@@ -160,7 +163,9 @@ describe("rateLimiter", () => {
 
       expect(newResponse.status).toBe(200);
       expect(newResponse.headers.get("X-RateLimit-Remaining")).toBe("5");
-      expect(newResponse.headers.get("X-RateLimit-Limit")).toBe(String(RATE_LIMIT));
+      expect(newResponse.headers.get("X-RateLimit-Limit")).toBe(
+        String(RATE_LIMIT)
+      );
       expect(newResponse.headers.get("Content-Type")).toBe("application/json");
     });
   });
