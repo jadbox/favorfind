@@ -1,6 +1,12 @@
 import type { APIRoute } from "astro";
 import { GoogleGenAI, Type } from "@google/genai";
 import { getCachedData, setCachedData } from "../../../services/cache";
+import {
+  getClientIP,
+  checkRateLimit,
+  createRateLimitResponse,
+  addRateLimitHeaders,
+} from "../../../services/rateLimiter";
 
 const COMMON_ICONS = [
   "Home",
@@ -37,6 +43,14 @@ const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // Rate limit check
+    const clientIP = getClientIP(request);
+    const rateLimitResult = checkRateLimit(clientIP);
+
+    if (!rateLimitResult.allowed) {
+      return createRateLimitResponse(rateLimitResult.resetIn);
+    }
+
     const body = await request.json();
     const { selections, exclude = [] } = body;
 
@@ -53,10 +67,13 @@ export const POST: APIRoute = async ({ request }) => {
     const cachedMenu = getCachedData(cacheKey);
 
     if (cachedMenu) {
-      return new Response(JSON.stringify(cachedMenu), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return addRateLimitHeaders(
+        new Response(JSON.stringify(cachedMenu), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+        rateLimitResult.remaining
+      );
     }
 
     console.log("selections:", selections);
@@ -122,10 +139,13 @@ export const POST: APIRoute = async ({ request }) => {
 
     setCachedData(cacheKey, parsed);
 
-    return new Response(JSON.stringify(parsed), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return addRateLimitHeaders(
+      new Response(JSON.stringify(parsed), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+      rateLimitResult.remaining
+    );
   } catch (error) {
     console.error("Error generating dynamic menu:", error);
     return new Response(

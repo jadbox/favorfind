@@ -3,16 +3,13 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import SearchBar from "../components/SearchBar.tsx";
 import SearchResultsDisplay from "../components/SearchResultsDisplay.tsx";
 import SearchResultsFilters from "../components/SearchResultsFilters.tsx";
-import {
-  parseSearchParams,
-  performSearch,
-} from "../utils/searchHelpers.server";
+import { parseSearchParams, performSearch } from "../api/search";
 
 // Parse search parameters
 const searchParams = parseSearchParams(new URL(Astro.request.url));
 
-// Perform server-side search
-const searchData = await performSearch(searchParams);
+// Perform server-side search with rate limiting
+const searchData = await performSearch(searchParams, Astro.request);
 ---
 
 <BaseLayout title="Search Results">

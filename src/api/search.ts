@@ -1,94 +1,104 @@
 import type { SearchResult } from "../types";
+import type { SearchParams } from "../types/search";
 import {
   getCachedSearchResults,
   setCachedSearchResults,
   generateCacheKey,
 } from "../services/cache";
-
-// --- Types for the Semantic Scholar API ---
+import { getClientIP, checkRateLimit } from "../services/rateLimiter";
 import type { DataProvider } from "../services/dataProviderInterface";
 import { GroundedGeminiDataProvider } from "../services/groundedGeminiDataProvider";
-// import { UngroundedGeminiDataProvider } from "../services/ungroundedGeminiDataProvider";
-// import { PerplexityDataProvider } from "../services/perplexityDataProvider";
 
-// Configuration constants
+// Re-export for convenience
+export { parseSearchParams } from "../types/search";
+
+// Configuration
 const DEFAULT_SEARCH_LIMIT = 12;
 const MAX_SEARCH_LIMIT = 20;
 
-// Choose data provider based on environment variable
-const getDataProvider = (): DataProvider => {
-  const provider: string = "gemini"; // Default to perplexity
-  // old logic used process.env.SEARCH_PROVIDER ||
+// Search result with error handling
+export interface SearchData {
+  results: SearchResult[];
+  error: string | null;
+}
 
-  switch (provider) {
-    case "gemini":
-      return new GroundedGeminiDataProvider();
-    // case "perplexity":
-    //   return new PerplexityDataProvider();
-    default:
-      throw new Error(`Unsupported search provider: ${provider}`);
-  }
-};
+const getDataProvider = (): DataProvider => new GroundedGeminiDataProvider();
 
-// Get provider name for cache key
-const getProviderName = (useGrounding: boolean): string => {
+const getProviderName = (): string => {
   const provider = process.env.SEARCH_PROVIDER || "gemini";
-  getDataProvider;
-  if (provider === "gemini") {
-    return useGrounding ? "gemini-grounded" : "gemini-ungrounded";
-  }
-  return provider;
+  return provider === "gemini" ? "gemini-grounded" : provider;
 };
 
-export const _fetchSearchResults = async (
-  query: string,
-  limit: number = DEFAULT_SEARCH_LIMIT,
-  page: number = 1,
-  filter_type: string = ""
-): Promise<SearchResult[]> => {
-  const q = query.trim();
+/**
+ * Build filter string from search params
+ */
+function buildFilterParams(params: SearchParams): string {
+  return [
+    params.selectedType !== "All" && params.selectedType,
+    params.sortBy !== "relevance" && params.sortBy,
+  ]
+    .filter(Boolean)
+    .join(",");
+}
 
-  console.log("q", q);
+/**
+ * Perform a search with caching and rate limiting
+ */
+export async function performSearch(
+  params: SearchParams,
+  request?: Request
+): Promise<SearchData> {
+  const query = params.query?.trim();
 
-  // Validate and clamp limit
-  const clampedLimit = !limit
-    ? DEFAULT_SEARCH_LIMIT
-    : Math.min(Math.max(limit, 1), MAX_SEARCH_LIMIT);
+  if (!query) {
+    return { results: [], error: null };
+  }
 
-  // Hardcode grounding to true for now
-  const useGrounding = true;
+  const limit = Math.min(
+    Math.max(params.limit || DEFAULT_SEARCH_LIMIT, 1),
+    MAX_SEARCH_LIMIT
+  );
+  const filterType = buildFilterParams(params);
 
-  // Check cache first
-  const provider = getProviderName(useGrounding);
+  // Check cache first (no rate limiting for cached results)
   const cacheKey = generateCacheKey(
-    provider,
-    q,
-    clampedLimit,
-    page,
-    filter_type
+    getProviderName(),
+    query,
+    limit,
+    1,
+    filterType
   );
   const cachedResults = getCachedSearchResults(cacheKey);
+
   if (cachedResults) {
-    return cachedResults;
+    return { results: cachedResults, error: null };
   }
 
-  if (!q) {
-    return [];
+  // Rate limit only for non-cached requests
+  if (request) {
+    const clientIP = getClientIP(request);
+    const { allowed } = checkRateLimit(clientIP);
+    if (!allowed) {
+      return {
+        results: [],
+        error: "Too many requests. Please try again later.",
+      };
+    }
   }
 
   try {
-    const dataProvider = getDataProvider();
-    const results = await dataProvider.fetchPapers(
-      q,
-      clampedLimit,
-      filter_type
+    const results = await getDataProvider().fetchPapers(
+      query,
+      limit,
+      filterType
     );
-
-    // No need to mapToSearchResult here as GeminiDataProvider now returns SearchResult[]
     setCachedSearchResults(cacheKey, results);
-    return results;
-  } catch (error) {
-    console.error("Search error:", error);
-    throw error;
+    return { results, error: null };
+  } catch (err) {
+    console.error("Search error:", err);
+    return {
+      results: [],
+      error: err instanceof Error ? err.message : "Search failed",
+    };
   }
-};
+}
