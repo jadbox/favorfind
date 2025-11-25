@@ -140,11 +140,12 @@ export const dialerConfig: {
       },
       { label: "Fitness Trackers", icon: Watch, value: "fitness-trackers" },
       { label: "Personal Care", icon: Sparkles, value: "personal-care" },
-      {
-        label: "Medical Supplies",
-        icon: Stethoscope,
-        value: "medical-supplies",
-      },
+      { label: "Gym Equipment", icon: Dumbbell, value: "gym-equipment" },
+      // {
+      //   label: "Medical Supplies",
+      //   icon: Stethoscope,
+      //   value: "medical-supplies",
+      // },
     ],
     // "food-grocery": [],
     // "sports-fitness": [],

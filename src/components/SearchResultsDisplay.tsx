@@ -60,7 +60,7 @@ const SearchResultsDisplay: React.FC<SearchResultsDisplayProps> = ({
         <div className="text-center py-12">
           <div className="loading loading-spinner loading-lg text-medical-600"></div>
           <div className="text-gray-500 text-lg mt-4">
-            Searching medical literature...
+            Searching...
           </div>
         </div>
       ) : filteredResults.length > 0 ? (

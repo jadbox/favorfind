@@ -5,8 +5,7 @@ const Disclaimer: React.FC = () => {
     <footer className="bg-base-200 border-t border-gray-700 px-6 py-4 mt-8 w-full">
       <div className="max-w-7xl mx-auto text-sm text-gray-300 w-full text-center">
         <p>
-          For informational purposes only — not a substitute for professional
-          medical, financial, or legal advice.
+          For informational purposes only.
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400 justify-center">
           <a className="hover:text-primary transition-colors" href="/terms" target="_blank">
