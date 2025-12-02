@@ -51,89 +51,80 @@ export class GroundedGeminiDataProvider implements DataProvider {
 
       // Add filter type if provided
       if (filter_type) {
-        // if (filter_type === "newest") {
-        //   const currentYear = new Date().getFullYear();
-        //   searchQuery += ` latest ${currentYear}`;
-        // } else {
         searchQuery += `. \n preferences: ${filter_type}. \n`;
-        // }
       }
 
       const isProductQuery = true; // KEEP THIS HARDCODED.
-      // searchQuery.toLowerCase().includes("buy") ||
-      // searchQuery.toLowerCase().includes("shopping");
 
       const prompt = `Find the top ${limit} recommended specific products (without duplicates) for the search query: ${searchQuery}. For each product, provide:
       - "title" (product name - best in __CATEGORY__)
       - "description" (brief explanation of why it's recommended)
       - "url" (Google Shopping link for the product)
-      - "pros" (valid JSON array of 2-3 short strings)
-      - "cons" (valid JSON array of 2-3 short strings)
-      - "best_for" (short phrase, e.g. "Best for Gaming", "Best Value")
-      
-      Do not include any introductory text or preamble. Ensure 'pros' and 'cons' are STRICTLY JSON arrays of strings, NOT inside the description string.`;
+      - "pros" (list of 2-3 short strings)
+      - "cons" (list of 2-3 short strings)
+      - "best_for" (short phrase, e.g. "Best for Gaming", "Best Value")`;
 
       console.log("Generated prompt:", prompt);
 
-      const generationConfig: Record<string, any> = {
-        tools: [{ googleSearch: {} }],
-      };
-
-      const result = await this.ai.models.generateContent({
-        model: "gemini-flash-lite-latest",
-        contents:
-          "You are a helpful assistant that always responds in JSON format { results: [ {title, description, url, price_range, rating, pros, cons, best_for} ] }. JSON ANSWERS ONLY. <USE_SEARCH>" +
-          prompt,
+      const response = await this.ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: prompt }],
+          },
+        ],
         config: {
-          tools: generationConfig.tools,
+          tools: [{ googleSearch: {} }],
           maxOutputTokens: 8192,
           temperature: 0.1,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              results: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    title: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    url: { type: Type.STRING },
+                    pros: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING },
+                    },
+                    cons: {
+                      type: Type.ARRAY,
+                      items: { type: Type.STRING },
+                    },
+                    best_for: { type: Type.STRING },
+                  },
+                  required: ["title", "description", "pros", "cons"],
+                },
+              },
+            },
+            required: ["results"],
+          },
         },
       });
+      // console.log("Gemini API response received");
+      // console.log(JSON.stringify(response, null, 2));
 
-      const response = result;
-      console.log("Gemini API response received");
-      console.log(JSON.stringify(response, null, 2));
+      // const groundingMetadata =
+      //   response.candidates?.[0]?.groundingMetadata?.groundingChunks;
 
-      const groundingMetadata =
-        response.candidates?.[0]?.groundingMetadata?.groundingChunks;
-      console.log(
-        "Grounding metadata:",
-        JSON.stringify(groundingMetadata, null, 2)
-      );
-      const content =
-        response.candidates?.[0]?.content?.parts
-          ?.map((part) => part.text)
-          .join("") || "";
+      if (!response) return [];
 
-      let text = content.trim();
-      // Handle markdown code blocks
-      if (text.includes("```json")) {
-        text = text
-          .substring(text.indexOf("```json") + 7, text.lastIndexOf("```"))
-          .trim();
-      } else if (text.includes("```")) {
-        text = text
-          .substring(text.indexOf("```") + 3, text.lastIndexOf("```"))
-          .trim();
-      }
-
-      // Find the first '{' and the last '}' to extract the JSON object
-      const firstBrace = text.indexOf("{");
-      const lastBrace = text.lastIndexOf("}");
-      if (firstBrace !== -1 && lastBrace > firstBrace) {
-        text = text.slice(firstBrace, lastBrace + 1);
-      }
-
-      console.log("Extracted text for parsing:", text);
-
+      const content = response.candidates?.[0]?.content?.parts?.[0]?.text || "";
       let parsed: any[] = [];
 
       try {
-        parsed = JSON.parse(text.trim()).results;
+        parsed = JSON.parse(content.trim()).results;
+        console.log("Grounding metadata:", JSON.stringify(parsed, null, 2));
       } catch (jsonError) {
         console.error("Failed to parse Gemini response as JSON:", jsonError);
-        console.error("Raw Gemini response:", text);
+        console.error("Raw Gemini response:", content);
 
         if (currentRetry < maxRetries) {
           const delay = Math.pow(2, currentRetry) * 1000; // Exponential backoff: 1s, 2s, 4s
@@ -142,15 +133,14 @@ export class GroundedGeminiDataProvider implements DataProvider {
               currentRetry + 1
             }/${maxRetries})`
           );
-          throw new Error("Retrying due to JSON parse failure"); // do not try to retry
-          // await new Promise((resolve) => setTimeout(resolve, delay));
-          // return this._fetchAndParseWithRetry(
-          //   query,
-          //   limit,
-          //   filter_type,
-          //   currentRetry + 1,
-          //   maxRetries
-          // );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          return this._fetchAndParseWithRetry(
+            query,
+            limit,
+            filter_type,
+            currentRetry + 1,
+            maxRetries
+          );
         } else {
           console.error(
             "Max retries reached for JSON parsing. Returning empty array."
@@ -175,7 +165,7 @@ export class GroundedGeminiDataProvider implements DataProvider {
             ? item.description
             : "No description available";
 
-        console.log("Item title:", groundingMetadata, item);
+        // console.log("Item title:", groundingMetadata, item);
 
         let searchTerm = location ? `${title} ${location}` : title;
         searchTerm = searchTerm.replace(/\[.*?\]/g, "").trim();
