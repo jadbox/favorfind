@@ -1,6 +1,6 @@
 import type { DataProvider } from "./dataProviderInterface";
 import type { SearchResult } from "../types"; // Using SearchResult for broader compatibility
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel, Type } from "@google/genai";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -67,7 +67,7 @@ export class GroundedGeminiDataProvider implements DataProvider {
       console.log("Generated prompt:", prompt);
 
       const response = await this.ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-3-flash-preview",
         contents: [
           {
             role: "user",
@@ -75,9 +75,13 @@ export class GroundedGeminiDataProvider implements DataProvider {
           },
         ],
         config: {
+          thinkingConfig: {
+            // thinkingBudget: 0,
+            thinkingLevel: ThinkingLevel.LOW,
+          },
           tools: [{ googleSearch: {} }],
           maxOutputTokens: 8192,
-          temperature: 0.1,
+          // temperature: 1,
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
