@@ -244,7 +244,7 @@
 
     "@oslojs/encoding": ["@oslojs/encoding@1.1.0", "", {}, "sha512-70wQhgYmndg4GCPxPPxPGevRKqTIJ2Nh4OkiMWmDAVYsTQ+Ta7Sq+rPevXyXGdzr30/qZBnyOalCszoMxlyldQ=="],
 
-    "@perplexity-ai/perplexity_ai": ["@perplexity-ai/perplexity_ai@0.18.1", "", {}, "sha512-CAGtbc4QnoQmzFm3A/ysLPHAoLvSu3GJs7FxzF/zhPBzYet0998NvFsSaH64Ilq7oeGPX7KE/xEdGA9bCch77Q=="],
+    "@perplexity-ai/perplexity_ai": ["@perplexity-ai/perplexity_ai@0.18.2", "", {}, "sha512-bk4+nyEiFTq3szfL4lIwV/tyGA+JwgcgLKH52ss1A3ZkCq5+ysyw6y+eeuQEJi9o6+Fx27cOevqjy1Z7ao1BSg=="],
 
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.0-beta.27", "", {}, "sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA=="],
 
